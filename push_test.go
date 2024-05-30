@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"testing"
+
+	"github.com/Smartling/smartling-cli/mocks"
+
 	smartling "github.com/Smartling/api-sdk-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"io/ioutil"
-	"net/http"
-	"smartling-cli/mocks"
-	"strings"
-	"testing"
 )
 
 type request struct {
@@ -109,7 +111,7 @@ func getMockHttpClient(responses []request) *http.Client {
 		}
 		return &http.Response{
 			StatusCode: statusCode,
-			Body:       ioutil.NopCloser(bytes.NewBufferString(response)),
+			Body:       io.NopCloser(bytes.NewBufferString(response)),
 			Header:     header,
 		}
 	})

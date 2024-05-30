@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
+	"dario.cat/mergo"
 	"github.com/gobwas/glob"
-	"github.com/imdario/mergo"
 	"github.com/kovetskiy/ko"
 	"github.com/reconquest/hierr-go"
 	"gopkg.in/yaml.v2"
@@ -22,8 +22,8 @@ type FileConfig struct {
 }
 
 type Config struct {
-	UserID    string `yaml:"user_id",required:"true"`
-	Secret    string `yaml:"secret",required:"true"`
+	UserID    string `yaml:"user_id" required:"true"`
+	Secret    string `yaml:"secret" required:"true"`
 	AccountID string `yaml:"account_id"`
 	ProjectID string `yaml:"project_id,omitempty"`
 	Threads   int    `yaml:"threads"`

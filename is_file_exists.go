@@ -6,9 +6,5 @@ func isFileExists(path string) bool {
 	// we don't care about any other errors there, just return false if stat
 	// failed for whatever reason
 	_, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }

@@ -13,7 +13,7 @@ type MissingConfigValueError struct {
 func (err MissingConfigValueError) Error() string {
 	return NewError(
 		fmt.Errorf(
-			"Cannot find mandatory configuration parameter %q",
+			"cannot find mandatory configuration parameter %q",
 			err.ValueName,
 		),
 

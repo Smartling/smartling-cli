@@ -4,15 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Smartling/api-sdk-go"
+	smartling "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
-func doProjectsInfo(
-	client *smartling.Client,
-	config Config,
-	args map[string]interface{},
-) error {
+func doProjectsInfo(client *smartling.Client, config Config) error {
 	details, err := client.GetProjectDetails(config.ProjectID)
 	if err != nil {
 		if _, ok := err.(smartling.NotFoundError); ok {

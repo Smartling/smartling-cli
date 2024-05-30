@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Smartling/api-sdk-go"
+	smartling "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -136,7 +136,7 @@ func downloadFileTranslations(
 
 func hasLocaleInList(locale string, locales []string) bool {
 	for _, filter := range locales {
-		if strings.ToLower(filter) == strings.ToLower(locale) {
+		if strings.EqualFold(strings.ToLower(filter), strings.ToLower(locale)) {
 			return true
 		}
 	}

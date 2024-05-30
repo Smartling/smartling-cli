@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/Smartling/api-sdk-go"
+	smartling "github.com/Smartling/api-sdk-go"
 	"github.com/docopt/docopt-go"
 	"github.com/kovetskiy/lorg"
 	"github.com/reconquest/hierr-go"
@@ -492,7 +492,7 @@ func doProjects(config Config, args map[string]interface{}) error {
 		return doProjectsList(client, config, args)
 
 	case args["info"].(bool):
-		return doProjectsInfo(client, config, args)
+		return doProjectsInfo(client, config)
 
 	case args["locales"].(bool):
 		return doProjectsLocales(client, config, args)
