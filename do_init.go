@@ -4,11 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 
-	"github.com/Smartling/api-sdk-go"
+	smartling "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 	"github.com/tcnksm/go-input"
 )
@@ -124,14 +123,14 @@ func doInit(config Config, args map[string]interface{}) error {
 	if err != nil {
 		if _, ok := err.(smartling.NotAuthorizedError); ok {
 			return NewError(
-				errors.New("Not authorized."),
+				errors.New("not authorized"),
 				"Your credentials are invalid. Double check them and run "+
-					"init command again.",
+					"init command again",
 			)
 		} else {
 			return NewError(
 				hierr.Errorf(err, "failure while testing connection"),
-				"Contact developer for more info.",
+				"Contact developer for more info",
 			)
 		}
 	}
@@ -146,7 +145,7 @@ func doInit(config Config, args map[string]interface{}) error {
 
 		fmt.Println(result.String())
 	} else {
-		err = ioutil.WriteFile(config.path, result.Bytes(), 0644)
+		err = os.WriteFile(config.path, result.Bytes(), 0644)
 		if err != nil {
 			return hierr.Errorf(
 				err,

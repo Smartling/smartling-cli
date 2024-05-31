@@ -1,4 +1,4 @@
-MAINTAINER = Stanislav Seletskiy <s.seletskiy@gmail.com>
+MAINTAINER = Alex Koval <akoval@smartling.com>
 DESCRIPTION = CLI for Smartling Platform
 
 all: clean get build

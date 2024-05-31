@@ -1,16 +1,16 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
-	"github.com/Smartling/api-sdk-go"
+	smartling "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
 func readFilesFromStdin() ([]smartling.File, error) {
-	lines, err := ioutil.ReadAll(os.Stdin)
+	lines, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		return nil, hierr.Errorf(
 			err,

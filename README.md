@@ -39,15 +39,3 @@ make MAINTAINER=<maintainer> <target>
 
 An executable named `smartling-cli` should become available in your
 `$GOPATH/bin`.
-
-
-## Managing dependencies
-
-Project uses [manul](https://github.com/kovetskiy/manul) vendoring tool,
-which uses vendoring through git-submodules.
-
-After adding any third-party libraries, you need to update vendoring:
-
-```
-manul -Ir
-```
