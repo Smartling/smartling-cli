@@ -1,4 +1,4 @@
-// +build windows
+//go:build windows
 
 package main
 
@@ -43,10 +43,10 @@ type (
 
 type ProgressRenderer struct{}
 
-func (renderer ProgressRenderer) Render(progress Progress) error {
+func (renderer ProgressRenderer) Render(progress *Progress) error {
 	var info consoleScreenBufferInfo
 
-	_, _, code := syscall.Syscall(
+	_, _, code := syscall.SyscallN(
 		procGetConsoleScreenBufferInfo.Addr(),
 		2,
 		uintptr(syscall.Stderr),
@@ -60,7 +60,7 @@ func (renderer ProgressRenderer) Render(progress Progress) error {
 	pos := info.cursorPosition
 	pos.X = 0
 
-	_, _, code = syscall.Syscall(
+	_, _, code = syscall.SyscallN(
 		procSetConsoleCursorPosition.Addr(),
 		2,
 		uintptr(syscall.Stderr),
