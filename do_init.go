@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 
@@ -146,7 +145,7 @@ func doInit(config Config, args map[string]interface{}) error {
 
 		fmt.Println(result.String())
 	} else {
-		err = ioutil.WriteFile(config.path, result.Bytes(), 0644)
+		err = os.WriteFile(config.path, result.Bytes(), 0644)
 		if err != nil {
 			return hierr.Errorf(
 				err,

@@ -1,3 +1,4 @@
+//go:build linux || darwin || freebsd || netbsd || openbsd || dragonfly
 // +build linux darwin freebsd netbsd openbsd dragonfly
 
 package main
@@ -9,7 +10,7 @@ import (
 
 type ProgressRenderer struct{}
 
-func (renderer ProgressRenderer) Render(progress Progress) error {
+func (renderer ProgressRenderer) Render(progress *Progress) error {
 	_, err := fmt.Fprintf(os.Stderr, "%s\r", progress.String())
 
 	return err

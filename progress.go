@@ -25,6 +25,6 @@ func (progress *Progress) Increment() {
 	progress.Current++
 }
 
-func (progress Progress) Flush() {
+func (progress *Progress) Flush() {
 	progress.Renderer.Render(progress)
 }
