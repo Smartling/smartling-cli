@@ -16,7 +16,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
-var version = "1.5"
+var version = "1.7"
 
 var usage = `smartling-cli - manage translation files using Smartling.
 
@@ -183,7 +183,7 @@ func main() {
 		return key
 	})
 
-	args, err := docopt.Parse(usage, nil, false, "smartling "+version, false)
+	args, err := docopt.ParseArgs(usage, nil, "smartling "+version)
 	if err != nil {
 		panic(err)
 	}

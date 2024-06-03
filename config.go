@@ -22,8 +22,8 @@ type FileConfig struct {
 }
 
 type Config struct {
-	UserID    string `yaml:"user_id" required:"true"`
-	Secret    string `yaml:"secret" required:"true"`
+	UserID    string `yaml:"user_id"`
+	Secret    string `yaml:"secret"`
 	AccountID string `yaml:"account_id"`
 	ProjectID string `yaml:"project_id,omitempty"`
 	Threads   int    `yaml:"threads"`
