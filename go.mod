@@ -23,8 +23,8 @@ require (
 	github.com/reconquest/karma-go v1.4.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/zazab/zhash v0.0.0-20221031090444-2b0d50417446 // indirect
-	golang.org/x/crypto v0.23.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/term v0.20.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/term v0.27.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
