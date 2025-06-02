@@ -1,7 +1,9 @@
 package main
 
-import "encoding/json"
-import "github.com/reconquest/hierr-go"
+import (
+	"encoding/json"
+	"github.com/reconquest/hierr-go"
+)
 
 type FormatExecutionError struct {
 	Cause  error
