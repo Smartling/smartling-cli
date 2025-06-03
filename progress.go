@@ -26,5 +26,8 @@ func (progress *Progress) Increment() {
 }
 
 func (progress *Progress) Flush() {
-	progress.Renderer.Render(progress)
+	err := progress.Renderer.Render(progress)
+	if err != nil {
+		fmt.Println("failed to Render: " + err.Error())
+	}
 }

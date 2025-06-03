@@ -242,17 +242,29 @@ func (suite *MainSuite) TestFilesPull() {
 			case "/Rick/portal-gun.java":
 				switch {
 				case strings.Contains(request.URL.Path, "/de-DE/"):
-					io.WriteString(writer, "Rick:de-DE\n")
+					_, err := io.WriteString(writer, "Rick:de-DE\n")
+					if err != nil {
+						panic(err)
+					}
 				default:
-					io.WriteString(writer, "Rick:original\n")
+					_, err := io.WriteString(writer, "Rick:original\n")
+					if err != nil {
+						panic(err)
+					}
 				}
 
 			case "/Morty/stupidness.txt":
 				switch {
 				case strings.Contains(request.URL.Path, "/es/"):
-					io.WriteString(writer, "Morty:es\n")
+					_, err := io.WriteString(writer, "Morty:es\n")
+					if err != nil {
+						panic(err)
+					}
 				default:
-					io.WriteString(writer, "Morty:original\n")
+					_, err := io.WriteString(writer, "Morty:original\n")
+					if err != nil {
+						panic(err)
+					}
 				}
 			}
 
