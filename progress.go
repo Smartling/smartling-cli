@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"sync"
 )
 
@@ -28,6 +29,6 @@ func (progress *Progress) Increment() {
 func (progress *Progress) Flush() {
 	err := progress.Renderer.Render(progress)
 	if err != nil {
-		fmt.Println("failed to Render: " + err.Error())
+		fmt.Fprintf(os.Stderr, "failed to Render: "+err.Error())
 	}
 }

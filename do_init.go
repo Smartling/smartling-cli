@@ -47,7 +47,7 @@ func doInit(config Config, args map[string]interface{}) error {
 
 		_, err = fmt.Sscanln(read, variable)
 		if err != nil {
-			fmt.Println("failed to Render: " + err.Error())
+			fmt.Fprintf(os.Stderr, "failed to scan input: "+err.Error())
 		}
 	}
 

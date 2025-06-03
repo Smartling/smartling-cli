@@ -134,12 +134,11 @@ func doFilesPush(
 			)
 		}
 
-		if !strings.HasPrefix(name, base) {
+		if relPath, err := filepath.Rel(base, name); err != nil || strings.HasPrefix(relPath, "..") {
 			return NewError(
 				errors.New(
 					`you are trying to push file outside project directory`,
 				),
-
 				`Check file path and path to configuration file and try again.`,
 			)
 		}
