@@ -134,7 +134,7 @@ func doFilesPush(
 			)
 		}
 
-		if !filepath.HasPrefix(name, base) {
+		if !strings.HasPrefix(name, base) {
 			return NewError(
 				errors.New(
 					`you are trying to push file outside project directory`,
