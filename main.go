@@ -314,7 +314,7 @@ func loadConfig(args map[string]interface{}) (Config, error) {
 		}
 	}
 
-	config, err := NewConfig(path)
+	config, err := loadConfigFromFile(path)
 	if err != nil {
 		return config, NewError(
 			hierr.Errorf(err, `failed to load configuration file "%s".`, path),

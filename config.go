@@ -5,9 +5,8 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/gobwas/glob"
-	"github.com/kovetskiy/ko"
+	"github.com/goccy/go-yaml"
 	"github.com/reconquest/hierr-go"
-	"gopkg.in/yaml.v2"
 )
 
 type FileConfig struct {
@@ -32,20 +31,23 @@ type Config struct {
 
 	Proxy string `yaml:"proxy,omitempty"`
 
-	path string
+	path string `yaml:"-"`
 }
 
-func NewConfig(path string) (Config, error) {
+func loadConfigFromFile(filename string) (Config, error) {
 	config := Config{
-		path: path,
+		path: filename,
 	}
 
-	err := ko.Load(path, &config, yaml.Unmarshal)
+	data, err := os.ReadFile(filename)
+	if err != nil && os.IsNotExist(err) {
+		return config, nil
+	}
 	if err != nil {
-		if os.IsNotExist(err) {
-			return config, nil
-		}
+		return config, err
+	}
 
+	if err := yaml.Unmarshal(data, &config); err != nil {
 		return config, err
 	}
 
