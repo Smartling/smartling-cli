@@ -48,7 +48,7 @@ func doFilesPush(
 		branch = strings.TrimSuffix(branch, "/") + "/"
 	}
 
-	patterns := []string{}
+	var patterns []string
 
 	if file != "" {
 		patterns = append(patterns, file)
@@ -60,7 +60,7 @@ func doFilesPush(
 		}
 	}
 
-	files := []string{}
+	var files []string
 
 	for _, pattern := range patterns {
 		base, pattern := getDirectoryFromPattern(pattern)
