@@ -1,9 +1,9 @@
 package projects
 
 import (
-	"github.com/Smartling/smartling-cli/cmd/root/projects/info"
-	"github.com/Smartling/smartling-cli/cmd/root/projects/list"
-	"github.com/Smartling/smartling-cli/cmd/root/projects/locales"
+	"github.com/Smartling/smartling-cli/cmd/projects/info"
+	"github.com/Smartling/smartling-cli/cmd/projects/list"
+	"github.com/Smartling/smartling-cli/cmd/projects/locales"
 
 	"github.com/spf13/cobra"
 )

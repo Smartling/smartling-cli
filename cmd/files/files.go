@@ -1,13 +1,13 @@
 package files
 
 import (
-	"github.com/Smartling/smartling-cli/cmd/root/files/delete"
-	importcmd "github.com/Smartling/smartling-cli/cmd/root/files/import"
-	"github.com/Smartling/smartling-cli/cmd/root/files/list"
-	"github.com/Smartling/smartling-cli/cmd/root/files/pull"
-	"github.com/Smartling/smartling-cli/cmd/root/files/push"
-	"github.com/Smartling/smartling-cli/cmd/root/files/rename"
-	"github.com/Smartling/smartling-cli/cmd/root/files/status"
+	"github.com/Smartling/smartling-cli/cmd/files/delete"
+	importcmd "github.com/Smartling/smartling-cli/cmd/files/import"
+	"github.com/Smartling/smartling-cli/cmd/files/list"
+	"github.com/Smartling/smartling-cli/cmd/files/pull"
+	"github.com/Smartling/smartling-cli/cmd/files/push"
+	"github.com/Smartling/smartling-cli/cmd/files/rename"
+	"github.com/Smartling/smartling-cli/cmd/files/status"
 
 	"github.com/spf13/cobra"
 )
