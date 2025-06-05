@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/cmd/init"
+	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/spf13/cobra"
 )
 
@@ -80,4 +81,12 @@ purposes.`)
 
 func Verbose() uint8 {
 	return verbose
+}
+
+func ClientConfig() client.Config {
+	return client.Config{
+		Insecure:     insecure,
+		Proxy:        proxy,
+		SmartlingURL: smartlingURL,
+	}
 }

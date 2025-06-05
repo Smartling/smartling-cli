@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"os"
 	"regexp"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/tcnksm/go-input"
 )
 
-func doInit(config Config, args map[string]interface{}) error {
+func doInit(config Config, args map[string]interface{}, cliClientConfig client.Config) error {
 	fmt.Printf("Generating %s...\n\n", config.path)
 
 	prompt := func(
@@ -114,7 +115,7 @@ func doInit(config Config, args map[string]interface{}) error {
 
 	fmt.Println("Testing connection to Smartling API...")
 
-	client, err := createClient(config, args)
+	client, err := createClient(config, cliClientConfig)
 	if err != nil {
 		return hierr.Errorf(
 			err,

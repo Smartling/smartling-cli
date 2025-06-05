@@ -5,7 +5,7 @@ import (
 	"github.com/kovetskiy/lorg"
 )
 
-func setLogger(client *smartling.Client, logger lorg.Logger, verbosity int) {
+func setLogger(client *smartling.Client, logger lorg.Logger, verbosity uint8) {
 	switch verbosity {
 	case 0:
 		return

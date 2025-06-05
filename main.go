@@ -3,6 +3,8 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"net/http"
 	"net/url"
 	"os"
@@ -183,20 +185,23 @@ func main() {
 		return key
 	})
 
+	//
+	rootCmd := cmd.NewRootCmd()
+	if err := rootCmd.Execute(); err != nil {
+		panic(err)
+	}
+	//
+
 	args, err := docopt.ParseArgs(usage, nil, "smartling "+version)
 	if err != nil {
 		panic(err)
 	}
 
-	if args["--help"].(bool) {
-		showHelp(args)
-
-		os.Exit(0)
-	}
-
 	logger.ToggleRedact(true)
 
-	switch args["--verbose"].(int) {
+	verbose := cmd.Verbose()
+
+	switch verbose {
 	case 0:
 		// nothing do to
 
@@ -214,7 +219,7 @@ func main() {
 	logger.SetFormat(lorg.NewFormat("* ${time} ${level:[%s]:right} %s"))
 	logger.SetIndentLines(true)
 
-	config, err := loadConfig(args)
+	config, err := buildConfigFromFlags(args)
 	if err != nil {
 		fmt.Println(err)
 
@@ -288,7 +293,7 @@ func findConfig(name string) (string, error) {
 	)
 }
 
-func loadConfig(args map[string]interface{}) (Config, error) {
+func buildConfigFromFlags(args map[string]interface{}) (Config, error) {
 	var (
 		directory, _ = args["--directory"].(string)
 	)
@@ -409,26 +414,23 @@ func loadConfig(args map[string]interface{}) (Config, error) {
 	return config, nil
 }
 
-func createClient(
-	config Config,
-	args map[string]interface{},
-) (*smartling.Client, error) {
+func createClient(config Config, cliClientConfig client.Config) (*smartling.Client, error) {
 	client := smartling.NewClient(config.UserID, config.Secret)
 
 	var transport http.Transport
 
-	if args["--insecure"].(bool) {
+	if cliClientConfig.Insecure {
 		transport.TLSClientConfig = &tls.Config{
 			InsecureSkipVerify: true,
 		}
 	}
 
-	if config.Proxy != "" && args["--proxy"] == nil {
-		args["--proxy"] = config.Proxy
+	if config.Proxy != "" && cliClientConfig.Proxy == "" {
+		cliClientConfig.Proxy = config.Proxy
 	}
 
-	if args["--proxy"] != nil {
-		proxy, err := url.Parse(args["--proxy"].(string))
+	if cliClientConfig.Proxy != "" {
+		proxy, err := url.Parse(cliClientConfig.Proxy)
 		if err != nil {
 			return nil, NewError(
 				hierr.Errorf(
@@ -444,14 +446,14 @@ func createClient(
 		transport.Proxy = http.ProxyURL(proxy)
 	}
 
-	if args["--smartling-url"] != nil {
-		client.BaseURL = args["--smartling-url"].(string)
+	if cliClientConfig.SmartlingURL != "" {
+		client.BaseURL = cliClientConfig.SmartlingURL
 	}
 
 	client.HTTP.Transport = &transport
 	client.UserAgent = "smartling-cli/" + version
 
-	setLogger(client, logger, args["--verbose"].(int))
+	setLogger(client, logger, cmd.Verbose())
 
 	logger.HideRegexp(
 		regexp.MustCompile(`"(?:access|refresh)Token": "([^"]+)"`),
@@ -468,8 +470,8 @@ func createClient(
 	return client, nil
 }
 
-func doProjects(config Config, args map[string]interface{}) error {
-	client, err := createClient(config, args)
+func doProjects(config Config, args map[string]interface{}, cliClientConfig client.Config) error {
+	client, err := createClient(config, cliClientConfig)
 	if err != nil {
 		return err
 	}
@@ -502,8 +504,8 @@ func doProjects(config Config, args map[string]interface{}) error {
 	return nil
 }
 
-func doFiles(config Config, args map[string]interface{}) error {
-	client, err := createClient(config, args)
+func doFiles(config Config, args map[string]interface{}, cliClientConfig client.Config) error {
+	client, err := createClient(config, cliClientConfig)
 	if err != nil {
 		return err
 	}
