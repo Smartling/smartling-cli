@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 
 	"github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
@@ -9,7 +11,7 @@ import (
 
 func doFilesDelete(
 	client *smartling.Client,
-	config Config,
+	config config.Config,
 	args map[string]interface{},
 ) error {
 	var (
@@ -35,7 +37,7 @@ func doFilesDelete(
 	}
 
 	if len(files) == 0 {
-		return NewError(
+		return clierror.NewError(
 			fmt.Errorf("no files match specified pattern"),
 
 			`Check files list on remote server and your pattern according `+

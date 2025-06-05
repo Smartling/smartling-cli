@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/client"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"os"
 	"regexp"
 
@@ -13,7 +15,7 @@ import (
 	"github.com/tcnksm/go-input"
 )
 
-func doInit(config Config, args map[string]interface{}, cliClientConfig client.Config) error {
+func doInit(config config.Config, args map[string]interface{}, cliClientConfig client.Config) error {
 	fmt.Printf("Generating %s...\n\n", config.path)
 
 	prompt := func(
@@ -52,7 +54,7 @@ func doInit(config Config, args map[string]interface{}, cliClientConfig client.C
 		}
 	}
 
-	var input Config
+	var input config.Config
 
 	prompt(
 		"Smartling API V2.0 User Identifier",
@@ -103,7 +105,7 @@ func doInit(config Config, args map[string]interface{}, cliClientConfig client.C
 	}
 
 	var result bytes.Buffer
-	err := configTemplate.Execute(&result, config)
+	err := config.configTemplate.Execute(&result, config)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -126,13 +128,13 @@ func doInit(config Config, args map[string]interface{}, cliClientConfig client.C
 	err = client.Authenticate()
 	if err != nil {
 		if _, ok := err.(smartling.NotAuthorizedError); ok {
-			return NewError(
+			return clierror.NewError(
 				errors.New("not authorized"),
 				"Your credentials are invalid. Double check them and run "+
 					"init command again",
 			)
 		} else {
-			return NewError(
+			return clierror.NewError(
 				hierr.Errorf(err, "failure while testing connection"),
 				"Contact developer for more info",
 			)

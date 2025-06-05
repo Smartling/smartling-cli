@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -12,7 +13,7 @@ import (
 
 func downloadFileTranslations(
 	client *smartling.Client,
-	config Config,
+	config config.Config,
 	args map[string]interface{},
 	file smartling.File,
 ) error {
@@ -91,7 +92,7 @@ func downloadFileTranslations(
 
 		useFormat := usePullFormat
 		if formatGiven {
-			useFormat = func(FileConfig) string {
+			useFormat = func(config.FileConfig) string {
 				return format
 			}
 		}

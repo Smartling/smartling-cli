@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"os"
 	"path/filepath"
 
@@ -11,7 +13,7 @@ import (
 
 func doFilesImport(
 	client *smartling.Client,
-	config Config,
+	config config.Config,
 	args map[string]interface{},
 ) error {
 	var (
@@ -24,7 +26,7 @@ func doFilesImport(
 
 	contents, err := os.ReadFile(file)
 	if err != nil {
-		return NewError(
+		return clierror.NewError(
 			hierr.Errorf(err, "unable to read file for import"),
 			"Check that specified file exists and you have permissions "+
 				"to read it.",
@@ -54,7 +56,7 @@ func doFilesImport(
 		)
 
 		if request.FileType == smartling.FileTypeUnknown {
-			return NewError(
+			return clierror.NewError(
 				fmt.Errorf(
 					"unable to deduce file type from extension: %q",
 					filepath.Ext(file),

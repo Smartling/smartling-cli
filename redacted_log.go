@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"io"
 	"os"
 	"regexp"
@@ -45,7 +46,7 @@ func (log *redactedLog) HideString(value string) {
 	log.writer.patterns = append(log.writer.patterns, pattern)
 }
 
-func (log *redactedLog) HideFromConfig(config Config) {
+func (log *redactedLog) HideFromConfig(config config.Config) {
 	log.HideString(config.Secret)
 	log.HideString(config.UserID)
 	log.HideString(config.AccountID)

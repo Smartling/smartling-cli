@@ -2,19 +2,20 @@ package main
 
 import (
 	"github.com/Smartling/api-sdk-go"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 )
 
 var (
-	usePullFormat = func(config FileConfig) string {
+	usePullFormat = func(config config.FileConfig) string {
 		return config.Pull.Format
 	}
 )
 
 func executeFileFormat(
-	config Config,
+	config config.Config,
 	file smartling.File,
 	fallback string,
-	getter func(config FileConfig) string,
+	getter func(config config.FileConfig) string,
 	data interface{},
 ) (string, error) {
 	local, err := config.GetFileConfig(file.FileURI)

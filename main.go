@@ -4,7 +4,9 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/client"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"net/http"
 	"net/url"
 	"os"
@@ -248,7 +250,7 @@ func main() {
 
 func reportError(err error) {
 	switch err := err.(type) {
-	case ProjectNotFoundError, Error:
+	case clierror.ProjectNotFoundError, clierror.Error:
 		fmt.Fprintln(logger.GetWriter(), err)
 
 	default:
@@ -293,7 +295,7 @@ func findConfig(name string) (string, error) {
 	)
 }
 
-func buildConfigFromFlags(args map[string]interface{}) (Config, error) {
+func buildConfigFromFlags(args map[string]interface{}) (config.Config, error) {
 	var (
 		directory, _ = args["--directory"].(string)
 	)
@@ -307,7 +309,7 @@ func buildConfigFromFlags(args map[string]interface{}) (Config, error) {
 		)
 		if err != nil {
 			if !args["init"].(bool) {
-				return Config{}, NewError(
+				return config.Config{}, clierror.NewError(
 					err,
 
 					`Ensure, that config file exists either in the current `+
@@ -319,9 +321,9 @@ func buildConfigFromFlags(args map[string]interface{}) (Config, error) {
 		}
 	}
 
-	config, err := loadConfigFromFile(path)
+	config, err := config.loadConfigFromFile(path)
 	if err != nil {
-		return config, NewError(
+		return config, clierror.NewError(
 			hierr.Errorf(err, `failed to load configuration file "%s".`, path),
 			`Check configuration file contents according to documentation.`,
 		)
@@ -414,7 +416,7 @@ func buildConfigFromFlags(args map[string]interface{}) (Config, error) {
 	return config, nil
 }
 
-func createClient(config Config, cliClientConfig client.Config) (*smartling.Client, error) {
+func createClient(config config.Config, cliClientConfig client.Config) (*smartling.Client, error) {
 	client := smartling.NewClient(config.UserID, config.Secret)
 
 	var transport http.Transport
@@ -432,7 +434,7 @@ func createClient(config Config, cliClientConfig client.Config) (*smartling.Clie
 	if cliClientConfig.Proxy != "" {
 		proxy, err := url.Parse(cliClientConfig.Proxy)
 		if err != nil {
-			return nil, NewError(
+			return nil, clierror.NewError(
 				hierr.Errorf(
 					err,
 					"unable to parse specified proxy URL",
@@ -461,7 +463,7 @@ func createClient(config Config, cliClientConfig client.Config) (*smartling.Clie
 
 	err := client.Authenticate()
 	if err != nil {
-		return nil, NewError(
+		return nil, clierror.NewError(
 			err,
 			`Your credentials are invalid. Double check it and try to run init.\n`,
 		)
@@ -470,7 +472,7 @@ func createClient(config Config, cliClientConfig client.Config) (*smartling.Clie
 	return client, nil
 }
 
-func doProjects(config Config, args map[string]interface{}, cliClientConfig client.Config) error {
+func doProjects(config config.Config, args map[string]interface{}, cliClientConfig client.Config) error {
 	client, err := createClient(config, cliClientConfig)
 	if err != nil {
 		return err
@@ -504,7 +506,7 @@ func doProjects(config Config, args map[string]interface{}, cliClientConfig clie
 	return nil
 }
 
-func doFiles(config Config, args map[string]interface{}, cliClientConfig client.Config) error {
+func doFiles(config config.Config, args map[string]interface{}, cliClientConfig client.Config) error {
 	client, err := createClient(config, cliClientConfig)
 	if err != nil {
 		return err

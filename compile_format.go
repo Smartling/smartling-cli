@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -57,7 +58,7 @@ func compileFormat(definition string) (*Format, error) {
 		definition,
 	)
 	if err != nil {
-		return nil, NewError(
+		return nil, clierror.NewError(
 			hierr.Errorf(
 				err,
 				"failed to compile format template",

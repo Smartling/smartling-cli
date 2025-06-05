@@ -3,7 +3,9 @@ package cmd
 import (
 	"github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/cmd/init"
+	"github.com/Smartling/smartling-cli/cmd/projects"
 	"github.com/Smartling/smartling-cli/services/helpers/client"
+
 	"github.com/spf13/cobra"
 )
 
@@ -36,7 +38,7 @@ func NewRootCmd() *cobra.Command {
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
 		Run: func(cmd *cobra.Command, args []string) {
-			// Do Stuff Here
+			rootSrv.Run(rootSrv.Params{})
 		},
 	}
 
@@ -75,6 +77,7 @@ purposes.`)
 
 	rootCmd.AddCommand(init.NewInitCmd())
 	rootCmd.AddCommand(files.NewFilesCmd())
+	rootCmd.AddCommand(projects.NewProjectsCmd())
 
 	return rootCmd
 }

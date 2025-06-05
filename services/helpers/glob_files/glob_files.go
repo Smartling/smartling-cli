@@ -1,4 +1,4 @@
-package main
+package globfiles
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
-func globFilesRemote(
+func Remote(
 	client *smartling.Client,
 	project string,
 	uri string,
@@ -68,7 +68,7 @@ func globFilesRemote(
 	return result, nil
 }
 
-func getDirectoryFromPattern(mask string) (string, string) {
+func GetDirectoryFromPattern(mask string) (string, string) {
 	matches := regexp.MustCompile(`^([^*?{}\[\]]+)/(.+)$`).FindStringSubmatch(
 		mask,
 	)
@@ -80,7 +80,7 @@ func getDirectoryFromPattern(mask string) (string, string) {
 	return matches[1], matches[2]
 }
 
-func globFilesLocallyFunc(
+func LocallyFunc(
 	directory string,
 	base string,
 	mask string,

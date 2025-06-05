@@ -2,17 +2,19 @@ package main
 
 import (
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"os"
 
 	smartling "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
-func doProjectsInfo(client *smartling.Client, config Config) error {
+func doProjectsInfo(client *smartling.Client, config config.Config) error {
 	details, err := client.GetProjectDetails(config.ProjectID)
 	if err != nil {
 		if _, ok := err.(smartling.NotFoundError); ok {
-			return ProjectNotFoundError{}
+			return clierror.ProjectNotFoundError{}
 		}
 
 		return hierr.Errorf(

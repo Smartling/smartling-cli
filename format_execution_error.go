@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -14,7 +15,7 @@ type FormatExecutionError struct {
 func (err FormatExecutionError) Error() string {
 	data, _ := json.MarshalIndent(err.Data, "", "  ")
 
-	return NewError(
+	return clierror.NewError(
 		hierr.Push(
 			"template execution failed",
 			hierr.Push(

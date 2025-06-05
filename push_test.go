@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"io"
 	"net/http"
 	"strings"
@@ -125,15 +126,15 @@ func getArgs(file string) map[string]interface{} {
 	return args
 }
 
-func getConfig() Config {
-	fileConfig := make(map[string]FileConfig)
-	fileConfig["default"] = FileConfig{
+func getConfig() config.Config {
+	fileConfig := make(map[string]config.FileConfig)
+	fileConfig["default"] = config.FileConfig{
 		Push: struct {
 			Type       string            `yaml:"type,omitempty"`
 			Directives map[string]string `yaml:"directives,omitempty,flow"`
 		}{Type: "md"},
 	}
-	return Config{
+	return config.Config{
 		UserID:    "test",
 		Secret:    "test",
 		ProjectID: "test",

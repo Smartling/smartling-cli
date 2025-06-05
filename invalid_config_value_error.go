@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
+)
 
 type InvalidConfigValueError struct {
 	ValueName   string
@@ -8,7 +11,7 @@ type InvalidConfigValueError struct {
 }
 
 func (err InvalidConfigValueError) Error() string {
-	return NewError(
+	return clierror.NewError(
 		fmt.Errorf(`"%s" is specified but invalid`, err.ValueName),
 		`"%s" %s.`,
 		err.ValueName,

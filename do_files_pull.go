@@ -2,11 +2,12 @@ package main
 
 import (
 	"github.com/Smartling/api-sdk-go"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 )
 
 func doFilesPull(
 	client *smartling.Client,
-	config Config,
+	config config.Config,
 	args map[string]interface{},
 ) error {
 	var (

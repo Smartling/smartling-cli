@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"io"
 	"os"
 
@@ -11,7 +13,7 @@ import (
 
 func doProjectsLocales(
 	client *smartling.Client,
-	config Config,
+	config config.Config,
 	args map[string]interface{},
 ) error {
 	var (
@@ -32,7 +34,7 @@ func doProjectsLocales(
 	details, err := client.GetProjectDetails(project)
 	if err != nil {
 		if _, ok := err.(smartling.NotFoundError); ok {
-			return ProjectNotFoundError{}
+			return clierror.ProjectNotFoundError{}
 		}
 
 		return hierr.Errorf(

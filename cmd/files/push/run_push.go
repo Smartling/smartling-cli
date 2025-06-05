@@ -1,4 +1,4 @@
-package main
+package push
 
 import (
 	"errors"
@@ -7,33 +7,37 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Smartling/api-sdk-go"
+	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
+	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
+
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
-func doFilesPush(
-	client smartling.ClientInterface,
-	config Config,
-	args map[string]interface{},
-) error {
+type Params struct {
+	URI        string
+	File       string
+	Branch     string
+	Locales    []string
+	Authorize  bool
+	Directory  string
+	FileType   string
+	Directives []string
+	FileConfig config.FileConfig
+	Config     config.Config
+}
+
+func runPush(client sdk.ClientInterface, params Params) error {
 	var (
-		failedFiles   []string
-		project       = config.ProjectID
-		result        error
-		file, _       = args["<file>"].(string)
-		uri, useURI   = args["<uri>"].(string)
-		branch, _     = args["--branch"].(string)
-		locales, _    = args["--locale"].([]string)
-		authorize     = args["--authorize"].(bool)
-		directory     = args["--directory"].(string)
-		fileType, _   = args["--type"].(string)
-		directives, _ = args["--directive"].([]string)
+		failedFiles []string
+		project     = params.Config.ProjectID
+		result      error
 	)
 
-	if branch == "@auto" {
+	if params.Branch == "@auto" {
 		var err error
-
-		branch, err = getGitBranch()
+		params.Branch, err = getGitBranch()
 		if err != nil {
 			return hierr.Errorf(
 				err,
@@ -44,16 +48,17 @@ func doFilesPush(
 		logger.Infof("autodetected branch name: %s", branch)
 	}
 
+	branch := params.Branch
 	if branch != "" {
-		branch = strings.TrimSuffix(branch, "/") + "/"
+		branch = strings.TrimSuffix(params.Branch, "/") + "/"
 	}
 
 	var patterns []string
 
-	if file != "" {
-		patterns = append(patterns, file)
+	if params.File != "" {
+		patterns = append(patterns, params.File)
 	} else {
-		for pattern, section := range config.Files {
+		for pattern, section := range params.Config.Files {
 			if section.Push.Type != "" {
 				patterns = append(patterns, pattern)
 			}
@@ -63,14 +68,14 @@ func doFilesPush(
 	var files []string
 
 	for _, pattern := range patterns {
-		base, pattern := getDirectoryFromPattern(pattern)
-		chunk, err := globFilesLocally(
-			directory,
+		base, pattern := globfiles.GetDirectoryFromPattern(pattern)
+		chunk, err := globfiles.LocallyFunc(
+			params.Directory,
 			base,
 			pattern,
 		)
 		if err != nil {
-			return NewError(
+			return clierror.NewError(
 				hierr.Errorf(
 					err,
 					`unable to find matching files to upload`,
@@ -85,7 +90,7 @@ func doFilesPush(
 	}
 
 	if len(files) == 0 {
-		return NewError(
+		return clierror.NewError(
 			fmt.Errorf(`no files found by specified patterns`),
 
 			`Check command line pattern if any and configuration file for`+
@@ -93,8 +98,8 @@ func doFilesPush(
 		)
 	}
 
-	if uri != "" && len(files) > 1 {
-		return NewError(
+	if params.URI != "" && len(files) > 1 {
+		return clierror.NewError(
 			fmt.Errorf(
 				`more than one file is matching speciifed pattern and <uri>`+
 					` is specified too`,
@@ -105,9 +110,9 @@ func doFilesPush(
 		)
 	}
 
-	base, err := filepath.Abs(config.path)
+	base, err := filepath.Abs(params.Config.Path)
 	if err != nil {
-		return NewError(
+		return clierror.NewError(
 			hierr.Errorf(
 				err,
 				`unable to resolve absolute path to config`,
@@ -122,7 +127,7 @@ func doFilesPush(
 	for _, file := range files {
 		name, err := filepath.Abs(file)
 		if err != nil {
-			return NewError(
+			return clierror.NewError(
 				hierr.Errorf(
 					err,
 					`unable to resolve absolute path to file: %q`,
@@ -135,7 +140,7 @@ func doFilesPush(
 		}
 
 		if relPath, err := filepath.Rel(base, name); err != nil || strings.HasPrefix(relPath, "..") {
-			return NewError(
+			return clierror.NewError(
 				errors.New(
 					`you are trying to push file outside project directory`,
 				),
@@ -145,7 +150,7 @@ func doFilesPush(
 
 		name, err = filepath.Rel(base, name)
 		if err != nil {
-			return NewError(
+			return clierror.NewError(
 				hierr.Errorf(
 					err,
 					`unable to resolve relative path to file: %q`,
@@ -157,13 +162,14 @@ func doFilesPush(
 			)
 		}
 
-		if !useURI {
+		uri := params.URI
+		if uri == "" {
 			uri = name
 		}
 
-		fileConfig, err := config.GetFileConfig(file)
+		fileConfig, err := params.Config.GetFileConfig(file)
 		if err != nil {
-			return NewError(
+			return clierror.NewError(
 				hierr.Errorf(
 					err,
 					`unable to retrieve file specific configuration`,
@@ -175,7 +181,7 @@ func doFilesPush(
 
 		contents, err := os.ReadFile(file)
 		if err != nil {
-			return NewError(
+			return clierror.NewError(
 				hierr.Errorf(
 					err,
 					`unable to read file contents "%s"`,
@@ -186,22 +192,22 @@ func doFilesPush(
 			)
 		}
 
-		request := smartling.FileUploadRequest{
+		request := sdk.FileUploadRequest{
 			File:               contents,
-			Authorize:          authorize,
-			LocalesToAuthorize: locales,
+			Authorize:          params.Authorize,
+			LocalesToAuthorize: params.Locales,
 		}
 
 		request.FileURI = branch + uri
 
 		if fileConfig.Push.Type == "" {
-			if fileType == "" {
-				request.FileType = smartling.GetFileTypeByExtension(
+			if params.FileType == "" {
+				request.FileType = sdk.GetFileTypeByExtension(
 					filepath.Ext(file),
 				)
 
-				if request.FileType == smartling.FileTypeUnknown {
-					return NewError(
+				if request.FileType == sdk.FileTypeUnknown {
+					return clierror.NewError(
 						fmt.Errorf(
 							"unable to deduce file type from extension: %q",
 							filepath.Ext(file),
@@ -211,18 +217,18 @@ func doFilesPush(
 					)
 				}
 			} else {
-				request.FileType = smartling.FileType(fileType)
+				request.FileType = sdk.FileType(params.FileType)
 			}
 		} else {
-			request.FileType = smartling.FileType(fileConfig.Push.Type)
+			request.FileType = sdk.FileType(fileConfig.Push.Type)
 		}
 
 		request.Smartling.Directives = fileConfig.Push.Directives
 
-		for _, directive := range directives {
+		for _, directive := range params.Directives {
 			spec := strings.SplitN(directive, "=", 2)
 			if len(spec) != 2 {
-				return NewError(
+				return clierror.NewError(
 					fmt.Errorf(
 						"invalid directive specification: %q",
 						directive,
@@ -243,7 +249,7 @@ func doFilesPush(
 
 		if err != nil {
 			if returnError(err) {
-				return NewError(
+				return clierror.NewError(
 					err,
 					fmt.Sprintf(`unable to upload file "%s"`, file),
 					`Check, that you have enough permissions to upload file to`+
@@ -270,19 +276,19 @@ func doFilesPush(
 	}
 
 	if len(failedFiles) != 0 {
-		result = NewError(fmt.Errorf("failed to upload %d files", len(failedFiles)), "failed to upload files "+strings.Join(failedFiles, ", "))
+		result = clierror.NewError(fmt.Errorf("failed to upload %d files", len(failedFiles)), "failed to upload files "+strings.Join(failedFiles, ", "))
 	}
 
 	return result
 }
 
 func returnError(err error) bool {
-	if errors.Is(err, smartling.NotAuthorizedError{}) {
+	if errors.Is(err, sdk.NotAuthorizedError{}) {
 		return true
 	}
 
 	for {
-		smartlingApiError, isSmartlingApiError := err.(smartling.APIError)
+		smartlingApiError, isSmartlingApiError := err.(sdk.APIError)
 		if isSmartlingApiError {
 			reasons := map[string]struct{}{
 				"AUTHENTICATION_ERROR":   {},
@@ -297,4 +303,50 @@ func returnError(err error) bool {
 			return false
 		}
 	}
+}
+
+func getGitBranch() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", hierr.Errorf(
+			err,
+			"unable to get current working directory",
+		)
+	}
+
+	for {
+		if dir == "/" {
+			return "", hierr.Errorf(
+				err,
+				"no git repository can be found containing current directory",
+			)
+		}
+
+		_, err := os.Stat(filepath.Join(dir, ".git"))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return "", hierr.Errorf(
+					err,
+					`unable to get stats for "%s"`,
+					dir,
+				)
+			}
+
+			dir = filepath.Dir(dir)
+
+			continue
+		} else {
+			break
+		}
+	}
+
+	head, err := os.ReadFile(filepath.Join(dir, ".git", "HEAD"))
+	if err != nil {
+		return "", hierr.Errorf(
+			err,
+			"unable to read git HEAD",
+		)
+	}
+
+	return filepath.Base(strings.TrimSpace(string(head))), nil
 }

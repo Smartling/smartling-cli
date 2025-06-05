@@ -1,7 +1,9 @@
-package main
+package config
 
 import (
 	"os"
+
+	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 
 	"dario.cat/mergo"
 	"github.com/gobwas/glob"
@@ -31,12 +33,12 @@ type Config struct {
 
 	Proxy string `yaml:"proxy,omitempty"`
 
-	path string `yaml:"-"`
+	Path string `yaml:"-"`
 }
 
 func loadConfigFromFile(filename string) (Config, error) {
 	config := Config{
-		path: filename,
+		Path: filename,
 	}
 
 	data, err := os.ReadFile(filename)
@@ -63,7 +65,7 @@ func (config *Config) GetFileConfig(path string) (FileConfig, error) {
 	for key, candidate := range config.Files {
 		pattern, err := glob.Compile(key, '/')
 		if err != nil {
-			return FileConfig{}, NewError(
+			return FileConfig{}, clierror.NewError(
 				hierr.Errorf(
 					err,
 					`unable to compile pattern from config file (key "%s")`,
@@ -89,7 +91,7 @@ func (config *Config) GetFileConfig(path string) (FileConfig, error) {
 
 	err := mergo.Merge(&match, defaults)
 	if err != nil {
-		return FileConfig{}, NewError(
+		return FileConfig{}, clierror.NewError(
 			hierr.Errorf(err, "unable to merge file config options"),
 			`It's internal error. Consider reporting bug.`,
 		)

@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"os"
 
 	"github.com/Smartling/api-sdk-go"
@@ -10,7 +12,7 @@ import (
 
 func doProjectsList(
 	client *smartling.Client,
-	config Config,
+	config config.Config,
 	args map[string]interface{},
 ) error {
 	var (
@@ -22,7 +24,7 @@ func doProjectsList(
 		smartling.ProjectsListRequest{},
 	)
 	if err != nil {
-		return NewError(
+		return clierror.NewError(
 			hierr.Errorf(err, "unable to list projects"),
 			"",
 		)

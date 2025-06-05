@@ -2,12 +2,13 @@ package main
 
 import (
 	"github.com/Smartling/api-sdk-go"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/reconquest/hierr-go"
 )
 
 func doFilesRename(
 	client *smartling.Client,
-	config Config,
+	config config.Config,
 	args map[string]interface{},
 ) error {
 	var (
