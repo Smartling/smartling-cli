@@ -1,6 +1,7 @@
 package pull
 
 import (
+	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/spf13/cobra"
 )
 
@@ -13,13 +14,26 @@ var (
 	format    string
 )
 
-func NewPullCmd() *cobra.Command {
+func NewPullCmd(s files.Service) *cobra.Command {
 	pullCmd := &cobra.Command{
-		Use:   "pull",
+		Use:   "pull <uri>",
 		Short: "Pulls specified files from server.",
 		Long:  `Pulls specified files from server.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			uri = args[0]
+			params := files.PullParams{
+				URI:       uri,
+				Format:    format,
+				Directory: directory,
+				Source:    source,
+				Locales:   nil,
+				Progress:  "",
+				Retrieve:  "",
+			}
+			err := s.RunPull(params)
+			if err != nil {
+				// TODO log it
+			}
 		},
 	}
 

@@ -1,6 +1,8 @@
 package rename
 
 import (
+	"github.com/Smartling/smartling-cli/services/files"
+
 	"github.com/spf13/cobra"
 )
 
@@ -9,7 +11,7 @@ var (
 	new string
 )
 
-func NewRenameCmd() *cobra.Command {
+func NewRenameCmd(s files.Service) *cobra.Command {
 	renameCmd := &cobra.Command{
 		Use:   "rename <old> <new>",
 		Short: "Renames given file by old URI into new URI.",
@@ -17,6 +19,10 @@ func NewRenameCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			old = args[0]
 			new = args[1]
+			err := s.RunRename(old, new)
+			if err != nil {
+				// TODO log it
+			}
 		},
 	}
 

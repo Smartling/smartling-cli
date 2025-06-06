@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
@@ -525,7 +526,7 @@ func doFiles(config config.Config, args map[string]interface{}, cliClientConfig 
 		return doFilesDelete(client, config, args)
 
 	case args["rename"].(bool):
-		return doFilesRename(client, config, args)
+		return files.DoFilesRename(client, config, args)
 
 	case args["import"].(bool):
 		return doFilesImport(client, config, args)
