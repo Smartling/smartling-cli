@@ -11,23 +11,19 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
-type DeleteParams struct {
-	URI string
-}
-
-func (s Service) RunDelete(params DeleteParams) error {
+func (s Service) RunDelete(uri string) error {
 	projectID := s.Config.ProjectID
 	var (
 		err   error
 		files []smartling.File
 	)
-	if params.URI == "-" {
+	if uri == "-" {
 		files, err = reader.ReadFilesFromStdin()
 		if err != nil {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(s.Client, projectID, params.URI)
+		files, err = globfiles.Remote(s.Client, projectID, uri)
 		if err != nil {
 			return err
 		}

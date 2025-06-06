@@ -1,21 +1,23 @@
 package importcmd
 
 import (
+	"github.com/Smartling/smartling-cli/services/files"
+
 	"github.com/spf13/cobra"
 )
 
-var (
-	uri    string
-	file   string
-	locale string
+func NewImportCmd(s files.Service) *cobra.Command {
+	var (
+		uri    string
+		file   string
+		locale string
+		// flag params
+		published       bool
+		postTranslation bool
+		typ             string
+		overwrite       bool
+	)
 
-	published       bool
-	postTranslation bool
-	typ             string
-	overwrite       bool
-)
-
-func NewImportCmd() *cobra.Command {
 	importCmd := &cobra.Command{
 		Use:   "import <uri> <file> <locale>",
 		Short: "Imports translations for given original file URI with.",
@@ -24,6 +26,19 @@ func NewImportCmd() *cobra.Command {
 			uri = args[0]
 			file = args[1]
 			locale = args[2]
+
+			params := files.ImportParams{
+				URI:             uri,
+				File:            file,
+				Locale:          locale,
+				FileType:        typ,
+				PostTranslation: postTranslation,
+				Overwrite:       overwrite,
+			}
+			err := s.RunImport(params)
+			if err != nil {
+				// TODO log it
+			}
 		},
 	}
 

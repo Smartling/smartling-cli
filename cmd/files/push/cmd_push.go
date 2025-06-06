@@ -1,16 +1,12 @@
 package push
 
 import (
-	"fmt"
-
 	"github.com/Smartling/smartling-cli/services/files"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
 
-	smartling "github.com/Smartling/api-sdk-go"
 	"github.com/spf13/cobra"
 )
 
-func NewPushCmd(client smartling.ClientInterface, cnf config.Config) *cobra.Command {
+func NewPushCmd(s files.Service) *cobra.Command {
 	var (
 		file       string
 		uri        string
@@ -38,11 +34,10 @@ func NewPushCmd(client smartling.ClientInterface, cnf config.Config) *cobra.Comm
 				Directory:  directory,
 				FileType:   typ,
 				Directives: directives,
-				Config:     cnf,
 			}
 
-			if err := files.RunPush(client, p); err != nil {
-				fmt.Println(err)
+			if err := s.RunPush(p); err != nil {
+				// TODO log it
 			}
 		},
 	}
