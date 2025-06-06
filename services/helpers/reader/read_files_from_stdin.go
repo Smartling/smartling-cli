@@ -1,4 +1,4 @@
-package main
+package reader
 
 import (
 	"io"
@@ -9,7 +9,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
-func readFilesFromStdin() ([]smartling.File, error) {
+func ReadFilesFromStdin() ([]smartling.File, error) {
 	lines, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		return nil, hierr.Errorf(

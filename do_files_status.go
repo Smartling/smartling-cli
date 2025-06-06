@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"os"
 	"path/filepath"
 	"text/tabwriter"
@@ -32,7 +33,7 @@ func doFilesStatus(
 		return err
 	}
 
-	files, err := globFilesRemote(client, project, uri)
+	files, err := globfiles.Remote(client, project, uri)
 	if err != nil {
 		return err
 	}

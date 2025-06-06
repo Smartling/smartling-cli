@@ -1,7 +1,8 @@
-package main
+package files
 
 import (
 	"fmt"
+
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
@@ -11,28 +12,24 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
-func doFilesDelete(
-	client *smartling.Client,
-	config config.Config,
-	args map[string]interface{},
-) error {
-	var (
-		project = config.ProjectID
-		uri     = args["<uri>"].(string)
-	)
+type DeleteParams struct {
+	URI    string
+	Config config.Config
+}
 
+func RunDelete(client *smartling.Client, params DeleteParams) error {
+	projectID := params.Config.ProjectID
 	var (
 		err   error
 		files []smartling.File
 	)
-
-	if uri == "-" {
+	if params.URI == "-" {
 		files, err = reader.ReadFilesFromStdin()
 		if err != nil {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(client, project, uri)
+		files, err = globfiles.Remote(client, projectID, params.URI)
 		if err != nil {
 			return err
 		}
@@ -41,14 +38,13 @@ func doFilesDelete(
 	if len(files) == 0 {
 		return clierror.NewError(
 			fmt.Errorf("no files match specified pattern"),
-
 			`Check files list on remote server and your pattern according `+
 				`to help.`,
 		)
 	}
 
 	for _, file := range files {
-		err := client.DeleteFile(project, file.FileURI)
+		err := client.DeleteFile(projectID, file.FileURI)
 		if err != nil {
 			return hierr.Errorf(
 				err,

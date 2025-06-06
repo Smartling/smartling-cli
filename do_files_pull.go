@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/Smartling/api-sdk-go"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
+	"github.com/Smartling/smartling-cli/services/helpers/reader"
 )
 
 func doFilesPull(
@@ -25,12 +27,12 @@ func doFilesPull(
 	)
 
 	if uri == "-" {
-		files, err = readFilesFromStdin()
+		files, err = reader.ReadFilesFromStdin()
 		if err != nil {
 			return err
 		}
 	} else {
-		files, err = globFilesRemote(client, project, uri)
+		files, err = globfiles.Remote(client, project, uri)
 		if err != nil {
 			return err
 		}

@@ -3,13 +3,14 @@ package push
 import (
 	"fmt"
 
+	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 
 	smartling "github.com/Smartling/api-sdk-go"
 	"github.com/spf13/cobra"
 )
 
-func NewPushCmd(client smartling.ClientInterface, cnf config.Config, fileConfig config.FileConfig) *cobra.Command {
+func NewPushCmd(client smartling.ClientInterface, cnf config.Config) *cobra.Command {
 	var (
 		file       string
 		uri        string
@@ -28,7 +29,7 @@ func NewPushCmd(client smartling.ClientInterface, cnf config.Config, fileConfig 
 		Run: func(cmd *cobra.Command, args []string) {
 			file = args[0]
 			uri = args[1]
-			p := Params{
+			p := files.PushParams{
 				URI:        uri,
 				File:       file,
 				Branch:     branch,
@@ -37,11 +38,10 @@ func NewPushCmd(client smartling.ClientInterface, cnf config.Config, fileConfig 
 				Directory:  directory,
 				FileType:   typ,
 				Directives: directives,
-				FileConfig: fileConfig,
 				Config:     cnf,
 			}
 
-			if err := runPush(client, p); err != nil {
+			if err := files.RunPush(client, p); err != nil {
 				fmt.Println(err)
 			}
 		},

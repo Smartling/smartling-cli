@@ -1,4 +1,4 @@
-package push
+package files
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
-type Params struct {
+type PushParams struct {
 	URI        string
 	File       string
 	Branch     string
@@ -24,11 +24,10 @@ type Params struct {
 	Directory  string
 	FileType   string
 	Directives []string
-	FileConfig config.FileConfig
 	Config     config.Config
 }
 
-func runPush(client sdk.ClientInterface, params Params) error {
+func RunPush(client sdk.ClientInterface, params PushParams) error {
 	var (
 		failedFiles []string
 		project     = params.Config.ProjectID
@@ -45,7 +44,7 @@ func runPush(client sdk.ClientInterface, params Params) error {
 			)
 		}
 
-		logger.Infof("autodetected branch name: %s", branch)
+		logger.Infof("autodetected branch name: %s", params.Branch)
 	}
 
 	branch := params.Branch
