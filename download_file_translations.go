@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	format2 "github.com/Smartling/smartling-cli/services/helpers/format"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -44,7 +45,7 @@ func downloadFileTranslations(
 	retrievalType := smartling.RetrievalType(retrieve)
 
 	if format == "" {
-		format = defaultFileStatusFormat
+		format = format2.DefaultFileStatusFormat
 	}
 
 	status, err := client.GetFileStatus(project, file.FileURI)

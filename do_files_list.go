@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	"github.com/Smartling/smartling-cli/services/helpers/format"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
+	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
 	"io"
 	"os"
 
@@ -23,10 +25,10 @@ func doFilesList(
 	)
 
 	if args["--format"] == nil {
-		args["--format"] = defaultFilesListFormat
+		args["--format"] = format.DefaultFilesListFormat
 	}
 
-	format, err := compileFormat(args["--format"].(string))
+	format, err := format.Compile(args["--format"].(string))
 	if err != nil {
 		return err
 	}
@@ -36,7 +38,7 @@ func doFilesList(
 		return err
 	}
 
-	table := NewTableWriter(os.Stdout)
+	table := table2.NewTableWriter(os.Stdout)
 
 	for _, file := range files {
 		if short {
@@ -57,7 +59,7 @@ func doFilesList(
 		}
 	}
 
-	err = RenderTable(table)
+	err = table2.Render(table)
 	if err != nil {
 		return err
 	}

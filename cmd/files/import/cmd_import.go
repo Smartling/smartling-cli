@@ -8,10 +8,6 @@ import (
 
 func NewImportCmd(s files.Service) *cobra.Command {
 	var (
-		uri    string
-		file   string
-		locale string
-		// flag params
 		published       bool
 		postTranslation bool
 		typ             string
@@ -23,9 +19,9 @@ func NewImportCmd(s files.Service) *cobra.Command {
 		Short: "Imports translations for given original file URI with.",
 		Long:  `Imports translations for given original file URI with.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			uri = args[0]
-			file = args[1]
-			locale = args[2]
+			uri := args[0]
+			file := args[1]
+			locale := args[2]
 
 			params := files.ImportParams{
 				URI:             uri,

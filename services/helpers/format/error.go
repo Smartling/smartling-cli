@@ -1,18 +1,20 @@
-package main
+package format
 
 import (
 	"encoding/json"
+
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
+
 	"github.com/reconquest/hierr-go"
 )
 
-type FormatExecutionError struct {
+type ExecutionError struct {
 	Cause  error
 	Format string
 	Data   interface{}
 }
 
-func (err FormatExecutionError) Error() string {
+func (err ExecutionError) Error() string {
 	data, _ := json.MarshalIndent(err.Data, "", "  ")
 
 	return clierror.NewError(

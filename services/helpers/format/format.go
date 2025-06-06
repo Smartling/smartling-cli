@@ -1,4 +1,4 @@
-package main
+package format
 
 import (
 	"bytes"
@@ -16,7 +16,7 @@ func (format *Format) Execute(data interface{}) (string, error) {
 
 	err := format.Template.Execute(buffer, data)
 	if err != nil {
-		return "", FormatExecutionError{
+		return "", ExecutionError{
 			Cause:  err,
 			Format: format.Source,
 			Data:   data,

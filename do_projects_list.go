@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
 	"os"
 
 	"github.com/Smartling/api-sdk-go"
@@ -30,7 +31,7 @@ func doProjectsList(
 		)
 	}
 
-	table := NewTableWriter(os.Stdout)
+	table := table2.NewTableWriter(os.Stdout)
 
 	for _, project := range projects.Items {
 		if short {
@@ -46,7 +47,7 @@ func doProjectsList(
 		}
 	}
 
-	err = RenderTable(table)
+	err = table2.Render(table)
 	if err != nil {
 		return err
 	}

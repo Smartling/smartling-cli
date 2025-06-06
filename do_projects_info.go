@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
 	"os"
 
 	smartling "github.com/Smartling/api-sdk-go"
@@ -24,7 +25,7 @@ func doProjectsInfo(client *smartling.Client, config config.Config) error {
 		)
 	}
 
-	table := NewTableWriter(os.Stdout)
+	table := table2.NewTableWriter(os.Stdout)
 
 	status := "active"
 
@@ -51,7 +52,7 @@ func doProjectsInfo(client *smartling.Client, config config.Config) error {
 		)
 	}
 
-	err = RenderTable(table)
+	err = table2.Render(table)
 	if err != nil {
 		return err
 	}

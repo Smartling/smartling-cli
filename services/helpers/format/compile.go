@@ -1,11 +1,12 @@
-package main
+package format
 
 import (
-	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"path/filepath"
 	"strings"
 	"sync"
 	"text/template"
+
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 
 	"github.com/reconquest/hierr-go"
 )
@@ -23,7 +24,7 @@ var (
 	}
 )
 
-func compileFormat(definition string) (*Format, error) {
+func Compile(definition string) (*Format, error) {
 	compiledFormatsCache.Lock()
 	defer compiledFormatsCache.Unlock()
 

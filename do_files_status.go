@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	"github.com/Smartling/smartling-cli/services/helpers/format"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
+	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
 	"os"
 	"path/filepath"
 	"text/tabwriter"
@@ -25,7 +27,7 @@ func doFilesStatus(
 	)
 
 	if defaultFormat == "" {
-		defaultFormat = defaultFileStatusFormat
+		defaultFormat = format.DefaultFileStatusFormat
 	}
 
 	info, err := client.GetProjectDetails(project)
@@ -38,7 +40,7 @@ func doFilesStatus(
 		return err
 	}
 
-	var table = NewTableWriter(os.Stdout)
+	var table = table2.NewTableWriter(os.Stdout)
 
 	var progress = Progress{
 		Total: len(files),
@@ -120,7 +122,7 @@ func doFilesStatus(
 		}
 	}
 
-	err = RenderTable(table)
+	err = table2.Render(table)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Smartling/api-sdk-go"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	"github.com/Smartling/smartling-cli/services/helpers/format"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/reader"
 )
@@ -18,7 +19,7 @@ func doFilesPull(
 	)
 
 	if args["--format"] == nil {
-		args["--format"] = defaultFilePullFormat
+		args["--format"] = format.DefaultFilePullFormat
 	}
 
 	var (

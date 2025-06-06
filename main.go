@@ -7,6 +7,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"net/http"
 	"net/url"
 	"os"
@@ -161,27 +162,22 @@ var (
 
 const (
 	defaultConfigName = "smartling.yml"
-
-	defaultProjectsLocalesFormat = `{{.LocaleID}}\t{{.Description}}\t{{.Enabled}}\n`
-	defaultFilesListFormat       = `{{.FileURI}}\t{{.LastUploaded}}\t{{.FileType}}\n`
-	defaultFileStatusFormat      = `{{name .FileURI}}{{with .Locale}}_{{.}}{{end}}{{ext .FileURI}}`
-	defaultFilePullFormat        = `{{name .FileURI}}{{with .Locale}}_{{.}}{{end}}{{ext .FileURI}}`
 )
 
 func main() {
 	usage = os.Expand(usage, func(key string) string {
 		switch key {
 		case "FILE_LIST_FORMAT":
-			return defaultFilesListFormat
+			return format.DefaultFilesListFormat
 
 		case "FILE_PULL_FORMAT":
-			return defaultFilePullFormat
+			return format.DefaultFilePullFormat
 
 		case "FILE_STATUS_FORMAT":
-			return defaultFileStatusFormat
+			return format.DefaultFileStatusFormat
 
 		case "PROJECTS_LOCALES_FORMAT":
-			return defaultProjectsLocalesFormat
+			return format.DefaultProjectsLocalesFormat
 		}
 
 		return key

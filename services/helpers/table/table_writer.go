@@ -1,17 +1,17 @@
-package main
+package table
 
 import (
 	"io"
 	"text/tabwriter"
 
-	hierr "github.com/reconquest/hierr-go"
+	"github.com/reconquest/hierr-go"
 )
 
 func NewTableWriter(target io.Writer) *tabwriter.Writer {
 	return tabwriter.NewWriter(target, 2, 4, 2, ' ', 0)
 }
 
-func RenderTable(writer *tabwriter.Writer) error {
+func Render(writer *tabwriter.Writer) error {
 	err := writer.Flush()
 	if err != nil {
 		return hierr.Errorf(

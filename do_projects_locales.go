@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	"github.com/Smartling/smartling-cli/services/helpers/format"
+	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
 	"io"
 	"os"
 
@@ -23,10 +25,10 @@ func doProjectsLocales(
 	)
 
 	if args["--format"] == nil {
-		args["--format"] = defaultProjectsLocalesFormat
+		args["--format"] = format.DefaultProjectsLocalesFormat
 	}
 
-	format, err := compileFormat(args["--format"].(string))
+	format, err := format.Compile(args["--format"].(string))
 	if err != nil {
 		return err
 	}
@@ -44,7 +46,7 @@ func doProjectsLocales(
 		)
 	}
 
-	table := NewTableWriter(os.Stdout)
+	table := table2.NewTableWriter(os.Stdout)
 
 	if source {
 		if short {
@@ -78,7 +80,7 @@ func doProjectsLocales(
 		}
 	}
 
-	err = RenderTable(table)
+	err = table2.Render(table)
 	if err != nil {
 		return err
 	}

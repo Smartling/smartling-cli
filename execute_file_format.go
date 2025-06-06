@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Smartling/api-sdk-go"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	format2 "github.com/Smartling/smartling-cli/services/helpers/format"
 )
 
 var (
@@ -29,7 +30,7 @@ func executeFileFormat(
 		template = fallback
 	}
 
-	format, err := compileFormat(template)
+	format, err := format2.Compile(template)
 	if err != nil {
 		return "", err
 	}
