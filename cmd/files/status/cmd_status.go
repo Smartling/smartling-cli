@@ -1,22 +1,32 @@
 package status
 
 import (
+	"github.com/Smartling/smartling-cli/services/files"
+
 	"github.com/spf13/cobra"
 )
 
 var (
-	uri       string
 	format    string
 	directory string
 )
 
-func NewStatusCmd() *cobra.Command {
+func NewStatusCmd(s files.Service) *cobra.Command {
 	statusCmd := &cobra.Command{
 		Use:   "status <uri>",
 		Short: "Shows file translation status.",
 		Long:  `Shows file translation status.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			uri = args[0]
+			uri := args[0]
+			p := files.StatusParams{
+				URI:       uri,
+				Directory: directory,
+				Format:    format,
+			}
+			err := s.RunStatus(p)
+			if err != nil {
+				// TODO log it
+			}
 		},
 	}
 

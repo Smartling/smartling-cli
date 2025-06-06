@@ -393,14 +393,14 @@ func buildConfigFromFlags(args map[string]interface{}) (config.Config, error) {
 
 	threads, err := strconv.ParseInt(args["--threads"].(string), 10, 0)
 	if err != nil {
-		return config, InvalidConfigValueError{
+		return config, clierror.InvalidConfigValueError{
 			ValueName:   "threads",
 			Description: "should be valid integer number",
 		}
 	}
 
 	if threads <= 0 {
-		return config, InvalidConfigValueError{
+		return config, clierror.InvalidConfigValueError{
 			ValueName:   "threads",
 			Description: "should be positive integer number",
 		}
@@ -520,7 +520,7 @@ func doFiles(config config.Config, args map[string]interface{}, cliClientConfig 
 		return doFilesPush(client, config, args)
 
 	case args["status"].(bool):
-		return doFilesStatus(client, config, args)
+		return files.doFilesStatus(client, config, args)
 
 	case args["delete"].(bool):
 		return doFilesDelete(client, config, args)

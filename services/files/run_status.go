@@ -1,4 +1,4 @@
-package main
+package files
 
 import (
 	"fmt"
@@ -6,49 +6,45 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 
-	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
+	"github.com/Smartling/smartling-cli/services/helpers/progress"
 	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
 
 	"github.com/Smartling/api-sdk-go"
 )
 
-func doFilesStatus(
-	client *smartling.Client,
-	config config.Config,
-	args map[string]interface{},
-) error {
-	var (
-		project   = config.ProjectID
-		uri, _    = args["<uri>"].(string)
-		directory = args["--directory"].(string)
+type StatusParams struct {
+	URI       string
+	Directory string
+	Format    string
+}
 
-		defaultFormat, _ = args["--format"].(string)
-	)
-
+func (s Service) RunStatus(params StatusParams) error {
+	defaultFormat := params.Format
 	if defaultFormat == "" {
 		defaultFormat = format.DefaultFileStatusFormat
 	}
 
-	info, err := client.GetProjectDetails(project)
+	projectID := s.Config.ProjectID
+	info, err := s.Client.GetProjectDetails(projectID)
 	if err != nil {
 		return err
 	}
 
-	files, err := globfiles.Remote(client, project, uri)
+	files, err := globfiles.Remote(s.Client, projectID, params.URI)
 	if err != nil {
 		return err
 	}
 
 	var table = table2.NewTableWriter(os.Stdout)
 
-	var progress = Progress{
+	var progress = progress.Progress{
 		Total: len(files),
 	}
 
 	for _, file := range files {
-		status, err := client.GetFileStatus(project, file.FileURI)
+		status, err := s.Client.GetFileStatus(projectID, file.FileURI)
 		if err != nil {
 			return err
 		}
@@ -70,7 +66,7 @@ func doFilesStatus(
 
 		for _, translation := range translations {
 			path, err := format.ExecuteFileFormat(
-				config,
+				s.Config,
 				file,
 				defaultFormat,
 				format.UsePullFormat,
@@ -83,7 +79,7 @@ func doFilesStatus(
 				return err
 			}
 
-			path = filepath.Join(directory, path)
+			path = filepath.Join(params.Directory, path)
 
 			var (
 				locale   = info.SourceLocaleID
@@ -142,4 +138,11 @@ func writeFileStatus(table *tabwriter.Writer, row map[string]string) {
 		row["Strings"],
 		row["Words"],
 	)
+}
+
+func isFileExists(path string) bool {
+	// we don't care about any other errors there, just return false if stat
+	// failed for whatever reason
+	_, err := os.Stat(path)
+	return err == nil
 }
