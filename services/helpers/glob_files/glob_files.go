@@ -15,7 +15,7 @@ import (
 )
 
 func Remote(
-	client *smartling.Client,
+	client smartling.ClientInterface,
 	project string,
 	uri string,
 ) ([]smartling.File, error) {

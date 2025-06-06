@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/reader"
 
@@ -13,12 +12,11 @@ import (
 )
 
 type DeleteParams struct {
-	URI    string
-	Config config.Config
+	URI string
 }
 
-func RunDelete(client *smartling.Client, params DeleteParams) error {
-	projectID := params.Config.ProjectID
+func (s Service) RunDelete(params DeleteParams) error {
+	projectID := s.Config.ProjectID
 	var (
 		err   error
 		files []smartling.File
@@ -29,7 +27,7 @@ func RunDelete(client *smartling.Client, params DeleteParams) error {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(client, projectID, params.URI)
+		files, err = globfiles.Remote(s.Client, projectID, params.URI)
 		if err != nil {
 			return err
 		}
@@ -44,7 +42,7 @@ func RunDelete(client *smartling.Client, params DeleteParams) error {
 	}
 
 	for _, file := range files {
-		err := client.DeleteFile(projectID, file.FileURI)
+		err := s.Client.DeleteFile(projectID, file.FileURI)
 		if err != nil {
 			return hierr.Errorf(
 				err,

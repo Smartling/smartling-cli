@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"

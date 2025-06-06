@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 
 	sdk "github.com/Smartling/api-sdk-go"
@@ -24,13 +23,12 @@ type PushParams struct {
 	Directory  string
 	FileType   string
 	Directives []string
-	Config     config.Config
 }
 
-func RunPush(client sdk.ClientInterface, params PushParams) error {
+func (s Service) RunPush(params PushParams) error {
 	var (
 		failedFiles []string
-		project     = params.Config.ProjectID
+		project     = s.Config.ProjectID
 		result      error
 	)
 
@@ -57,7 +55,7 @@ func RunPush(client sdk.ClientInterface, params PushParams) error {
 	if params.File != "" {
 		patterns = append(patterns, params.File)
 	} else {
-		for pattern, section := range params.Config.Files {
+		for pattern, section := range s.Config.Files {
 			if section.Push.Type != "" {
 				patterns = append(patterns, pattern)
 			}
@@ -109,7 +107,7 @@ func RunPush(client sdk.ClientInterface, params PushParams) error {
 		)
 	}
 
-	base, err := filepath.Abs(params.Config.Path)
+	base, err := filepath.Abs(s.Config.Path)
 	if err != nil {
 		return clierror.NewError(
 			hierr.Errorf(
@@ -166,7 +164,7 @@ func RunPush(client sdk.ClientInterface, params PushParams) error {
 			uri = name
 		}
 
-		fileConfig, err := params.Config.GetFileConfig(file)
+		fileConfig, err := s.Config.GetFileConfig(file)
 		if err != nil {
 			return clierror.NewError(
 				hierr.Errorf(
@@ -244,7 +242,7 @@ func RunPush(client sdk.ClientInterface, params PushParams) error {
 			request.Smartling.Directives[spec[0]] = spec[1]
 		}
 
-		response, err := client.UploadFile(project, request)
+		response, err := s.ClientI.UploadFile(project, request)
 
 		if err != nil {
 			if returnError(err) {
