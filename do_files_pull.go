@@ -2,10 +2,12 @@ package main
 
 import (
 	"github.com/Smartling/api-sdk-go"
+	files2 "github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/reader"
+	"github.com/Smartling/smartling-cli/services/helpers/thread_pool"
 )
 
 func doFilesPull(
@@ -39,13 +41,13 @@ func doFilesPull(
 		}
 	}
 
-	pool := NewThreadPool(config.Threads)
+	pool := threadpool.NewThreadPool(config.Threads)
 
 	for _, file := range files {
 		// func closure required to pass different file objects to goroutines
 		func(file smartling.File) {
 			pool.Do(func() {
-				err := downloadFileTranslations(client, config, args, file)
+				err := files2.downloadFileTranslations(client, config, args, file)
 
 				if err != nil {
 					logger.Error(err)

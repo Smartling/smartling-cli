@@ -2,6 +2,7 @@ package format
 
 import (
 	"bytes"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"text/template"
 )
 
@@ -25,3 +26,9 @@ func (format *Format) Execute(data interface{}) (string, error) {
 
 	return buffer.String(), nil
 }
+
+var (
+	UsePullFormat = func(config config.FileConfig) string {
+		return config.Pull.Format
+	}
+)

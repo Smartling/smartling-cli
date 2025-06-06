@@ -1,18 +1,12 @@
-package main
+package format
 
 import (
-	"github.com/Smartling/api-sdk-go"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
-	format2 "github.com/Smartling/smartling-cli/services/helpers/format"
+
+	"github.com/Smartling/api-sdk-go"
 )
 
-var (
-	usePullFormat = func(config config.FileConfig) string {
-		return config.Pull.Format
-	}
-)
-
-func executeFileFormat(
+func ExecuteFileFormat(
 	config config.Config,
 	file smartling.File,
 	fallback string,
@@ -30,7 +24,7 @@ func executeFileFormat(
 		template = fallback
 	}
 
-	format, err := format2.Compile(template)
+	format, err := Compile(template)
 	if err != nil {
 		return "", err
 	}

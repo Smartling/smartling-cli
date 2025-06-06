@@ -1,4 +1,4 @@
-package main
+package helpers
 
 import (
 	"io"
@@ -9,7 +9,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
-func downloadFile(
+func DownloadFile(
 	client *smartling.Client,
 	project string,
 	file smartling.File,

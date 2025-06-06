@@ -7,7 +7,7 @@ import (
 
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
-
+	"github.com/Smartling/smartling-cli/services/helpers/table"
 
 	"github.com/reconquest/hierr-go"
 )

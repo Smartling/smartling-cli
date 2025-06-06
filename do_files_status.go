@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"text/tabwriter"
+
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
-	"os"
-	"path/filepath"
-	"text/tabwriter"
 
 	"github.com/Smartling/api-sdk-go"
 )
@@ -68,11 +69,11 @@ func doFilesStatus(
 		)
 
 		for _, translation := range translations {
-			path, err := executeFileFormat(
+			path, err := format.ExecuteFileFormat(
 				config,
 				file,
 				defaultFormat,
-				usePullFormat,
+				format.UsePullFormat,
 				map[string]interface{}{
 					"FileURI": file.FileURI,
 					"Locale":  translation.LocaleID,
