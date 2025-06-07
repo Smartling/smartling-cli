@@ -11,7 +11,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/progress"
 	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
 
-	"github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 )
 
 type StatusParams struct {
@@ -55,7 +55,7 @@ func (s Service) RunStatus(params StatusParams) error {
 		translations := status.Items
 
 		translations = append(
-			[]smartling.FileStatusTranslation{
+			[]sdk.FileStatusTranslation{
 				{
 					CompletedStringCount: status.TotalStringCount,
 					CompletedWordCount:   status.TotalWordCount,

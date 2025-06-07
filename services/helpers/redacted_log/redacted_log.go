@@ -1,23 +1,24 @@
-package main
+package redactedlog
 
 import (
 	"fmt"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"io"
 	"os"
 	"regexp"
 
+	"github.com/Smartling/smartling-cli/services/helpers/config"
+
 	"github.com/kovetskiy/lorg"
 )
 
-type redactedLog struct {
+type RedactedLog struct {
 	*lorg.Log
 
 	writer *redactedWriter
 }
 
-func NewRedactedLog() *redactedLog {
-	log := &redactedLog{
+func NewRedactedLog() *RedactedLog {
+	log := &RedactedLog{
 		Log:    lorg.NewLog(),
 		writer: &redactedWriter{},
 	}
@@ -27,15 +28,15 @@ func NewRedactedLog() *redactedLog {
 	return log
 }
 
-func (log *redactedLog) ToggleRedact(enable bool) {
+func (log *RedactedLog) ToggleRedact(enable bool) {
 	log.writer.enabled = enable
 }
 
-func (log *redactedLog) HideRegexp(pattern *regexp.Regexp) {
+func (log *RedactedLog) HideRegexp(pattern *regexp.Regexp) {
 	log.writer.patterns = append(log.writer.patterns, pattern)
 }
 
-func (log *redactedLog) HideString(value string) {
+func (log *RedactedLog) HideString(value string) {
 	pattern := regexp.MustCompile(
 		fmt.Sprintf(
 			"(%s)",
@@ -46,14 +47,14 @@ func (log *redactedLog) HideString(value string) {
 	log.writer.patterns = append(log.writer.patterns, pattern)
 }
 
-func (log *redactedLog) HideFromConfig(config config.Config) {
+func (log *RedactedLog) HideFromConfig(config config.Config) {
 	log.HideString(config.Secret)
 	log.HideString(config.UserID)
 	log.HideString(config.AccountID)
 	log.HideString(config.ProjectID)
 }
 
-func (log *redactedLog) GetWriter() io.Writer {
+func (log *RedactedLog) GetWriter() io.Writer {
 	return log.writer
 }
 

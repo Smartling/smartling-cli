@@ -1,22 +1,23 @@
-package main
+package init
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
-	"github.com/Smartling/smartling-cli/services/helpers/client"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"os"
 	"regexp"
 
-	smartling "github.com/Smartling/api-sdk-go"
+	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	"github.com/Smartling/smartling-cli/services/helpers/client"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
+
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 	"github.com/tcnksm/go-input"
 )
 
-func doInit(config config.Config, args map[string]interface{}, cliClientConfig client.Config) error {
-	fmt.Printf("Generating %s...\n\n", config.path)
+func (s Service) RunInit(dryRun bool, verbose uint8) error {
+	fmt.Printf("Generating %s...\n\n", s.Config.Path)
 
 	prompt := func(
 		message string,
@@ -58,54 +59,54 @@ func doInit(config config.Config, args map[string]interface{}, cliClientConfig c
 
 	prompt(
 		"Smartling API V2.0 User Identifier",
-		config.UserID,
-		config.UserID == "",
+		s.Config.UserID,
+		s.Config.UserID == "",
 		false,
 		&input.UserID,
 	)
 
 	if input.UserID != "" {
-		config.UserID = input.UserID
+		s.Config.UserID = input.UserID
 	}
 
 	prompt(
 		"Smartling API V2.0 Token Secret",
-		config.Secret,
-		config.Secret == "",
+		s.Config.Secret,
+		s.Config.Secret == "",
 		true,
 		&input.Secret,
 	)
 
 	if input.Secret != "" {
-		config.Secret = input.Secret
+		s.Config.Secret = input.Secret
 	}
 
 	prompt(
 		"Account ID (optional)",
-		config.AccountID,
-		config.AccountID == "",
+		s.Config.AccountID,
+		s.Config.AccountID == "",
 		false,
 		&input.AccountID,
 	)
 
 	if input.AccountID != "" {
-		config.AccountID = input.AccountID
+		s.Config.AccountID = input.AccountID
 	}
 
 	prompt(
 		"Project ID",
-		config.ProjectID,
-		config.ProjectID == "",
+		s.Config.ProjectID,
+		s.Config.ProjectID == "",
 		false,
 		&input.ProjectID,
 	)
 
 	if input.ProjectID != "" {
-		config.ProjectID = input.ProjectID
+		s.Config.ProjectID = input.ProjectID
 	}
 
 	var result bytes.Buffer
-	err := config.configTemplate.Execute(&result, config)
+	err := configTemplate.Execute(&result, s.Config)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -113,11 +114,11 @@ func doInit(config config.Config, args map[string]interface{}, cliClientConfig c
 		)
 	}
 
-	logger.HideFromConfig(config)
+	logger.HideFromConfig(s.Config)
 
 	fmt.Println("Testing connection to Smartling API...")
 
-	client, err := createClient(config, cliClientConfig)
+	client, err := client.CreateClient(s.Config, s.CliClientConfig, logger, verbose)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -127,7 +128,7 @@ func doInit(config config.Config, args map[string]interface{}, cliClientConfig c
 
 	err = client.Authenticate()
 	if err != nil {
-		if _, ok := err.(smartling.NotAuthorizedError); ok {
+		if _, ok := err.(sdk.NotAuthorizedError); ok {
 			return clierror.NewError(
 				errors.New("not authorized"),
 				"Your credentials are invalid. Double check them and run "+
@@ -143,7 +144,7 @@ func doInit(config config.Config, args map[string]interface{}, cliClientConfig c
 
 	fmt.Println("Connection is successful.")
 
-	if args["--dry-run"].(bool) {
+	if dryRun {
 		fmt.Println()
 		fmt.Println("Configured for Dry run. Not writing config file.")
 		fmt.Println("New config is displayed below.")
@@ -151,7 +152,7 @@ func doInit(config config.Config, args map[string]interface{}, cliClientConfig c
 
 		fmt.Println(result.String())
 	} else {
-		err = os.WriteFile(config.path, result.Bytes(), 0644)
+		err = os.WriteFile(s.Config.Path, result.Bytes(), 0644)
 		if err != nil {
 			return hierr.Errorf(
 				err,

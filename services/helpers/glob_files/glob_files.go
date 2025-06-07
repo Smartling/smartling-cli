@@ -9,16 +9,16 @@ import (
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 
-	"github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/gobwas/glob"
 	"github.com/reconquest/hierr-go"
 )
 
 func Remote(
-	client smartling.ClientInterface,
+	client sdk.ClientInterface,
 	project string,
 	uri string,
-) ([]smartling.File, error) {
+) ([]sdk.File, error) {
 	if uri == "" {
 		uri = "**"
 	}
@@ -32,11 +32,11 @@ func Remote(
 		)
 	}
 
-	request := smartling.FilesListRequest{}
+	request := sdk.FilesListRequest{}
 
 	files, err := client.ListAllFiles(project, request)
 	if err != nil {
-		if _, ok := err.(smartling.NotFoundError); ok {
+		if _, ok := err.(sdk.NotFoundError); ok {
 			return nil, clierror.ProjectNotFoundError{}
 		}
 
@@ -47,7 +47,7 @@ func Remote(
 		)
 	}
 
-	result := []smartling.File{}
+	result := []sdk.File{}
 
 	for _, file := range files {
 		if pattern.Match(file.FileURI) {

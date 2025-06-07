@@ -13,7 +13,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/reader"
 	threadpool "github.com/Smartling/smartling-cli/services/helpers/thread_pool"
 
-	"github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -34,7 +34,7 @@ func (s Service) RunPull(params PullParams) error {
 
 	var (
 		err   error
-		files []smartling.File
+		files []sdk.File
 	)
 	if params.URI == "-" {
 		files, err = reader.ReadFilesFromStdin()
@@ -52,7 +52,7 @@ func (s Service) RunPull(params PullParams) error {
 
 	for _, file := range files {
 		// func closure required to pass different file objects to goroutines
-		func(file smartling.File) {
+		func(file sdk.File) {
 			pool.Do(func() {
 				err := s.downloadFileTranslations(params, file)
 				if err != nil {
@@ -67,7 +67,7 @@ func (s Service) RunPull(params PullParams) error {
 	return nil
 }
 
-func (s Service) downloadFileTranslations(params PullParams, file smartling.File) error {
+func (s Service) downloadFileTranslations(params PullParams, file sdk.File) error {
 	params.Progress = strings.TrimSuffix(params.Progress, "%")
 	if params.Progress == "" {
 		params.Progress = "0"
@@ -81,7 +81,7 @@ func (s Service) downloadFileTranslations(params PullParams, file smartling.File
 		)
 	}
 
-	retrievalType := smartling.RetrievalType(params.Retrieve)
+	retrievalType := sdk.RetrievalType(params.Retrieve)
 
 	if params.Format == "" {
 		params.Format = format.DefaultFileStatusFormat
@@ -98,10 +98,10 @@ func (s Service) downloadFileTranslations(params PullParams, file smartling.File
 		)
 	}
 
-	var translations []smartling.FileStatusTranslation
+	var translations []sdk.FileStatusTranslation
 
 	if params.Source {
-		translations = []smartling.FileStatusTranslation{
+		translations = []sdk.FileStatusTranslation{
 			{LocaleID: ""},
 		}
 	} else {

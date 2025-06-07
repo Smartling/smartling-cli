@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,9 +15,9 @@ func (suite *MainSuite) TestProjectsList() {
 		writer http.ResponseWriter,
 		request *http.Request,
 	) {
-		list := smartling.ProjectsList{
+		list := sdk.ProjectsList{
 			TotalCount: 2,
-			Items: []smartling.Project{
+			Items: []sdk.Project{
 				{
 					ProjectID:      "01234ab",
 					ProjectName:    "Rick and Morty",
@@ -64,7 +64,7 @@ func (suite *MainSuite) TestProjectsInfo() {
 			strings.HasSuffix(request.URL.Path, "/01234ab"),
 		)
 
-		list := smartling.Project{
+		list := sdk.Project{
 			ProjectID:               "01234ab",
 			ProjectName:             "Rick and Morty",
 			AccountUID:              "xxyyzz",
@@ -101,11 +101,11 @@ func (suite *MainSuite) TestProjectsLocales() {
 			strings.HasSuffix(request.URL.Path, "/01234ab"),
 		)
 
-		list := smartling.ProjectDetails{
-			Project: smartling.Project{
+		list := sdk.ProjectDetails{
+			Project: sdk.Project{
 				SourceLocaleID: "en-US",
 			},
-			TargetLocales: []smartling.Locale{
+			TargetLocales: []sdk.Locale{
 				{
 					LocaleID:    "zh-CN",
 					Description: "Chinese",
@@ -168,9 +168,9 @@ func (suite *MainSuite) TestFilesList() {
 			strings.Contains(request.URL.Path, "/01234ab/"),
 		)
 
-		list := smartling.FilesList{
+		list := sdk.FilesList{
 			TotalCount: 2,
-			Items: []smartling.File{
+			Items: []sdk.File{
 				{
 					FileURI:      "/Rick/portal-gun.java",
 					LastUploaded: utc("2016-09-16T16:06:16Z"),
@@ -273,10 +273,10 @@ func (suite *MainSuite) TestFilesPull() {
 		case strings.HasSuffix(request.URL.Path, "/status"):
 			switch request.URL.Query().Get("fileUri") {
 			case "/Rick/portal-gun.java":
-				reply = smartling.FileStatus{
+				reply = sdk.FileStatus{
 					TotalStringCount: 12,
 					TotalWordCount:   120,
-					Items: []smartling.FileStatusTranslation{
+					Items: []sdk.FileStatusTranslation{
 						{
 							LocaleID:             "de-DE",
 							CompletedStringCount: 10,
@@ -286,10 +286,10 @@ func (suite *MainSuite) TestFilesPull() {
 				}
 
 			case "/Morty/stupidness.txt":
-				reply = smartling.FileStatus{
+				reply = sdk.FileStatus{
 					TotalStringCount: 2,
 					TotalWordCount:   12,
-					Items: []smartling.FileStatusTranslation{
+					Items: []sdk.FileStatusTranslation{
 						{
 							LocaleID:             "es",
 							CompletedStringCount: 1,
@@ -300,9 +300,9 @@ func (suite *MainSuite) TestFilesPull() {
 			}
 
 		case strings.HasSuffix(request.URL.Path, "/list"):
-			reply = smartling.FilesList{
+			reply = sdk.FilesList{
 				TotalCount: 2,
-				Items: []smartling.File{
+				Items: []sdk.File{
 					{
 						FileURI:      "/Rick/portal-gun.java",
 						LastUploaded: utc("2016-09-16T16:06:16Z"),
@@ -434,7 +434,7 @@ func (suite *MainSuite) TestFilesPush() {
 			)
 		}
 
-		result := smartling.FileUploadResult{
+		result := sdk.FileUploadResult{
 			Overwritten: testValues.Overwritten,
 			StringCount: testValues.StringCount,
 			WordCount:   testValues.WordCount,
@@ -606,9 +606,9 @@ func (suite *MainSuite) TestFilesDelete() {
 			)
 
 		case strings.HasSuffix(request.URL.Path, "/list"):
-			reply = smartling.FilesList{
+			reply = sdk.FilesList{
 				TotalCount: 2,
-				Items: []smartling.File{
+				Items: []sdk.File{
 					{
 						FileURI:      "/Rick/portal-gun.java",
 						LastUploaded: utc("2016-09-16T16:06:16Z"),
@@ -677,10 +677,10 @@ func (suite *MainSuite) TestFilesStatus() {
 		case strings.HasSuffix(request.URL.Path, "/status"):
 			switch request.URL.Query().Get("fileUri") {
 			case "/Rick/portal-gun.java":
-				reply = smartling.FileStatus{
+				reply = sdk.FileStatus{
 					TotalStringCount: 12,
 					TotalWordCount:   120,
-					Items: []smartling.FileStatusTranslation{
+					Items: []sdk.FileStatusTranslation{
 						{
 							LocaleID:             "de-DE",
 							CompletedStringCount: 10,
@@ -690,10 +690,10 @@ func (suite *MainSuite) TestFilesStatus() {
 				}
 
 			case "/Morty/stupidness.txt":
-				reply = smartling.FileStatus{
+				reply = sdk.FileStatus{
 					TotalStringCount: 2,
 					TotalWordCount:   12,
-					Items: []smartling.FileStatusTranslation{
+					Items: []sdk.FileStatusTranslation{
 						{
 							LocaleID:             "es",
 							CompletedStringCount: 1,
@@ -704,9 +704,9 @@ func (suite *MainSuite) TestFilesStatus() {
 			}
 
 		case strings.HasSuffix(request.URL.Path, "/list"):
-			reply = smartling.FilesList{
+			reply = sdk.FilesList{
 				TotalCount: 2,
-				Items: []smartling.File{
+				Items: []sdk.File{
 					{
 						FileURI:      "/Rick/portal-gun.java",
 						LastUploaded: utc("2016-09-16T16:06:16Z"),
@@ -747,7 +747,7 @@ func (suite *MainSuite) TestFilesImport() {
 	var testValues struct {
 		Overwritten bool
 		FileType    string
-		State       smartling.TranslationState
+		State       sdk.TranslationState
 		WordCount   int
 		StringCount int
 	}
@@ -786,7 +786,7 @@ func (suite *MainSuite) TestFilesImport() {
 			assert.Equal(suite.T(), []string{"true"}, form["overwrite"])
 		}
 
-		result := smartling.FileImportResult{
+		result := sdk.FileImportResult{
 			StringCount: testValues.StringCount,
 			WordCount:   testValues.WordCount,
 		}
@@ -812,7 +812,7 @@ func (suite *MainSuite) TestFilesImport() {
 	)
 	assert.NoError(suite.T(), err)
 
-	testValues.State = smartling.TranslationStatePublished
+	testValues.State = sdk.TranslationStatePublished
 	testValues.FileType = "plaintext"
 	testValues.StringCount = 1
 	testValues.WordCount = 3
@@ -834,7 +834,7 @@ func (suite *MainSuite) TestFilesImport() {
 		"--overwrite",
 	)
 
-	testValues.State = smartling.TranslationStatePostTranslation
+	testValues.State = sdk.TranslationStatePostTranslation
 	testValues.Overwritten = false
 
 	suite.assertStdout(

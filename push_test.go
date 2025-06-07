@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
 
-	"github.com/Smartling/smartling-cli/mocks"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 
-	smartling "github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
+	"github.com/Smartling/smartling-cli/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -48,7 +48,7 @@ func TestPushStopUnauthorized(t *testing.T) {
 
 	err := doFilesPush(&client, getConfig(), args)
 
-	assert.True(t, errors.Is(err, smartling.NotAuthorizedError{}))
+	assert.True(t, errors.Is(err, sdk.NotAuthorizedError{}))
 }
 
 func TestPushContinueFakeError(t *testing.T) {
@@ -61,7 +61,7 @@ func TestPushContinueFakeError(t *testing.T) {
 
 	client := &mocks.ClientInterface{}
 	client.On("UploadFile", "test", mock.Anything).
-		Return(nil, smartling.APIError{Cause: errors.New("some error")}).
+		Return(nil, sdk.APIError{Cause: errors.New("some error")}).
 		Times(2)
 
 	err := doFilesPush(client, getConfig(), args)
@@ -81,7 +81,7 @@ func TestPushStopApiError(t *testing.T) {
 	}()
 
 	client := &mocks.ClientInterface{}
-	expectedError := smartling.APIError{
+	expectedError := sdk.APIError{
 		Cause: errors.New("some error"),
 		Code:  "MAINTENANCE_MODE_ERROR",
 	}
@@ -142,8 +142,8 @@ func getConfig() config.Config {
 	}
 }
 
-func getClient(httpClient *http.Client) smartling.Client {
-	client := smartling.NewClient("test", "test")
+func getClient(httpClient *http.Client) sdk.Client {
+	client := sdk.NewClient("test", "test")
 	client.HTTP = httpClient
 
 	return *client

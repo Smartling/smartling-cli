@@ -5,17 +5,17 @@ import (
 	"os"
 	"path/filepath"
 
-	smartling "github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
 func DownloadFile(
-	client *smartling.Client,
+	client sdk.ClientInterface,
 	project string,
-	file smartling.File,
+	file sdk.File,
 	locale string,
 	path string,
-	retrievalType smartling.RetrievalType,
+	retrievalType sdk.RetrievalType,
 ) error {
 	var (
 		reader io.Reader
@@ -33,7 +33,7 @@ func DownloadFile(
 			)
 		}
 	} else {
-		request := smartling.FileDownloadRequest{}
+		request := sdk.FileDownloadRequest{}
 		request.FileURI = file.FileURI
 		request.Type = retrievalType
 

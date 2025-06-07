@@ -7,7 +7,7 @@ import (
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 
-	"github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -30,27 +30,27 @@ func (s Service) RunImport(params ImportParams) error {
 		)
 	}
 
-	request := smartling.ImportRequest{}
+	request := sdk.ImportRequest{}
 
 	request.File = contents
 	request.FileURI = params.URI
 
-	request.TranslationState = smartling.TranslationStatePublished
+	request.TranslationState = sdk.TranslationStatePublished
 
 	if params.PostTranslation {
-		request.TranslationState = smartling.TranslationStatePostTranslation
+		request.TranslationState = sdk.TranslationStatePostTranslation
 	}
 
 	request.Overwrite = params.Overwrite
 
 	if params.FileType != "" {
-		request.FileType = smartling.FileType(params.FileType)
+		request.FileType = sdk.FileType(params.FileType)
 	} else {
-		request.FileType = smartling.GetFileTypeByExtension(
+		request.FileType = sdk.GetFileTypeByExtension(
 			filepath.Ext(params.File),
 		)
 
-		if request.FileType == smartling.FileTypeUnknown {
+		if request.FileType == sdk.FileTypeUnknown {
 			return clierror.NewError(
 				fmt.Errorf(
 					"unable to deduce file type from extension: %q",

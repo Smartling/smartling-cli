@@ -5,11 +5,11 @@ import (
 	"os"
 	"strings"
 
-	smartling "github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
-func ReadFilesFromStdin() ([]smartling.File, error) {
+func ReadFilesFromStdin() ([]sdk.File, error) {
 	lines, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		return nil, hierr.Errorf(
@@ -18,14 +18,14 @@ func ReadFilesFromStdin() ([]smartling.File, error) {
 		)
 	}
 
-	var files []smartling.File
+	var files []sdk.File
 
 	for _, line := range strings.Split(string(lines), "\n") {
 		if line == "" {
 			continue
 		}
 
-		files = append(files, smartling.File{
+		files = append(files, sdk.File{
 			FileURI: line,
 		})
 	}

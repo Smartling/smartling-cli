@@ -3,12 +3,12 @@ package format
 import (
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 
-	"github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 )
 
 func ExecuteFileFormat(
 	config config.Config,
-	file smartling.File,
+	file sdk.File,
 	fallback string,
 	getter func(config config.FileConfig) string,
 	data interface{},

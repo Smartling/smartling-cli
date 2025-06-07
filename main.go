@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
 	"github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/files"
@@ -9,20 +8,15 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
-	"net/http"
-	"net/url"
+	"github.com/Smartling/smartling-cli/services/helpers/redacted_log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 
-	smartling "github.com/Smartling/api-sdk-go"
 	"github.com/docopt/docopt-go"
 	"github.com/kovetskiy/lorg"
 	"github.com/reconquest/hierr-go"
 )
-
-var version = "1.7"
 
 var usage = `smartling-cli - manage translation files using Smartling.
 
@@ -158,7 +152,7 @@ Options:
 `
 
 var (
-	logger = NewRedactedLog()
+	logger = redactedlog.NewRedactedLog()
 )
 
 const (
@@ -357,7 +351,7 @@ func buildConfigFromFlags(args map[string]interface{}) (config.Config, error) {
 	if !args["init"].(bool) {
 		if config.UserID == "" {
 			return config, MissingConfigValueError{
-				ConfigPath: config.path,
+				ConfigPath: config.Path,
 				EnvVarName: "SMARTLING_USER_ID",
 				ValueName:  "user ID",
 				OptionName: "user",
@@ -413,64 +407,8 @@ func buildConfigFromFlags(args map[string]interface{}) (config.Config, error) {
 	return config, nil
 }
 
-func createClient(config config.Config, cliClientConfig client.Config) (*smartling.Client, error) {
-	client := smartling.NewClient(config.UserID, config.Secret)
-
-	var transport http.Transport
-
-	if cliClientConfig.Insecure {
-		transport.TLSClientConfig = &tls.Config{
-			InsecureSkipVerify: true,
-		}
-	}
-
-	if config.Proxy != "" && cliClientConfig.Proxy == "" {
-		cliClientConfig.Proxy = config.Proxy
-	}
-
-	if cliClientConfig.Proxy != "" {
-		proxy, err := url.Parse(cliClientConfig.Proxy)
-		if err != nil {
-			return nil, clierror.NewError(
-				hierr.Errorf(
-					err,
-					"unable to parse specified proxy URL",
-				),
-
-				`Proxy should be valid URL, check CLI options and `+
-					`config value.`,
-			)
-		}
-
-		transport.Proxy = http.ProxyURL(proxy)
-	}
-
-	if cliClientConfig.SmartlingURL != "" {
-		client.BaseURL = cliClientConfig.SmartlingURL
-	}
-
-	client.HTTP.Transport = &transport
-	client.UserAgent = "smartling-cli/" + version
-
-	setLogger(client, logger, cmd.Verbose())
-
-	logger.HideRegexp(
-		regexp.MustCompile(`"(?:access|refresh)Token": "([^"]+)"`),
-	)
-
-	err := client.Authenticate()
-	if err != nil {
-		return nil, clierror.NewError(
-			err,
-			`Your credentials are invalid. Double check it and try to run init.\n`,
-		)
-	}
-
-	return client, nil
-}
-
 func doProjects(config config.Config, args map[string]interface{}, cliClientConfig client.Config) error {
-	client, err := createClient(config, cliClientConfig)
+	client, err := client.CreateClient(config, cliClientConfig)
 	if err != nil {
 		return err
 	}
@@ -504,7 +442,7 @@ func doProjects(config config.Config, args map[string]interface{}, cliClientConf
 }
 
 func doFiles(config config.Config, args map[string]interface{}, cliClientConfig client.Config) error {
-	client, err := createClient(config, cliClientConfig)
+	client, err := client.CreateClient(config, cliClientConfig)
 	if err != nil {
 		return err
 	}

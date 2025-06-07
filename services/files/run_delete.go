@@ -7,7 +7,7 @@ import (
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/reader"
 
-	"github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -15,7 +15,7 @@ func (s Service) RunDelete(uri string) error {
 	projectID := s.Config.ProjectID
 	var (
 		err   error
-		files []smartling.File
+		files []sdk.File
 	)
 	if uri == "-" {
 		files, err = reader.ReadFilesFromStdin()

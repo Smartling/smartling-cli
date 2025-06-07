@@ -7,12 +7,12 @@ import (
 	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
 	"os"
 
-	"github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
 func doProjectsList(
-	client *smartling.Client,
+	client *sdk.Client,
 	config config.Config,
 	args map[string]interface{},
 ) error {
@@ -22,7 +22,7 @@ func doProjectsList(
 
 	projects, err := client.ListProjects(
 		config.AccountID,
-		smartling.ProjectsListRequest{},
+		sdk.ProjectsListRequest{},
 	)
 	if err != nil {
 		return clierror.NewError(

@@ -9,12 +9,12 @@ import (
 	"io"
 	"os"
 
-	"github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
 func doProjectsLocales(
-	client *smartling.Client,
+	client *sdk.Client,
 	config config.Config,
 	args map[string]interface{},
 ) error {
@@ -35,7 +35,7 @@ func doProjectsLocales(
 
 	details, err := client.GetProjectDetails(project)
 	if err != nil {
-		if _, ok := err.(smartling.NotFoundError); ok {
+		if _, ok := err.(sdk.NotFoundError); ok {
 			return clierror.ProjectNotFoundError{}
 		}
 

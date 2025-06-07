@@ -7,15 +7,13 @@ import (
 )
 
 type Service struct {
-	ClientI    sdk.ClientInterface
-	Client     *sdk.Client
+	Client     sdk.ClientInterface
 	Config     config.Config
 	FileConfig config.FileConfig
 }
 
-func NewService(clientI sdk.ClientInterface, client *sdk.Client, config config.Config, fileConfig config.FileConfig) *Service {
+func NewService(client sdk.ClientInterface, config config.Config, fileConfig config.FileConfig) *Service {
 	return &Service{
-		ClientI:    clientI,
 		Client:     client,
 		Config:     config,
 		FileConfig: fileConfig,

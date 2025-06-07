@@ -242,7 +242,7 @@ func (s Service) RunPush(params PushParams) error {
 			request.Smartling.Directives[spec[0]] = spec[1]
 		}
 
-		response, err := s.ClientI.UploadFile(project, request)
+		response, err := s.Client.UploadFile(project, request)
 
 		if err != nil {
 			if returnError(err) {

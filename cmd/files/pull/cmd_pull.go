@@ -2,6 +2,7 @@ package pull
 
 import (
 	"github.com/Smartling/smartling-cli/services/files"
+
 	"github.com/spf13/cobra"
 )
 

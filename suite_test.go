@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Smartling/api-sdk-go"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -197,8 +197,8 @@ func handleAuthentication(
 
 func utc(
 	timestamp string,
-) smartling.UTC {
-	var utc smartling.UTC
+) sdk.UTC {
+	var utc sdk.UTC
 
 	data, _ := json.Marshal(timestamp)
 
