@@ -1,19 +1,18 @@
-package main
+package projects
 
 import (
 	"fmt"
 	"os"
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
-	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
+	"github.com/Smartling/smartling-cli/services/helpers/table"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
-func doProjectsInfo(client *sdk.Client, config config.Config) error {
-	details, err := client.GetProjectDetails(config.ProjectID)
+func (s Service) RunInfo() error {
+	details, err := s.Client.GetProjectDetails(s.Config.ProjectID)
 	if err != nil {
 		if _, ok := err.(sdk.NotFoundError); ok {
 			return clierror.ProjectNotFoundError{}
@@ -22,11 +21,11 @@ func doProjectsInfo(client *sdk.Client, config config.Config) error {
 		return hierr.Errorf(
 			err,
 			`unable to get project "%s" details`,
-			config.ProjectID,
+			s.Config.ProjectID,
 		)
 	}
 
-	table := table2.NewTableWriter(os.Stdout)
+	tableWriter := table.NewTableWriter(os.Stdout)
 
 	status := "active"
 
@@ -47,13 +46,13 @@ func doProjectsInfo(client *sdk.Client, config config.Config) error {
 
 	for _, row := range info {
 		fmt.Fprintf(
-			table,
+			tableWriter,
 			"%s\t%s\n",
 			row...,
 		)
 	}
 
-	err = table2.Render(table)
+	err = table.Render(tableWriter)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/projects"
+	"os"
+	"path/filepath"
+	"strconv"
+
 	"github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
@@ -9,9 +14,6 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/redacted_log"
-	"os"
-	"path/filepath"
-	"strconv"
 
 	"github.com/docopt/docopt-go"
 	"github.com/kovetskiy/lorg"
@@ -350,7 +352,7 @@ func buildConfigFromFlags(args map[string]interface{}) (config.Config, error) {
 
 	if !args["init"].(bool) {
 		if config.UserID == "" {
-			return config, MissingConfigValueError{
+			return config, clierror.MissingConfigValueError{
 				ConfigPath: config.Path,
 				EnvVarName: "SMARTLING_USER_ID",
 				ValueName:  "user ID",
@@ -360,7 +362,7 @@ func buildConfigFromFlags(args map[string]interface{}) (config.Config, error) {
 		}
 
 		if config.Secret == "" {
-			return config, MissingConfigValueError{
+			return config, clierror.MissingConfigValueError{
 				ConfigPath: config.path,
 				EnvVarName: "SMARTLING_SECRET",
 				ValueName:  "token secret",
@@ -375,7 +377,7 @@ func buildConfigFromFlags(args map[string]interface{}) (config.Config, error) {
 	switch {
 	case args["files"].(bool), args["projects"].(bool) && !args["list"].(bool):
 		if config.ProjectID == "" {
-			return config, MissingConfigValueError{
+			return config, clierror.MissingConfigValueError{
 				ConfigPath: config.path,
 				EnvVarName: "SMARTLING_PROJECT_ID",
 				ValueName:  "project ID",
@@ -416,7 +418,7 @@ func doProjects(config config.Config, args map[string]interface{}, cliClientConf
 	switch {
 	case args["list"].(bool):
 		if config.AccountID == "" {
-			return MissingConfigValueError{
+			return clierror.MissingConfigValueError{
 				ConfigPath: config.path,
 				EnvVarName: "SMARTLING_PROJECT_ID",
 				ValueName:  "account ID",
@@ -428,13 +430,13 @@ func doProjects(config config.Config, args map[string]interface{}, cliClientConf
 
 	switch {
 	case args["list"].(bool):
-		return doProjectsList(client, config, args)
+		return projects.doProjectsList(client, config, args)
 
 	case args["info"].(bool):
-		return doProjectsInfo(client, config)
+		return projects.doProjectsInfo(client, config)
 
 	case args["locales"].(bool):
-		return doProjectsLocales(client, config, args)
+		return projects.doProjectsLocales(client, config, args)
 
 	}
 

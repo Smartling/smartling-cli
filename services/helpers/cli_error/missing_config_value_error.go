@@ -1,8 +1,7 @@
-package main
+package clierror
 
 import (
 	"fmt"
-	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 )
 
 type MissingConfigValueError struct {
@@ -14,7 +13,7 @@ type MissingConfigValueError struct {
 }
 
 func (err MissingConfigValueError) Error() string {
-	return clierror.NewError(
+	return NewError(
 		fmt.Errorf(
 			"cannot find mandatory configuration parameter %q",
 			err.ValueName,
