@@ -7,7 +7,7 @@ import (
 	filessrv "github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
-	inits
+	redactedlog "github.com/Smartling/
 	projectssrv "github.com/Smartling/smartling-cli/services/projects"
 
 	"github.com/kovetskiy/lorg"
@@ -35,7 +35,7 @@ var (
 	smartlingURL string
 )
 
-func NewRootCmd(logger lorg.Logger) (*cobra.Command, error) {
+func NewRootCmd() (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:     "smartling-cli",
 		Short:   "Manage translation files using Smartling CLI.",
@@ -80,6 +80,29 @@ executed for at most <number> of threads.
 purposes.`)
 	rootCmd.PersistentFlags().Uint8VarP(&verbose, "verbose", "v", 0, "Verbose logging")
 
+	//
+	logger := redactedlog.NewRedactedLog()
+
+	logger.ToggleRedact(true)
+
+	logger.SetFormat(lorg.NewFormat("* ${time} ${level:[%s]:right} %s"))
+	logger.SetIndentLines(true)
+	switch verbose {
+	case 0:
+		// nothing do to
+
+	case 1:
+		logger.SetLevel(lorg.LevelInfo)
+
+	case 2:
+		logger.SetLevel(lorg.LevelDebug)
+
+	default:
+		logger.ToggleRedact(false)
+		logger.SetLevel(lorg.LevelDebug)
+	}
+	//
+
 	cliClientConfig := client.Config{
 		Insecure:     insecure,
 		Proxy:        proxy,
@@ -118,16 +141,4 @@ purposes.`)
 	rootCmd.AddCommand(projects.NewProjectsCmd(projectsSrv))
 
 	return rootCmd, nil
-}
-
-func Verbose() uint8 {
-	return verbose
-}
-
-func ClientConfig() client.Config {
-	return client.Config{
-		Insecure:     insecure,
-		Proxy:        proxy,
-		SmartlingURL: smartlingURL,
-	}
 }
