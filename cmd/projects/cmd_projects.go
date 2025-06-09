@@ -1,15 +1,12 @@
 package projects
 
 import (
-	"github.com/Smartling/smartling-cli/cmd/projects/info"
-	"github.com/Smartling/smartling-cli/cmd/projects/list"
-	"github.com/Smartling/smartling-cli/cmd/projects/locales"
+	"github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/projects"
-
 	"github.com/spf13/cobra"
 )
 
-func NewProjectsCmd(s *projects.Service) *cobra.Command {
+func NewProjectsCmd() *cobra.Command {
 	projectsCmd := &cobra.Command{
 		Use:     "projects",
 		Aliases: []string{"f"},
@@ -20,9 +17,18 @@ func NewProjectsCmd(s *projects.Service) *cobra.Command {
 		},
 	}
 
-	projectsCmd.AddCommand(list.NewListCmd(s))
-	projectsCmd.AddCommand(info.NewInfoCmd(s))
-	projectsCmd.AddCommand(locales.NewLocatesCmd(s))
-
 	return projectsCmd
+}
+
+func GetService() (*projects.Service, error) {
+	client, err := cmd.Client()
+	if err != nil {
+		return nil, err
+	}
+	cnf, err := cmd.Config()
+	if err != nil {
+		return nil, err
+	}
+	srv := projects.NewService(&client, cnf)
+	return srv, nil
 }

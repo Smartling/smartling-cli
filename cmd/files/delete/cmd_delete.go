@@ -1,14 +1,14 @@
 package delete
 
 import (
-	"github.com/Smartling/smartling-cli/services/files"
+	"github.com/Smartling/smartling-cli/cmd/files"
 
 	"github.com/spf13/cobra"
 )
 
 var uri string
 
-func NewDeleteCmd(s *files.Service) *cobra.Command {
+func NewDeleteCmd() *cobra.Command {
 	deleteCmd := &cobra.Command{
 		Use:   "delete <uri>",
 		Short: "Deletes given file from Smartling.",
@@ -16,7 +16,12 @@ func NewDeleteCmd(s *files.Service) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			uri = args[0]
 
-			err := s.RunDelete(uri)
+			s, err := files.GetService()
+			if err != nil {
+				// TODO log it
+			}
+
+			err = s.RunDelete(uri)
 			if err != nil {
 				// TODO log it
 			}

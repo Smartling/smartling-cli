@@ -1,12 +1,13 @@
 package push
 
 import (
+	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
 
 	"github.com/spf13/cobra"
 )
 
-func NewPushCmd(s *files.Service) *cobra.Command {
+func NewPushCmd() *cobra.Command {
 	var (
 		file       string
 		uri        string
@@ -25,6 +26,12 @@ func NewPushCmd(s *files.Service) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			file = args[0]
 			uri = args[1]
+
+			s, err := filescmd.GetService()
+			if err != nil {
+				// TODO log it
+			}
+
 			p := files.PushParams{
 				URI:        uri,
 				File:       file,

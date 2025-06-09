@@ -1,17 +1,10 @@
 package cmd
 
 import (
-	"github.com/Smartling/smartling-cli/cmd/files"
-	"github.com/Smartling/smartling-cli/cmd/init"
-	"github.com/Smartling/smartling-cli/cmd/projects"
-	filessrv "github.com/Smartling/smartling-cli/services/files"
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	redactedlog "github.com/Smartling/smartling-cli/services/helpers/redacted_log"
-	initializesrv "github.com/Smartling/smartling-cli/services/init"
-	
-	projectssrv "github.com/Smartling/smartling-cli/services/projects"
-
 	"github.com/kovetskiy/lorg"
 	"github.com/spf13/cobra"
 )
@@ -82,7 +75,10 @@ executed for at most <number> of threads.
 purposes.`)
 	rootCmd.PersistentFlags().Uint8VarP(&verbose, "verbose", "v", 0, "Verbose logging")
 
-	//
+	return rootCmd, nil
+}
+
+func Logger() redactedlog.RedactedLog {
 	logger := redactedlog.NewRedactedLog()
 
 	logger.ToggleRedact(true)
@@ -103,13 +99,34 @@ purposes.`)
 		logger.ToggleRedact(false)
 		logger.SetLevel(lorg.LevelDebug)
 	}
-	//
+	return *logger
+}
 
-	cliClientConfig := client.Config{
+func CLIClientConfig() client.Config {
+	return client.Config{
 		Insecure:     insecure,
 		Proxy:        proxy,
 		SmartlingURL: smartlingURL,
 	}
+}
+
+func ConfigParams() config.Params {
+	return config.Params{
+		Directory:  directory,
+		File:       configFile,
+		User:       user,
+		Secret:     secret,
+		Account:    account,
+		Project:    project,
+		Threads:    threads,
+		IsInit:     false,
+		IsFiles:    false,
+		IsProjects: false,
+		IsList:     false,
+	}
+}
+
+func Config() (config.Config, error) {
 	params := config.Params{
 		Directory:  directory,
 		File:       configFile,
@@ -125,22 +142,24 @@ purposes.`)
 	}
 	cnf, err := config.BuildConfigFromFlags(params)
 	if err != nil {
-		return nil, err
+		return config.Config{}, err
 	}
-	fileConfig, err := cnf.GetFileConfig(configFile)
+	return cnf, nil
+}
+
+func Client() (sdk.Client, error) {
+	cnf, err := Config()
 	if err != nil {
-		return nil, err
+		return sdk.Client{}, err
 	}
+	logger := Logger()
+	client, err := client.CreateClient(CLIClientConfig(), cnf, logger, verbose)
+	if err != nil {
+		return sdk.Client{}, err
+	}
+	return *client, nil
+}
 
-	client, err := client.CreateClient(cliClientConfig, cnf, logger, verbose)
-	initSrv := initializesrv.NewService(client, cnf, cliClientConfig)
-	rootCmd.AddCommand(initialize.NewInitCmd(initSrv))
-
-	filesSrv := filessrv.NewService(client, cnf, fileConfig)
-	rootCmd.AddCommand(files.NewFilesCmd(filesSrv))
-
-	projectsSrv := projectssrv.NewService(client, cnf)
-	rootCmd.AddCommand(projects.NewProjectsCmd(projectsSrv))
-
-	return rootCmd, nil
+func ConfigFile() string {
+	return configFile
 }

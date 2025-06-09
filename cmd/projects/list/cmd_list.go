@@ -1,20 +1,25 @@
 package list
 
 import (
-	"github.com/Smartling/smartling-cli/services/projects"
+	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
 
 	"github.com/spf13/cobra"
 )
 
 var short bool
 
-func NewListCmd(s *projects.Service) *cobra.Command {
+func NewListCmd() *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list",
 		Short: "Lists projects for current account.",
 		Long:  `Lists projects for current account.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := s.RunList(short)
+			s, err := projectscmd.GetService()
+			if err != nil {
+				// TODO log it
+			}
+
+			err = s.RunList(short)
 			if err != nil {
 				// TODO log it
 			}

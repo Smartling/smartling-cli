@@ -1,7 +1,7 @@
 package list
 
 import (
-	"github.com/Smartling/smartling-cli/services/files"
+	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 
 	"github.com/spf13/cobra"
 )
@@ -11,7 +11,7 @@ var (
 	short  bool
 )
 
-func NewListCmd(s *files.Service) *cobra.Command {
+func NewListCmd() *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list <uri>",
 		Short: "Lists files from specified project.",
@@ -19,7 +19,12 @@ func NewListCmd(s *files.Service) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			uri := args[0]
 
-			err := s.RunList(format, short, uri)
+			s, err := filescmd.GetService()
+			if err != nil {
+				// TODO log it
+			}
+
+			err = s.RunList(format, short, uri)
 			if err != nil {
 				// TODO log it
 			}

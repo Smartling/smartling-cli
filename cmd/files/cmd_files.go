@@ -1,19 +1,13 @@
 package files
 
 import (
-	"github.com/Smartling/smartling-cli/cmd/files/delete"
-	importcmd "github.com/Smartling/smartling-cli/cmd/files/import"
-	"github.com/Smartling/smartling-cli/cmd/files/list"
-	"github.com/Smartling/smartling-cli/cmd/files/pull"
-	"github.com/Smartling/smartling-cli/cmd/files/push"
-	"github.com/Smartling/smartling-cli/cmd/files/rename"
-	"github.com/Smartling/smartling-cli/cmd/files/status"
+	"github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/files"
 
 	"github.com/spf13/cobra"
 )
 
-func NewFilesCmd(s *files.Service) *cobra.Command {
+func NewFilesCmd() *cobra.Command {
 	filesCmd := &cobra.Command{
 		Use:     "files",
 		Aliases: []string{"f"},
@@ -24,13 +18,22 @@ func NewFilesCmd(s *files.Service) *cobra.Command {
 		},
 	}
 
-	filesCmd.AddCommand(delete.NewDeleteCmd(s))
-	filesCmd.AddCommand(importcmd.NewImportCmd(s))
-	filesCmd.AddCommand(list.NewListCmd(s))
-	filesCmd.AddCommand(pull.NewPullCmd(s))
-	filesCmd.AddCommand(push.NewPushCmd(s))
-	filesCmd.AddCommand(rename.NewRenameCmd(s))
-	filesCmd.AddCommand(status.NewStatusCmd(s))
-
 	return filesCmd
+}
+
+func GetService() (*files.Service, error) {
+	client, err := cmd.Client()
+	if err != nil {
+		return nil, err
+	}
+	cnf, err := cmd.Config()
+	if err != nil {
+		return nil, err
+	}
+	fileConfig, err := cnf.GetFileConfig(cmd.ConfigFile())
+	if err != nil {
+		return nil, err
+	}
+	srv := files.NewService(&client, cnf, fileConfig)
+	return srv, nil
 }

@@ -1,12 +1,13 @@
 package importcmd
 
 import (
+	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
 
 	"github.com/spf13/cobra"
 )
 
-func NewImportCmd(s *files.Service) *cobra.Command {
+func NewImportCmd() *cobra.Command {
 	var (
 		published       bool
 		postTranslation bool
@@ -23,6 +24,11 @@ func NewImportCmd(s *files.Service) *cobra.Command {
 			file := args[1]
 			locale := args[2]
 
+			s, err := filescmd.GetService()
+			if err != nil {
+				// TODO log it
+			}
+
 			params := files.ImportParams{
 				URI:             uri,
 				File:            file,
@@ -31,7 +37,7 @@ func NewImportCmd(s *files.Service) *cobra.Command {
 				PostTranslation: postTranslation,
 				Overwrite:       overwrite,
 			}
-			err := s.RunImport(params)
+			err = s.RunImport(params)
 			if err != nil {
 				// TODO log it
 			}
