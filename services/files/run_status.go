@@ -9,7 +9,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/progress"
-	table2 "github.com/Smartling/smartling-cli/services/helpers/table"
+	"github.com/Smartling/smartling-cli/services/helpers/table"
 
 	sdk "github.com/Smartling/api-sdk-go"
 )
@@ -37,7 +37,7 @@ func (s Service) RunStatus(params StatusParams) error {
 		return err
 	}
 
-	var table = table2.NewTableWriter(os.Stdout)
+	var tableWriter = table.NewTableWriter(os.Stdout)
 
 	var progress = progress.Progress{
 		Total: len(files),
@@ -108,7 +108,7 @@ func (s Service) RunStatus(params StatusParams) error {
 				state = "missing"
 			}
 
-			writeFileStatus(table, map[string]string{
+			writeFileStatus(tableWriter, map[string]string{
 				"Path":     path,
 				"Locale":   locale,
 				"State":    state,
@@ -119,7 +119,7 @@ func (s Service) RunStatus(params StatusParams) error {
 		}
 	}
 
-	err = table2.Render(table)
+	err = table.Render(tableWriter)
 	if err != nil {
 		return err
 	}
