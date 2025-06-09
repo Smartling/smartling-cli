@@ -8,11 +8,12 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/files/push"
 	"github.com/Smartling/smartling-cli/cmd/files/rename"
 	"github.com/Smartling/smartling-cli/cmd/files/status"
+	"github.com/Smartling/smartling-cli/services/files"
 
 	"github.com/spf13/cobra"
 )
 
-func NewFilesCmd() *cobra.Command {
+func NewFilesCmd(s *files.Service) *cobra.Command {
 	filesCmd := &cobra.Command{
 		Use:     "files",
 		Aliases: []string{"f"},
@@ -23,13 +24,13 @@ func NewFilesCmd() *cobra.Command {
 		},
 	}
 
-	filesCmd.AddCommand(delete.NewDeleteCmd())
-	filesCmd.AddCommand(importcmd.NewImportCmd())
-	filesCmd.AddCommand(list.NewListCmd())
-	filesCmd.AddCommand(pull.NewPullCmd())
-	filesCmd.AddCommand(push.NewPushCmd())
-	filesCmd.AddCommand(rename.NewRenameCmd())
-	filesCmd.AddCommand(status.NewStatusCmd())
+	filesCmd.AddCommand(delete.NewDeleteCmd(s))
+	filesCmd.AddCommand(importcmd.NewImportCmd(s))
+	filesCmd.AddCommand(list.NewListCmd(s))
+	filesCmd.AddCommand(pull.NewPullCmd(s))
+	filesCmd.AddCommand(push.NewPushCmd(s))
+	filesCmd.AddCommand(rename.NewRenameCmd(s))
+	filesCmd.AddCommand(status.NewStatusCmd(s))
 
 	return filesCmd
 }

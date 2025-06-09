@@ -3,13 +3,15 @@ package init
 import (
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+
+	sdk "github.com/Smartling/api-sdk-go"
 )
 
 type Service struct {
-	Config          config.Config
-	CliClientConfig client.Config
+	Client sdk.ClientInterface
+	Config config.Config
 }
 
-func NewService(config config.Config, cliClientConfig client.Config) *Service {
-	return &Service{Config: config, CliClientConfig: cliClientConfig}
+func NewService(client sdk.ClientInterface, config config.Config, cliClientConfig client.Config) *Service {
+	return &Service{Client: client, Config: config}
 }

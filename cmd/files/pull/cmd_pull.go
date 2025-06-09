@@ -15,7 +15,7 @@ var (
 	format    string
 )
 
-func NewPullCmd(s files.Service) *cobra.Command {
+func NewPullCmd(s *files.Service) *cobra.Command {
 	pullCmd := &cobra.Command{
 		Use:   "pull <uri>",
 		Short: "Pulls specified files from server.",

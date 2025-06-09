@@ -10,7 +10,7 @@ var (
 	dryRun bool
 )
 
-func NewInitCmd(s init.Service, verbose uint8) *cobra.Command {
+func NewInitCmd(s *init.Service) *cobra.Command {
 	initCmd := &cobra.Command{
 		Use:     "init",
 		Aliases: []string{"i"},
@@ -19,7 +19,7 @@ func NewInitCmd(s init.Service, verbose uint8) *cobra.Command {
 essentially, assisting user in creating
 configuration file.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := s.RunInit(dryRun, verbose)
+			err := s.RunInit(dryRun)
 			if err != nil {
 				// TODO log it
 			}

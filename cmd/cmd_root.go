@@ -4,14 +4,21 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/cmd/init"
 	"github.com/Smartling/smartling-cli/cmd/projects"
+	files2 "github.com/Smartling/smartling-cli/services/files"
+	
+github.com/Smartling/smartling-cli/services/helpers/client"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
+	init
 	"github.com/Smartling/smartling-cli/services/helpers/client"
+	projects2 "github.com/Smartling/smartling-cli/services/projects"
 
+	"github.com/kovetskiy/lorg"
 	"github.com/spf13/cobra"
 )
 
 var (
 	verbose      uint8
-	config       string
+	configFile   string
 	project      string
 	account      string
 	user         string
@@ -30,7 +37,7 @@ var (
 	smartlingURL string
 )
 
-func NewRootCmd() *cobra.Command {
+func NewRootCmd(logger lorg.Logger) (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:     "smartling-cli",
 		Short:   "Manage translation files using Smartling CLI.",
@@ -38,11 +45,11 @@ func NewRootCmd() *cobra.Command {
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
 		Run: func(cmd *cobra.Command, args []string) {
-			rootSrv.Run(rootSrv.Params{})
+			//rootSrv.Run(rootSrv.Params{})
 		},
 	}
 
-	rootCmd.PersistentFlags().StringVarP(&config, "config", "c", "", `Config file in YAML format.
+	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", `Config file in YAML format.
 By default CLI will look for file named
 "smartling.yml" in current directory and in all
 intermediate parents, emulating git behavior.`)
@@ -75,11 +82,44 @@ executed for at most <number> of threads.
 purposes.`)
 	rootCmd.PersistentFlags().Uint8VarP(&verbose, "verbose", "v", 0, "Verbose logging")
 
-	rootCmd.AddCommand(init.NewInitCmd())
-	rootCmd.AddCommand(files.NewFilesCmd())
-	rootCmd.AddCommand(projects.NewProjectsCmd())
+	cliClientConfig := client.Config{
+		Insecure:     insecure,
+		Proxy:        proxy,
+		SmartlingURL: smartlingURL,
+	}
+	params := config.Params{
+		Directory:  directory,
+		File:       configFile,
+		User:       user,
+		Secret:     secret,
+		Account:    account,
+		Project:    project,
+		Threads:    threads,
+		IsInit:     false,
+		IsFiles:    false,
+		IsProjects: false,
+		IsList:     false,
+	}
+	cnf, err := config.BuildConfigFromFlags(params)
+	if err != nil {
+		return nil, err
+	}
+	fileConfig, err := cnf.GetFileConfig(configFile)
+	if err != nil {
+		return nil, err
+	}
 
-	return rootCmd
+	client, err := client.CreateClient(cliClientConfig, cnf, logger, verbose)
+	initSrv := init2.NewService(client, cnf, cliClientConfig)
+	rootCmd.AddCommand(init.NewInitCmd(initSrv))
+
+	filesSrv := files2.NewService(client, cnf, fileConfig)
+	rootCmd.AddCommand(files.NewFilesCmd(filesSrv))
+
+	projectsSrv := projects2.NewService(client, cnf)
+	rootCmd.AddCommand(projects.NewProjectsCmd(projectsSrv))
+
+	return rootCmd, nil
 }
 
 func Verbose() uint8 {

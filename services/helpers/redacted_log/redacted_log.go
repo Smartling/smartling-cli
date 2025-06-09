@@ -6,8 +6,6 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/Smartling/smartling-cli/services/helpers/config"
-
 	"github.com/kovetskiy/lorg"
 )
 
@@ -47,11 +45,8 @@ func (log *RedactedLog) HideString(value string) {
 	log.writer.patterns = append(log.writer.patterns, pattern)
 }
 
-func (log *RedactedLog) HideFromConfig(config config.Config) {
-	log.HideString(config.Secret)
-	log.HideString(config.UserID)
-	log.HideString(config.AccountID)
-	log.HideString(config.ProjectID)
+func (log *RedactedLog) HideFromConfig(value string) {
+	log.HideString(value)
 }
 
 func (log *RedactedLog) GetWriter() io.Writer {

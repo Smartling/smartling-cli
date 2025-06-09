@@ -8,7 +8,6 @@ import (
 	"regexp"
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
-	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 
 	sdk "github.com/Smartling/api-sdk-go"
@@ -16,7 +15,7 @@ import (
 	"github.com/tcnksm/go-input"
 )
 
-func (s Service) RunInit(dryRun bool, verbose uint8) error {
+func (s Service) RunInit(dryRun bool) error {
 	fmt.Printf("Generating %s...\n\n", s.Config.Path)
 
 	prompt := func(
@@ -114,19 +113,14 @@ func (s Service) RunInit(dryRun bool, verbose uint8) error {
 		)
 	}
 
-	logger.HideFromConfig(s.Config)
+	logger.HideString(s.Config.Secret)
+	logger.HideString(s.Config.UserID)
+	logger.HideString(s.Config.AccountID)
+	logger.HideString(s.Config.ProjectID)
 
 	fmt.Println("Testing connection to Smartling API...")
 
-	client, err := client.CreateClient(s.Config, s.CliClientConfig, logger, verbose)
-	if err != nil {
-		return hierr.Errorf(
-			err,
-			"unable to create client for testing connection",
-		)
-	}
-
-	err = client.Authenticate()
+	err = s.Client.Authenticate()
 	if err != nil {
 		if _, ok := err.(sdk.NotAuthorizedError); ok {
 			return clierror.NewError(

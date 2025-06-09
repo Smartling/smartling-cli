@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewPushCmd(s files.Service) *cobra.Command {
+func NewPushCmd(s *files.Service) *cobra.Command {
 	var (
 		file       string
 		uri        string

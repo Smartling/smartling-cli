@@ -12,7 +12,7 @@ var (
 	format string
 )
 
-func NewLocatesCmd(s projects.Service) *cobra.Command {
+func NewLocatesCmd(s *projects.Service) *cobra.Command {
 	locatesCmd := &cobra.Command{
 		Use:   "locates",
 		Short: "Display list of target locales.",

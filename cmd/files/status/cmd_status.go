@@ -11,7 +11,7 @@ var (
 	directory string
 )
 
-func NewStatusCmd(s files.Service) *cobra.Command {
+func NewStatusCmd(s *files.Service) *cobra.Command {
 	statusCmd := &cobra.Command{
 		Use:   "status <uri>",
 		Short: "Shows file translation status.",

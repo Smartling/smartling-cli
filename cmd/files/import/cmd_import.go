@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewImportCmd(s files.Service) *cobra.Command {
+func NewImportCmd(s *files.Service) *cobra.Command {
 	var (
 		published       bool
 		postTranslation bool

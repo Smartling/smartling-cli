@@ -11,7 +11,7 @@ var (
 	new string
 )
 
-func NewRenameCmd(s files.Service) *cobra.Command {
+func NewRenameCmd(s *files.Service) *cobra.Command {
 	renameCmd := &cobra.Command{
 		Use:   "rename <old> <new>",
 		Short: "Renames given file by old URI into new URI.",

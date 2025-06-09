@@ -11,7 +11,7 @@ var (
 	short  bool
 )
 
-func NewListCmd(s files.Service) *cobra.Command {
+func NewListCmd(s *files.Service) *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list <uri>",
 		Short: "Lists files from specified project.",

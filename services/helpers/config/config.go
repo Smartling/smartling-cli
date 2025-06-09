@@ -8,7 +8,7 @@ import (
 	"dario.cat/mergo"
 	"github.com/gobwas/glob"
 	"github.com/goccy/go-yaml"
-	"github.com/reconquest/hierr-go"
+	
 )
 
 type FileConfig struct {
@@ -27,33 +27,13 @@ type Config struct {
 	Secret    string `yaml:"secret"`
 	AccountID string `yaml:"account_id"`
 	ProjectID string `yaml:"project_id,omitempty"`
-	Threads   int    `yaml:"threads"`
+	Threads   uint32 `yaml:"threads"`
 
 	Files map[string]FileConfig `yaml:"files"`
 
 	Proxy string `yaml:"proxy,omitempty"`
 
 	Path string `yaml:"-"`
-}
-
-func loadConfigFromFile(filename string) (Config, error) {
-	config := Config{
-		Path: filename,
-	}
-
-	data, err := os.ReadFile(filename)
-	if err != nil && os.IsNotExist(err) {
-		return config, nil
-	}
-	if err != nil {
-		return config, err
-	}
-
-	if err := yaml.Unmarshal(data, &config); err != nil {
-		return config, err
-	}
-
-	return config, nil
 }
 
 func (config *Config) GetFileConfig(path string) (FileConfig, error) {
@@ -98,4 +78,24 @@ func (config *Config) GetFileConfig(path string) (FileConfig, error) {
 	}
 
 	return match, nil
+}
+
+func LoadConfigFromFile(filename string) (Config, error) {
+	config := Config{
+		Path: filename,
+	}
+
+	data, err := os.ReadFile(filename)
+	if err != nil && os.IsNotExist(err) {
+		return config, nil
+	}
+	if err != nil {
+		return config, err
+	}
+
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return config, err
+	}
+
+	return config, nil
 }

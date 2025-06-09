@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewInfoCmd(s projects.Service) *cobra.Command {
+func NewInfoCmd(s *projects.Service) *cobra.Command {
 	infoCmd := &cobra.Command{
 		Use:   "info",
 		Short: "Get project details about specific project.",

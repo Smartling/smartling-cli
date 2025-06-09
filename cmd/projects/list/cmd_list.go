@@ -8,7 +8,7 @@ import (
 
 var short bool
 
-func NewListCmd(s projects.Service) *cobra.Command {
+func NewListCmd(s *projects.Service) *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list",
 		Short: "Lists projects for current account.",

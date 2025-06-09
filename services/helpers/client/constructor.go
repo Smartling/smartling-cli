@@ -16,23 +16,23 @@ import (
 
 var version = "1.7"
 
-func CreateClient(config config.Config, cliClientConfig Config, logger lorg.Logger, verbose uint8) (*sdk.Client, error) {
+func CreateClient(clientConfig Config, config config.Config, logger lorg.Logger, verbose uint8) (*sdk.Client, error) {
 	client := sdk.NewClient(config.UserID, config.Secret)
 
 	var transport http.Transport
 
-	if cliClientConfig.Insecure {
+	if clientConfig.Insecure {
 		transport.TLSClientConfig = &tls.Config{
 			InsecureSkipVerify: true,
 		}
 	}
 
-	if config.Proxy != "" && cliClientConfig.Proxy == "" {
-		cliClientConfig.Proxy = config.Proxy
+	if config.Proxy != "" && clientConfig.Proxy == "" {
+		clientConfig.Proxy = config.Proxy
 	}
 
-	if cliClientConfig.Proxy != "" {
-		proxy, err := url.Parse(cliClientConfig.Proxy)
+	if clientConfig.Proxy != "" {
+		proxy, err := url.Parse(clientConfig.Proxy)
 		if err != nil {
 			return nil, clierror.NewError(
 				hierr.Errorf(
@@ -48,8 +48,8 @@ func CreateClient(config config.Config, cliClientConfig Config, logger lorg.Logg
 		transport.Proxy = http.ProxyURL(proxy)
 	}
 
-	if cliClientConfig.SmartlingURL != "" {
-		client.BaseURL = cliClientConfig.SmartlingURL
+	if clientConfig.SmartlingURL != "" {
+		client.BaseURL = clientConfig.SmartlingURL
 	}
 
 	client.HTTP.Transport = &transport

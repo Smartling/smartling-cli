@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/Smartling/smartling-cli/services/projects"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -14,6 +13,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/redacted_log"
+
 
 	"github.com/docopt/docopt-go"
 	"github.com/kovetskiy/lorg"
@@ -157,10 +157,6 @@ var (
 	logger = redactedlog.NewRedactedLog()
 )
 
-const (
-	defaultConfigName = "smartling.yml"
-)
-
 func main() {
 	usage = os.Expand(usage, func(key string) string {
 		switch key {
@@ -186,11 +182,6 @@ func main() {
 		panic(err)
 	}
 	//
-
-	args, err := docopt.ParseArgs(usage, nil, "smartling "+version)
-	if err != nil {
-		panic(err)
-	}
 
 	logger.ToggleRedact(true)
 
@@ -221,24 +212,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	switch {
-	case args["init"].(bool):
-		err = doInit(config, args)
-
-	case args["projects"].(bool):
-		err = doProjects(config, args)
-
-	case args["files"].(bool):
-		err = doFiles(config, args)
-
-	default:
-		showHelp(args)
-	}
-
-	if err != nil {
-		reportError(err)
-		os.Exit(1)
-	}
 }
 
 func reportError(err error) {
@@ -251,166 +224,8 @@ func reportError(err error) {
 	}
 }
 
-func findConfig(name string) (string, error) {
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		return "", err
-	}
-
-	var path string
-
-	for {
-		path = filepath.Join(dir, name)
-
-		logger.Debugf("looking for config file in: %q", dir)
-
-		_, err = os.Stat(path)
-		if err != nil {
-			if !os.IsNotExist(err) {
-				return "", hierr.Errorf(err, "unable to find config file: %q", path)
-			}
-		} else {
-			logger.Debugf("config file found: %q", path)
-
-			return path, nil
-		}
-
-		if dir == "/" {
-			break
-		}
-
-		dir = filepath.Dir(dir)
-	}
-
-	return "", fmt.Errorf(
-		"no configuration file %q found",
-		name,
-	)
-}
-
-func buildConfigFromFlags(args map[string]interface{}) (config.Config, error) {
-	var (
-		directory, _ = args["--directory"].(string)
-	)
-
-	var err error
-
-	path, _ := args["--config"].(string)
-	if path == "" {
-		path, err = findConfig(
-			filepath.Join(directory, defaultConfigName),
-		)
-		if err != nil {
-			if !args["init"].(bool) {
-				return config.Config{}, clierror.NewError(
-					err,
-
-					`Ensure, that config file exists either in the current `+
-						`directory or in any parent directory.`,
-				)
-			} else {
-				path = "smartling.yml"
-			}
-		}
-	}
-
-	config, err := config.loadConfigFromFile(path)
-	if err != nil {
-		return config, clierror.NewError(
-			hierr.Errorf(err, `failed to load configuration file "%s".`, path),
-			`Check configuration file contents according to documentation.`,
-		)
-	}
-
-	if config.UserID == "" {
-		config.UserID = os.Getenv("SMARTLING_USER_ID")
-	}
-
-	if config.Secret == "" {
-		config.Secret = os.Getenv("SMARTLING_SECRET")
-	}
-
-	if config.ProjectID == "" {
-		config.ProjectID = os.Getenv("SMARTLING_PROJECT_ID")
-	}
-
-	if args["--user"] != nil {
-		config.UserID = args["--user"].(string)
-	}
-
-	if args["--secret"] != nil {
-		config.Secret = args["--secret"].(string)
-	}
-
-	if args["--account"] != nil {
-		config.AccountID = args["--account"].(string)
-	}
-
-	if args["--project"] != nil {
-		config.ProjectID = args["--project"].(string)
-	}
-
-	if !args["init"].(bool) {
-		if config.UserID == "" {
-			return config, clierror.MissingConfigValueError{
-				ConfigPath: config.Path,
-				EnvVarName: "SMARTLING_USER_ID",
-				ValueName:  "user ID",
-				OptionName: "user",
-				KeyName:    "user_id",
-			}
-		}
-
-		if config.Secret == "" {
-			return config, clierror.MissingConfigValueError{
-				ConfigPath: config.path,
-				EnvVarName: "SMARTLING_SECRET",
-				ValueName:  "token secret",
-				OptionName: "secret",
-				KeyName:    "secret",
-			}
-		}
-	}
-
-	logger.HideFromConfig(config)
-
-	switch {
-	case args["files"].(bool), args["projects"].(bool) && !args["list"].(bool):
-		if config.ProjectID == "" {
-			return config, clierror.MissingConfigValueError{
-				ConfigPath: config.path,
-				EnvVarName: "SMARTLING_PROJECT_ID",
-				ValueName:  "project ID",
-				OptionName: "project",
-				KeyName:    "project_id",
-			}
-		}
-	}
-
-	threads, err := strconv.ParseInt(args["--threads"].(string), 10, 0)
-	if err != nil {
-		return config, clierror.InvalidConfigValueError{
-			ValueName:   "threads",
-			Description: "should be valid integer number",
-		}
-	}
-
-	if threads <= 0 {
-		return config, clierror.InvalidConfigValueError{
-			ValueName:   "threads",
-			Description: "should be positive integer number",
-		}
-	}
-
-	if config.Threads == 0 {
-		config.Threads = int(threads)
-	}
-
-	return config, nil
-}
-
 func doProjects(config config.Config, args map[string]interface{}, cliClientConfig client.Config) error {
-	client, err := client.CreateClient(config, cliClientConfig)
+	client, err := client.CreateClient(cliClientConfig, config)
 	if err != nil {
 		return err
 	}
@@ -444,7 +259,7 @@ func doProjects(config config.Config, args map[string]interface{}, cliClientConf
 }
 
 func doFiles(config config.Config, args map[string]interface{}, cliClientConfig client.Config) error {
-	client, err := client.CreateClient(config, cliClientConfig)
+	client, err := client.CreateClient(cliClientConfig, config)
 	if err != nil {
 		return err
 	}

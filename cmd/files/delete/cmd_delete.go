@@ -8,7 +8,7 @@ import (
 
 var uri string
 
-func NewDeleteCmd(s files.Service) *cobra.Command {
+func NewDeleteCmd(s *files.Service) *cobra.Command {
 	deleteCmd := &cobra.Command{
 		Use:   "delete <uri>",
 		Short: "Deletes given file from Smartling.",
