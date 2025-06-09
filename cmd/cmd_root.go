@@ -4,13 +4,11 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/cmd/init"
 	"github.com/Smartling/smartling-cli/cmd/projects"
-	files2 "github.com/Smartling/smartling-cli/services/files"
-	
-github.com/Smartling/smartling-cli/services/helpers/client"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
-	init
+	filessrv "github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/client"
-	projects2 "github.com/Smartling/smartling-cli/services/projects"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
+	inits
+	projectssrv "github.com/Smartling/smartling-cli/services/projects"
 
 	"github.com/kovetskiy/lorg"
 	"github.com/spf13/cobra"
@@ -110,13 +108,13 @@ purposes.`)
 	}
 
 	client, err := client.CreateClient(cliClientConfig, cnf, logger, verbose)
-	initSrv := init2.NewService(client, cnf, cliClientConfig)
+	initSrv := initsrv.NewService(client, cnf, cliClientConfig)
 	rootCmd.AddCommand(init.NewInitCmd(initSrv))
 
-	filesSrv := files2.NewService(client, cnf, fileConfig)
+	filesSrv := filessrv.NewService(client, cnf, fileConfig)
 	rootCmd.AddCommand(files.NewFilesCmd(filesSrv))
 
-	projectsSrv := projects2.NewService(client, cnf)
+	projectsSrv := projectssrv.NewService(client, cnf)
 	rootCmd.AddCommand(projects.NewProjectsCmd(projectsSrv))
 
 	return rootCmd, nil
