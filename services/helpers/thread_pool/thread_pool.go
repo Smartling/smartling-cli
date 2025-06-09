@@ -6,13 +6,13 @@ import (
 
 type ThreadPool struct {
 	available chan struct{}
-	size      int
+	size      uint32
 	group     sync.WaitGroup
 }
 
-func NewThreadPool(size int) *ThreadPool {
+func NewThreadPool(size uint32) *ThreadPool {
 	available := make(chan struct{}, size)
-	for i := 0; i < size; i++ {
+	for i := uint32(0); i < size; i++ {
 		available <- struct{}{}
 	}
 
