@@ -7,7 +7,9 @@ import (
 	filessrv "github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
-	redactedlog "github.com/Smartling/
+	redactedlog "github.com/Smartling/smartling-cli/services/helpers/redacted_log"
+	initializesrv "github.com/Smartling/smartling-cli/services/init"
+	
 	projectssrv "github.com/Smartling/smartling-cli/services/projects"
 
 	"github.com/kovetskiy/lorg"
@@ -131,8 +133,8 @@ purposes.`)
 	}
 
 	client, err := client.CreateClient(cliClientConfig, cnf, logger, verbose)
-	initSrv := initsrv.NewService(client, cnf, cliClientConfig)
-	rootCmd.AddCommand(init.NewInitCmd(initSrv))
+	initSrv := initializesrv.NewService(client, cnf, cliClientConfig)
+	rootCmd.AddCommand(initialize.NewInitCmd(initSrv))
 
 	filesSrv := filessrv.NewService(client, cnf, fileConfig)
 	rootCmd.AddCommand(files.NewFilesCmd(filesSrv))

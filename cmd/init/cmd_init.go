@@ -1,4 +1,4 @@
-package init
+package initialize
 
 import (
 	"github.com/Smartling/smartling-cli/services/init"
@@ -10,7 +10,7 @@ var (
 	dryRun bool
 )
 
-func NewInitCmd(s *init.Service) *cobra.Command {
+func NewInitCmd(s *initialize.Service) *cobra.Command {
 	initCmd := &cobra.Command{
 		Use:     "init",
 		Aliases: []string{"i"},

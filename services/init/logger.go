@@ -1,4 +1,4 @@
-package init
+package initialize
 
 import (
 	redactedlog "github.com/Smartling/smartling-cli/services/helpers/redacted_log"

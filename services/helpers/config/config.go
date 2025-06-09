@@ -8,7 +8,7 @@ import (
 	"dario.cat/mergo"
 	"github.com/gobwas/glob"
 	"github.com/goccy/go-yaml"
-	
+	"github.com/reconquest/hierr-go"
 )
 
 type FileConfig struct {

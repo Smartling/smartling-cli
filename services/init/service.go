@@ -1,4 +1,4 @@
-package init
+package initialize
 
 import (
 	"github.com/Smartling/smartling-cli/services/helpers/client"
