@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	redactedlog "github.com/Smartling/smartling-cli/services/helpers/redacted_log"
@@ -29,6 +31,11 @@ var (
 	insecure     bool
 	proxy        string
 	smartlingURL string
+
+	isInit     bool
+	isFiles    bool
+	isProjects bool
+	isList     bool
 )
 
 func NewRootCmd() (*cobra.Command, error) {
@@ -38,6 +45,13 @@ func NewRootCmd() (*cobra.Command, error) {
 		Version: "1.7",
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			path := cmd.CommandPath()
+			isInit = strings.HasPrefix(path, "my-cli init")
+			isFiles = strings.HasPrefix(path, "my-cli init")
+			isProjects = strings.HasPrefix(path, "my-cli init")
+			isList = strings.HasPrefix(path, "my-cli init")
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 
 		},
@@ -111,22 +125,6 @@ func CLIClientConfig() client.Config {
 	}
 }
 
-func ConfigParams() config.Params {
-	return config.Params{
-		Directory:  directory,
-		File:       configFile,
-		User:       user,
-		Secret:     secret,
-		Account:    account,
-		Project:    project,
-		Threads:    threads,
-		IsInit:     false,
-		IsFiles:    false,
-		IsProjects: false,
-		IsList:     false,
-	}
-}
-
 func Config() (config.Config, error) {
 	params := config.Params{
 		Directory:  directory,
@@ -136,10 +134,10 @@ func Config() (config.Config, error) {
 		Account:    account,
 		Project:    project,
 		Threads:    threads,
-		IsInit:     false,
-		IsFiles:    false,
-		IsProjects: false,
-		IsList:     false,
+		IsInit:     isInit,
+		IsFiles:    isFiles,
+		IsProjects: isProjects,
+		IsList:     isList,
 	}
 	cnf, err := config.BuildConfigFromFlags(params)
 	if err != nil {

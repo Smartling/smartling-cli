@@ -2,6 +2,7 @@ package rename
 
 import (
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
+
 	"github.com/spf13/cobra"
 )
 
