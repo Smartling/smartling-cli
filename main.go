@@ -41,7 +41,6 @@ func main() {
 	projectsCmd.AddCommand(listprojects.NewListCmd())
 	projectsCmd.AddCommand(info.NewInfoCmd())
 	projectsCmd.AddCommand(locales.NewLocatesCmd())
-	//
 
 	if err := rootCmd.Execute(); err != nil {
 		panic(err)

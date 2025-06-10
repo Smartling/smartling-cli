@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	redactedlog "github.com/Smartling/smartling-cli/services/helpers/redacted_log"
+
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/kovetskiy/lorg"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +39,7 @@ func NewRootCmd() (*cobra.Command, error) {
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
 		Run: func(cmd *cobra.Command, args []string) {
-			//rootSrv.Run(rootSrv.Params{})
+
 		},
 	}
 
