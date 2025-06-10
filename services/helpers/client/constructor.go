@@ -8,6 +8,7 @@ import (
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/kovetskiy/lorg"
@@ -16,7 +17,7 @@ import (
 
 var version = "1.7"
 
-func CreateClient(clientConfig Config, config config.Config, logger lorg.Logger, verbose uint8) (*sdk.Client, error) {
+func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sdk.Client, error) {
 	client := sdk.NewClient(config.UserID, config.Secret)
 
 	var transport http.Transport
@@ -55,9 +56,9 @@ func CreateClient(clientConfig Config, config config.Config, logger lorg.Logger,
 	client.HTTP.Transport = &transport
 	client.UserAgent = "smartling-cli/" + version
 
-	setLogger(client, logger, verbose)
+	setLogger(client, rlog.Logger(), verbose)
 
-	redactedLogger.HideRegexp(
+	rlog.HideRegexp(
 		regexp.MustCompile(`"(?:access|refresh)Token": "([^"]+)"`),
 	)
 

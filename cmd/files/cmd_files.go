@@ -26,9 +26,7 @@ func InitFilesSrv() (*files.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger := cmd.Logger()
-	files.InitLogger(logger)
-	cnf, err := cmd.Config(logger)
+	cnf, err := cmd.Config()
 	if err != nil {
 		return nil, err
 	}

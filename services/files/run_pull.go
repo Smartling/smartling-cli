@@ -11,6 +11,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/reader"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	threadpool "github.com/Smartling/smartling-cli/services/helpers/thread_pool"
 
 	sdk "github.com/Smartling/api-sdk-go"
@@ -56,7 +57,7 @@ func (s Service) RunPull(params PullParams) error {
 			pool.Do(func() {
 				err := s.downloadFileTranslations(params, file)
 				if err != nil {
-					logger.Error(err)
+					rlog.Error(err)
 				}
 			})
 		}(file)

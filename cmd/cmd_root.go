@@ -5,7 +5,7 @@ import (
 
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
-	redactedlog "github.com/Smartling/smartling-cli/services/helpers/redacted_log"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/kovetskiy/lorg"
@@ -93,28 +93,25 @@ purposes.`)
 	return rootCmd, nil
 }
 
-func Logger() *redactedlog.RedactedLog {
-	logger := redactedlog.NewRedactedLog()
-
-	logger.ToggleRedact(true)
-
-	logger.SetFormat(lorg.NewFormat("* ${time} ${level:[%s]:right} %s"))
-	logger.SetIndentLines(true)
+func ConfigureLogger() {
+	rlog.Init()
+	rlog.ToggleRedact(true)
+	rlog.SetFormat(lorg.NewFormat("* ${time} ${level:[%s]:right} %s"))
+	rlog.SetIndentLines(true)
 	switch verbose {
 	case 0:
 		// nothing do to
 
 	case 1:
-		logger.SetLevel(lorg.LevelInfo)
+		rlog.SetLevel(lorg.LevelInfo)
 
 	case 2:
-		logger.SetLevel(lorg.LevelDebug)
+		rlog.SetLevel(lorg.LevelDebug)
 
 	default:
-		logger.ToggleRedact(false)
-		logger.SetLevel(lorg.LevelDebug)
+		rlog.ToggleRedact(false)
+		rlog.SetLevel(lorg.LevelDebug)
 	}
-	return logger
 }
 
 func CLIClientConfig() client.Config {
@@ -125,7 +122,7 @@ func CLIClientConfig() client.Config {
 	}
 }
 
-func Config(logger *redactedlog.RedactedLog) (config.Config, error) {
+func Config() (config.Config, error) {
 	params := config.Params{
 		Directory:  directory,
 		File:       configFile,
@@ -139,7 +136,7 @@ func Config(logger *redactedlog.RedactedLog) (config.Config, error) {
 		IsProjects: isProjects,
 		IsList:     isList,
 	}
-	cnf, err := config.BuildConfigFromFlags(params, logger)
+	cnf, err := config.BuildConfigFromFlags(params)
 	if err != nil {
 		return config.Config{}, err
 	}
@@ -147,13 +144,11 @@ func Config(logger *redactedlog.RedactedLog) (config.Config, error) {
 }
 
 func Client() (sdk.Client, error) {
-	logger := Logger()
-	cnf, err := Config(logger)
+	cnf, err := Config()
 	if err != nil {
 		return sdk.Client{}, err
 	}
-	client.InitLogger(logger)
-	client, err := client.CreateClient(CLIClientConfig(), cnf, logger, verbose)
+	client, err := client.CreateClient(CLIClientConfig(), cnf, verbose)
 	if err != nil {
 		return sdk.Client{}, err
 	}

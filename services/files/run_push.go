@@ -9,6 +9,7 @@ import (
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
@@ -42,7 +43,7 @@ func (s Service) RunPush(params PushParams) error {
 			)
 		}
 
-		logger.Infof("autodetected branch name: %s", params.Branch)
+		rlog.Infof("autodetected branch name: %s", params.Branch)
 	}
 
 	branch := params.Branch

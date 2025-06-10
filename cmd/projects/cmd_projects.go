@@ -26,8 +26,7 @@ func GetService() (*projects.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger := cmd.Logger()
-	cnf, err := cmd.Config(logger)
+	cnf, err := cmd.Config()
 	if err != nil {
 		return nil, err
 	}

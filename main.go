@@ -18,6 +18,7 @@ import (
 )
 
 func main() {
+	cmd.ConfigureLogger()
 	rootCmd, err := cmd.NewRootCmd()
 	if err != nil {
 		panic(err)

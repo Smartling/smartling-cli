@@ -9,6 +9,7 @@ import (
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
@@ -113,10 +114,10 @@ func (s Service) RunInit(dryRun bool) error {
 		)
 	}
 
-	logger.HideString(s.Config.Secret)
-	logger.HideString(s.Config.UserID)
-	logger.HideString(s.Config.AccountID)
-	logger.HideString(s.Config.ProjectID)
+	rlog.HideString(s.Config.Secret)
+	rlog.HideString(s.Config.UserID)
+	rlog.HideString(s.Config.AccountID)
+	rlog.HideString(s.Config.ProjectID)
 
 	fmt.Println("Testing connection to Smartling API...")
 

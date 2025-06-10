@@ -1,8 +1,8 @@
 package rename
 
 import (
-	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
@@ -23,13 +23,13 @@ func NewRenameCmd() *cobra.Command {
 
 			s, err := filescmd.InitFilesSrv()
 			if err != nil {
-				rootcmd.Logger().Errorf("failed to get files service: %s", err)
+				rlog.Errorf("failed to get files service: %s", err)
 				return
 			}
 
 			err = s.RunRename(old, new)
 			if err != nil {
-				rootcmd.Logger().Errorf("failed to run rename: %s", err)
+				rlog.Errorf("failed to run rename: %s", err)
 				return
 			}
 		},

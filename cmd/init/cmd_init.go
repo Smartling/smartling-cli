@@ -2,6 +2,7 @@ package initialize
 
 import (
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/init"
 
 	"github.com/spf13/cobra"
@@ -22,12 +23,12 @@ configuration file.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			s, err := GetService()
 			if err != nil {
-				rootcmd.Logger().Errorf("failed to get init service: %s", err)
+				rlog.Errorf("failed to get init service: %s", err)
 				return
 			}
 			err = s.RunInit(dryRun)
 			if err != nil {
-				rootcmd.Logger().Errorf("failed to run init: %s", err)
+				rlog.Errorf("failed to run init: %s", err)
 				return
 			}
 		},
@@ -42,9 +43,7 @@ func GetService() (*initialize.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger := rootcmd.Logger()
-	initialize.InitLogger(logger)
-	cnf, err := rootcmd.Config(logger)
+	cnf, err := rootcmd.Config()
 	if err != nil {
 		return nil, err
 	}

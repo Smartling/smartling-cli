@@ -1,9 +1,9 @@
 package pull
 
 import (
-	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
@@ -27,7 +27,7 @@ func NewPullCmd() *cobra.Command {
 
 			s, err := filescmd.InitFilesSrv()
 			if err != nil {
-				rootcmd.Logger().Errorf("failed to get files service: %s", err)
+				rlog.Errorf("failed to get files service: %s", err)
 				return
 			}
 
@@ -42,7 +42,7 @@ func NewPullCmd() *cobra.Command {
 			}
 			err = s.RunPull(params)
 			if err != nil {
-				rootcmd.Logger().Errorf("failed to run pull: %s", err)
+				rlog.Errorf("failed to run pull: %s", err)
 				return
 			}
 		},

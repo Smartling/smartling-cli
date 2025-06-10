@@ -1,4 +1,4 @@
-package redactedlog
+package rlog
 
 import (
 	"fmt"
@@ -9,32 +9,23 @@ import (
 	"github.com/kovetskiy/lorg"
 )
 
+var logger *RedactedLog
+
 type RedactedLog struct {
 	*lorg.Log
 
 	writer *redactedWriter
 }
 
-func NewRedactedLog() *RedactedLog {
-	log := &RedactedLog{
+func Init() {
+	logger = &RedactedLog{
 		Log:    lorg.NewLog(),
 		writer: &redactedWriter{},
 	}
-
-	log.SetOutput(log.writer)
-
-	return log
+	logger.SetOutput(logger.writer)
 }
 
-func (log *RedactedLog) ToggleRedact(enable bool) {
-	log.writer.enabled = enable
-}
-
-func (log *RedactedLog) HideRegexp(pattern *regexp.Regexp) {
-	log.writer.patterns = append(log.writer.patterns, pattern)
-}
-
-func (log *RedactedLog) HideString(value string) {
+func (log *RedactedLog) hideString(value string) {
 	pattern := regexp.MustCompile(
 		fmt.Sprintf(
 			"(%s)",
@@ -42,15 +33,43 @@ func (log *RedactedLog) HideString(value string) {
 		),
 	)
 
-	log.writer.patterns = append(log.writer.patterns, pattern)
+	logger.writer.patterns = append(logger.writer.patterns, pattern)
 }
 
-func (log *RedactedLog) HideFromConfig(value string) {
-	log.HideString(value)
+func ToggleRedact(enable bool) {
+	logger.writer.enabled = enable
 }
 
-func (log *RedactedLog) GetWriter() io.Writer {
-	return log.writer
+func HideRegexp(pattern *regexp.Regexp) {
+	logger.writer.patterns = append(logger.writer.patterns, pattern)
+}
+
+func HideFromConfig(value string) {
+	logger.hideString(value)
+}
+
+func HideString(value string) {
+	logger.hideString(value)
+}
+
+func SetFormat(format lorg.Formatter) {
+	logger.SetFormat(format)
+}
+
+func SetIndentLines(value bool) {
+	logger.SetIndentLines(value)
+}
+
+func SetLevel(level lorg.Level) {
+	logger.SetLevel(level)
+}
+
+func GetWriter() io.Writer {
+	return logger.writer
+}
+
+func Logger() *RedactedLog {
+	return logger
 }
 
 type redactedWriter struct {
