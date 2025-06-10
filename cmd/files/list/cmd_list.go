@@ -20,7 +20,7 @@ func NewListCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			uri := args[0]
 
-			s, err := filescmd.GetService()
+			s, err := filescmd.InitFilesSrv()
 			if err != nil {
 				rootcmd.Logger().Errorf("failed to get files service: %s", err)
 				return

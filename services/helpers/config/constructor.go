@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	redactedlog "github.com/Smartling/smartling-cli/services/helpers/redacted_log"
 
 	"github.com/reconquest/hierr-go"
 )
@@ -28,13 +29,14 @@ type Params struct {
 	IsList     bool
 }
 
-func BuildConfigFromFlags(params Params) (Config, error) {
+func BuildConfigFromFlags(params Params, logger *redactedlog.RedactedLog) (Config, error) {
 	var err error
 
 	path := params.File
 	if path == "" {
 		path, err = findConfig(
 			filepath.Join(params.Directory, defaultConfigName),
+			logger,
 		)
 		if err != nil {
 			if !params.IsInit {
@@ -108,10 +110,10 @@ func BuildConfigFromFlags(params Params) (Config, error) {
 		}
 	}
 
-	redactedLogger.HideString(config.Secret)
-	redactedLogger.HideString(config.UserID)
-	redactedLogger.HideString(config.AccountID)
-	redactedLogger.HideString(config.ProjectID)
+	logger.HideString(config.Secret)
+	logger.HideString(config.UserID)
+	logger.HideString(config.AccountID)
+	logger.HideString(config.ProjectID)
 
 	switch {
 	case params.IsFiles, params.IsProjects && !params.IsList:
@@ -133,7 +135,7 @@ func BuildConfigFromFlags(params Params) (Config, error) {
 	return config, nil
 }
 
-func findConfig(name string) (string, error) {
+func findConfig(name string, logger *redactedlog.RedactedLog) (string, error) {
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		return "", err
@@ -144,7 +146,7 @@ func findConfig(name string) (string, error) {
 	for {
 		path = filepath.Join(dir, name)
 
-		redactedLogger.Debugf("looking for config file in: %q", dir)
+		logger.Debugf("looking for config file in: %q", dir)
 
 		_, err = os.Stat(path)
 		if err != nil {
@@ -152,7 +154,7 @@ func findConfig(name string) (string, error) {
 				return "", hierr.Errorf(err, "unable to find config file: %q", path)
 			}
 		} else {
-			redactedLogger.Debugf("config file found: %q", path)
+			logger.Debugf("config file found: %q", path)
 
 			return path, nil
 		}

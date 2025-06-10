@@ -42,7 +42,8 @@ func GetService() (*initialize.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	cnf, err := rootcmd.Config()
+	logger := rootcmd.Logger()
+	cnf, err := rootcmd.Config(logger)
 	if err != nil {
 		return nil, err
 	}

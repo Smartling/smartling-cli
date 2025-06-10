@@ -93,7 +93,7 @@ purposes.`)
 	return rootCmd, nil
 }
 
-func Logger() redactedlog.RedactedLog {
+func Logger() *redactedlog.RedactedLog {
 	logger := redactedlog.NewRedactedLog()
 
 	logger.ToggleRedact(true)
@@ -114,7 +114,7 @@ func Logger() redactedlog.RedactedLog {
 		logger.ToggleRedact(false)
 		logger.SetLevel(lorg.LevelDebug)
 	}
-	return *logger
+	return logger
 }
 
 func CLIClientConfig() client.Config {
@@ -125,7 +125,7 @@ func CLIClientConfig() client.Config {
 	}
 }
 
-func Config() (config.Config, error) {
+func Config(logger *redactedlog.RedactedLog) (config.Config, error) {
 	params := config.Params{
 		Directory:  directory,
 		File:       configFile,
@@ -139,7 +139,7 @@ func Config() (config.Config, error) {
 		IsProjects: isProjects,
 		IsList:     isList,
 	}
-	cnf, err := config.BuildConfigFromFlags(params)
+	cnf, err := config.BuildConfigFromFlags(params, logger)
 	if err != nil {
 		return config.Config{}, err
 	}
@@ -147,11 +147,12 @@ func Config() (config.Config, error) {
 }
 
 func Client() (sdk.Client, error) {
-	cnf, err := Config()
+	logger := Logger()
+	cnf, err := Config(logger)
 	if err != nil {
 		return sdk.Client{}, err
 	}
-	logger := Logger()
+
 	client, err := client.CreateClient(CLIClientConfig(), cnf, logger, verbose)
 	if err != nil {
 		return sdk.Client{}, err

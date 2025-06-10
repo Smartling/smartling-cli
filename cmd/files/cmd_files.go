@@ -21,12 +21,14 @@ func NewFilesCmd() *cobra.Command {
 	return filesCmd
 }
 
-func GetService() (*files.Service, error) {
+func InitFilesSrv() (*files.Service, error) {
 	client, err := cmd.Client()
 	if err != nil {
 		return nil, err
 	}
-	cnf, err := cmd.Config()
+	logger := cmd.Logger()
+	files.InitLogger(logger)
+	cnf, err := cmd.Config(logger)
 	if err != nil {
 		return nil, err
 	}
@@ -35,5 +37,6 @@ func GetService() (*files.Service, error) {
 		return nil, err
 	}
 	srv := files.NewService(&client, cnf, fileConfig)
+
 	return srv, nil
 }

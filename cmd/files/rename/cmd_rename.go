@@ -21,7 +21,7 @@ func NewRenameCmd() *cobra.Command {
 			old = args[0]
 			new = args[1]
 
-			s, err := filescmd.GetService()
+			s, err := filescmd.InitFilesSrv()
 			if err != nil {
 				rootcmd.Logger().Errorf("failed to get files service: %s", err)
 				return

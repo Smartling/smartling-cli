@@ -25,7 +25,7 @@ func NewImportCmd() *cobra.Command {
 			file := args[1]
 			locale := args[2]
 
-			s, err := filescmd.GetService()
+			s, err := filescmd.InitFilesSrv()
 			if err != nil {
 				rootcmd.Logger().Errorf("failed to get files service: %s", err)
 				return
