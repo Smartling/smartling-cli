@@ -1,6 +1,7 @@
 package importcmd
 
 import (
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
 
@@ -26,7 +27,8 @@ func NewImportCmd() *cobra.Command {
 
 			s, err := filescmd.GetService()
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to get files service: %s", err)
+				return
 			}
 
 			params := files.ImportParams{
@@ -39,7 +41,8 @@ func NewImportCmd() *cobra.Command {
 			}
 			err = s.RunImport(params)
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to run import: %s", err)
+				return
 			}
 		},
 	}

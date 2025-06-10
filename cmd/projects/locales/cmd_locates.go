@@ -1,6 +1,7 @@
 package locales
 
 import (
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
 	"github.com/Smartling/smartling-cli/services/projects"
 
@@ -21,7 +22,8 @@ func NewLocatesCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			s, err := projectscmd.GetService()
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to get project service: %s", err)
+				return
 			}
 
 			params := projects.LocalesParams{
@@ -31,7 +33,8 @@ func NewLocatesCmd() *cobra.Command {
 			}
 			err = s.RunLocales(params)
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to run locates: %s", err)
+				return
 			}
 		},
 	}

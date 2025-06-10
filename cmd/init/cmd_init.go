@@ -1,7 +1,7 @@
 package initialize
 
 import (
-	"github.com/Smartling/smartling-cli/cmd"
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/init"
 
 	"github.com/spf13/cobra"
@@ -22,11 +22,13 @@ configuration file.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			s, err := GetService()
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to get init service: %s", err)
+				return
 			}
 			err = s.RunInit(dryRun)
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to run init: %s", err)
+				return
 			}
 		},
 	}
@@ -36,14 +38,14 @@ configuration file.`,
 }
 
 func GetService() (*initialize.Service, error) {
-	client, err := cmd.Client()
+	client, err := rootcmd.Client()
 	if err != nil {
 		return nil, err
 	}
-	cnf, err := cmd.Config()
+	cnf, err := rootcmd.Config()
 	if err != nil {
 		return nil, err
 	}
-	srv := initialize.NewService(&client, cnf, cmd.CLIClientConfig())
+	srv := initialize.NewService(&client, cnf, rootcmd.CLIClientConfig())
 	return srv, nil
 }

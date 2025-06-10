@@ -1,6 +1,7 @@
 package info
 
 import (
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
 
 	"github.com/spf13/cobra"
@@ -14,11 +15,13 @@ func NewInfoCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			s, err := projectscmd.GetService()
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to get project service: %s", err)
+				return
 			}
 			err = s.RunInfo()
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to run info: %s", err)
+				return
 			}
 		},
 	}

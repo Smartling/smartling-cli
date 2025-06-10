@@ -1,6 +1,7 @@
 package delete
 
 import (
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/cmd/files"
 
 	"github.com/spf13/cobra"
@@ -18,12 +19,14 @@ func NewDeleteCmd() *cobra.Command {
 
 			s, err := files.GetService()
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to get files service: %s", err)
+				return
 			}
 
 			err = s.RunDelete(uri)
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to run delete: %s", err)
+				return
 			}
 		},
 	}

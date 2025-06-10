@@ -1,6 +1,7 @@
 package status
 
 import (
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
 
@@ -22,7 +23,8 @@ func NewStatusCmd() *cobra.Command {
 
 			s, err := filescmd.GetService()
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to get files service: %s", err)
+				return
 			}
 
 			p := files.StatusParams{
@@ -33,7 +35,8 @@ func NewStatusCmd() *cobra.Command {
 
 			err = s.RunStatus(p)
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to run status: %s", err)
+				return
 			}
 		},
 	}

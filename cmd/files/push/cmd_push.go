@@ -1,6 +1,7 @@
 package push
 
 import (
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
 
@@ -29,7 +30,8 @@ func NewPushCmd() *cobra.Command {
 
 			s, err := filescmd.GetService()
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to get files service: %s", err)
+				return
 			}
 
 			p := files.PushParams{
@@ -44,7 +46,8 @@ func NewPushCmd() *cobra.Command {
 			}
 
 			if err := s.RunPush(p); err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to run push: %s", err)
+				return
 			}
 		},
 	}

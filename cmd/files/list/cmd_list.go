@@ -1,6 +1,7 @@
 package list
 
 import (
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 
 	"github.com/spf13/cobra"
@@ -21,12 +22,14 @@ func NewListCmd() *cobra.Command {
 
 			s, err := filescmd.GetService()
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to get files service: %s", err)
+				return
 			}
 
 			err = s.RunList(format, short, uri)
 			if err != nil {
-				// TODO log it
+				rootcmd.Logger().Errorf("failed to run list: %s", err)
+				return
 			}
 		},
 	}
