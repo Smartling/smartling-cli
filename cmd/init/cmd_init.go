@@ -43,6 +43,7 @@ func GetService() (*initialize.Service, error) {
 		return nil, err
 	}
 	logger := rootcmd.Logger()
+	initialize.InitLogger(logger)
 	cnf, err := rootcmd.Config(logger)
 	if err != nil {
 		return nil, err

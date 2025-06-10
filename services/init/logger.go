@@ -7,6 +7,6 @@ import (
 // TODO replace legacy
 var logger redactedlog.RedactedLog
 
-func InitLogger(l redactedlog.RedactedLog) {
-	logger = l
+func InitLogger(l *redactedlog.RedactedLog) {
+	logger = *l
 }

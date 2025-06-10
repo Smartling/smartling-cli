@@ -152,7 +152,7 @@ func Client() (sdk.Client, error) {
 	if err != nil {
 		return sdk.Client{}, err
 	}
-
+	client.InitLogger(logger)
 	client, err := client.CreateClient(CLIClientConfig(), cnf, logger, verbose)
 	if err != nil {
 		return sdk.Client{}, err
