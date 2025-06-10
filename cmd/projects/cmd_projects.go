@@ -10,7 +10,7 @@ import (
 func NewProjectsCmd() *cobra.Command {
 	projectsCmd := &cobra.Command{
 		Use:     "projects",
-		Aliases: []string{"f"},
+		Aliases: []string{"p"},
 		Short:   "Used to access various projects sub-commands.",
 		Long:    `Used to access various projects sub-commands.`,
 		Run: func(cmd *cobra.Command, args []string) {
