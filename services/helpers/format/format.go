@@ -6,17 +6,18 @@ import (
 	"text/template"
 )
 
+// Format is format for rendering templates.
 type Format struct {
 	*template.Template
 
 	Source string
 }
 
-func (format *Format) Execute(data interface{}) (string, error) {
+// Execute executes the format template with the provided data.
+// It returns the rendered string, and an error if any.
+func (format *Format) Execute(data any) (string, error) {
 	buffer := &bytes.Buffer{}
-
-	err := format.Template.Execute(buffer, data)
-	if err != nil {
+	if err := format.Template.Execute(buffer, data); err != nil {
 		return "", ExecutionError{
 			Cause:  err,
 			Format: format.Source,
@@ -28,6 +29,7 @@ func (format *Format) Execute(data interface{}) (string, error) {
 }
 
 var (
+	// UsePullFormat returns the format for pull files.
 	UsePullFormat = func(config config.FileConfig) string {
 		return config.Pull.Format
 	}

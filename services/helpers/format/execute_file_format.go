@@ -6,6 +6,8 @@ import (
 	sdk "github.com/Smartling/api-sdk-go"
 )
 
+// ExecuteFileFormat executes a file format using the provided configuration and data.
+// It returns the rendered string, and an error if any.
 func ExecuteFileFormat(
 	config config.Config,
 	file sdk.File,

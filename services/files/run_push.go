@@ -15,6 +15,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// PushParams holds the parameters for the RunPush method.
 type PushParams struct {
 	URI        string
 	File       string
@@ -26,6 +27,7 @@ type PushParams struct {
 	Directives []string
 }
 
+// RunPush uploads files to the Smartling project based on the provided parameters.
 func (s Service) RunPush(params PushParams) error {
 	var (
 		failedFiles []string
@@ -286,15 +288,15 @@ func returnError(err error) bool {
 	}
 
 	for {
-		smartlingApiError, isSmartlingApiError := err.(sdk.APIError)
-		if isSmartlingApiError {
+		smartlingAPIError, isSmartlingAPIError := err.(sdk.APIError)
+		if isSmartlingAPIError {
 			reasons := map[string]struct{}{
 				"AUTHENTICATION_ERROR":   {},
 				"AUTHORIZATION_ERROR":    {},
 				"MAINTENANCE_MODE_ERROR": {},
 			}
 
-			_, stopExecution := reasons[smartlingApiError.Code]
+			_, stopExecution := reasons[smartlingAPIError.Code]
 			return stopExecution
 		}
 		if err = errors.Unwrap(err); err == nil {
@@ -333,9 +335,8 @@ func getGitBranch() (string, error) {
 			dir = filepath.Dir(dir)
 
 			continue
-		} else {
-			break
 		}
+		break
 	}
 
 	head, err := os.ReadFile(filepath.Join(dir, ".git", "HEAD"))

@@ -17,12 +17,13 @@ var (
 	format    string
 )
 
+// NewPullCmd creates a new command to pull files.
 func NewPullCmd() *cobra.Command {
 	pullCmd := &cobra.Command{
 		Use:   "pull <uri>",
 		Short: "Pulls specified files from server.",
 		Long:  `Pulls specified files from server.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			uri = args[0]
 
 			s, err := filescmd.InitFilesSrv()

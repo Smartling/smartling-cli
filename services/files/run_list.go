@@ -12,6 +12,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// RunList retrieves and outputs a list of files.
 func (s Service) RunList(formatType string, short bool, uri string) error {
 	if formatType == "" {
 		formatType = format.DefaultFilesListFormat

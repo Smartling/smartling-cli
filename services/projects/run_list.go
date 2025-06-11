@@ -11,6 +11,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// RunList lists all projects.
 func (s Service) RunList(short bool) error {
 	projects, err := s.Client.ListProjects(s.Config.AccountID, sdk.ProjectsListRequest{})
 	if err != nil {

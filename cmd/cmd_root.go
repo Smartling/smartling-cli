@@ -38,6 +38,7 @@ var (
 	isList     bool
 )
 
+// NewRootCmd creates a new root command.
 func NewRootCmd() (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:     "smartling-cli",
@@ -45,7 +46,7 @@ func NewRootCmd() (*cobra.Command, error) {
 		Version: "1.7",
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 			configureLoggerVerbose()
 
 			path := cmd.CommandPath()
@@ -54,7 +55,7 @@ func NewRootCmd() (*cobra.Command, error) {
 			isProjects = strings.HasPrefix(path, "my-cli projects")
 			isList = strings.HasPrefix(path, "my-cli list")
 		},
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 
 		},
 	}
@@ -95,6 +96,7 @@ purposes.`)
 	return rootCmd, nil
 }
 
+// ConfigureLogger initializes the logger with default settings.
 func ConfigureLogger() {
 	rlog.Init()
 	rlog.ToggleRedact(true)
@@ -102,6 +104,7 @@ func ConfigureLogger() {
 	rlog.SetIndentLines(true)
 }
 
+// CLIClientConfig returns a client.Config based on the CLI flags.
 func CLIClientConfig() client.Config {
 	return client.Config{
 		Insecure:     insecure,
@@ -110,6 +113,7 @@ func CLIClientConfig() client.Config {
 	}
 }
 
+// Config returns a config.Config based on the CLI flags.
 func Config() (config.Config, error) {
 	params := config.Params{
 		Directory:  directory,
@@ -131,6 +135,7 @@ func Config() (config.Config, error) {
 	return cnf, nil
 }
 
+// Client creates a new Smartling API client based on the configuration and CLI params.
 func Client() (sdk.Client, error) {
 	cnf, err := Config()
 	if err != nil {
@@ -143,6 +148,7 @@ func Client() (sdk.Client, error) {
 	return *client, nil
 }
 
+// ConfigFile returns the path to the configuration file.
 func ConfigFile() string {
 	return configFile
 }

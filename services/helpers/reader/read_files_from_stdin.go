@@ -9,6 +9,8 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// ReadFilesFromStdin reads file URIs from stdin, one per line.
+// Returns a slice of sdk.File with file URIs, and an error if any.
 func ReadFilesFromStdin() ([]sdk.File, error) {
 	lines, err := io.ReadAll(os.Stdin)
 	if err != nil {

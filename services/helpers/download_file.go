@@ -9,6 +9,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// DownloadFile downloads a file.
 func DownloadFile(
 	client sdk.ClientInterface,
 	project string,

@@ -18,6 +18,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// PullParams is the parameters for the RunPull method.
 type PullParams struct {
 	URI       string
 	Format    string
@@ -28,6 +29,7 @@ type PullParams struct {
 	Retrieve  string
 }
 
+// RunPull pulls translations for files from the Smartling based on the provided parameters.
 func (s Service) RunPull(params PullParams) error {
 	if params.Format == "" {
 		params.Format = format.DefaultFilePullFormat
@@ -134,7 +136,7 @@ func (s Service) downloadFileTranslations(params PullParams, file sdk.File) erro
 
 		useFormat := format.UsePullFormat
 		if params.Format != "" {
-			useFormat = func(config config.FileConfig) string {
+			useFormat = func(_ config.FileConfig) string {
 				return params.Format
 			}
 		}

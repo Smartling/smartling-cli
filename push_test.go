@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -30,7 +29,7 @@ func (function roundTripFunc) RoundTrip(req *http.Request) (*http.Response, erro
 	return function(req), nil
 }
 
-func mockHttpClient(function roundTripFunc) *http.Client {
+func mockHTTPClient(function roundTripFunc) *http.Client {
 	return &http.Client{
 		Transport: function,
 	}
@@ -39,11 +38,11 @@ func mockHttpClient(function roundTripFunc) *http.Client {
 func TestPushStopUnauthorized(t *testing.T) {
 	params := getPushParams("README.md README.md")
 
-	httpClient := getMockHttpClient([]request{{"{}", 401}})
+	httpClient := getMockHTTPClient([]request{{"{}", 401}})
 
 	mockGlobber(params)
 	defer func() {
-		globfiles.GlobFilesLocally = globfiles.GlobFilesLocallyFunc
+		globfiles.GlobFilesLocally = globfiles.LocallyFn
 	}()
 
 	client := getClient(httpClient)
@@ -60,7 +59,7 @@ func TestPushContinueFakeError(t *testing.T) {
 
 	mockGlobber(params)
 	defer func() {
-		globfiles.GlobFilesLocally = globfiles.GlobFilesLocallyFunc
+		globfiles.GlobFilesLocally = globfiles.LocallyFn
 	}()
 
 	client := &mocks.ClientInterface{}
@@ -82,7 +81,7 @@ func TestPushStopApiError(t *testing.T) {
 
 	mockGlobber(params)
 	defer func() {
-		globfiles.GlobFilesLocally = globfiles.GlobFilesLocallyFunc
+		globfiles.GlobFilesLocally = globfiles.LocallyFn
 	}()
 
 	client := &mocks.ClientInterface{}
@@ -101,9 +100,9 @@ func TestPushStopApiError(t *testing.T) {
 	client.AssertExpectations(t)
 }
 
-func getMockHttpClient(responses []request) *http.Client {
+func getMockHTTPClient(responses []request) *http.Client {
 	responseCount := 0
-	return mockHttpClient(func(req *http.Request) *http.Response {
+	return mockHTTPClient(func(_ *http.Request) *http.Response {
 		var response string
 		var statusCode int
 		header := make(http.Header)
@@ -157,11 +156,7 @@ func getClient(httpClient *http.Client) sdk.Client {
 }
 
 func mockGlobber(params files.PushParams) {
-	globfiles.GlobFilesLocally = func(
-		directory string,
-		base string,
-		mask string,
-	) ([]string, error) {
-		return strings.Split(fmt.Sprintf("%s", params.File), " "), nil
+	globfiles.GlobFilesLocally = func(_, _, _ string) ([]string, error) {
+		return strings.Split(params.File, " "), nil
 	}
 }

@@ -7,13 +7,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewProjectsCmd creates a new projects command.
 func NewProjectsCmd() *cobra.Command {
 	projectsCmd := &cobra.Command{
 		Use:     "projects",
 		Aliases: []string{"p"},
 		Short:   "Used to access various projects sub-commands.",
 		Long:    `Used to access various projects sub-commands.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 
 		},
 	}
@@ -21,6 +22,7 @@ func NewProjectsCmd() *cobra.Command {
 	return projectsCmd
 }
 
+// GetService returns a new instance of projects service.
 func GetService() (*projects.Service, error) {
 	client, err := cmd.Client()
 	if err != nil {

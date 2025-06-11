@@ -11,6 +11,8 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// RunInfo retrieves and output project details.
+// Returns an error if any
 func (s Service) RunInfo() error {
 	details, err := s.Client.GetProjectDetails(s.Config.ProjectID)
 	if err != nil {
@@ -45,11 +47,7 @@ func (s Service) RunInfo() error {
 	}
 
 	for _, row := range info {
-		fmt.Fprintf(
-			tableWriter,
-			"%s\t%s\n",
-			row...,
-		)
+		fmt.Fprintf(tableWriter, "%s\t%s\n", row...)
 	}
 
 	err = table.Render(tableWriter)

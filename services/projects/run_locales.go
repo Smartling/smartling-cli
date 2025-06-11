@@ -13,12 +13,14 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// LocalesParams is the parameters for the RunLocales method.
 type LocalesParams struct {
 	Format string
 	Short  bool
 	Source bool
 }
 
+// RunLocales retrieves and outputs the locales.
 func (s Service) RunLocales(params LocalesParams) error {
 	formatType := params.Format
 	if formatType == "" {

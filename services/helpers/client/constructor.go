@@ -17,6 +17,8 @@ import (
 
 var version = "1.7"
 
+// CreateClient initializes a new Smartling API client with the provided configurations.
+// Returns the client, and an error if any.
 func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sdk.Client, error) {
 	client := sdk.NewClient(config.UserID, config.Secret)
 

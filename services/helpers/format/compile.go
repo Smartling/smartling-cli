@@ -24,6 +24,7 @@ var (
 	}
 )
 
+// Compile returns a format from the given definition, and an error if any.
 func Compile(definition string) (*Format, error) {
 	compiledFormatsCache.Lock()
 	defer compiledFormatsCache.Unlock()

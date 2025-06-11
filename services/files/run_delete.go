@@ -11,6 +11,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// RunDelete deletes files from the Smartling project based on the provided URI.
 func (s Service) RunDelete(uri string) error {
 	projectID := s.Config.ProjectID
 	var (

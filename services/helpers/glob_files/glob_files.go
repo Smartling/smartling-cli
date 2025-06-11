@@ -14,6 +14,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// Remote searches for files matching a specified glob pattern on the remote server.
 func Remote(
 	client sdk.ClientInterface,
 	project string,
@@ -68,6 +69,7 @@ func Remote(
 	return result, nil
 }
 
+// GetDirectoryFromPattern extracts the directory and file mask from a glob pattern.
 func GetDirectoryFromPattern(mask string) (string, string) {
 	matches := regexp.MustCompile(`^([^*?{}\[\]]+)/(.+)$`).FindStringSubmatch(
 		mask,
@@ -80,6 +82,7 @@ func GetDirectoryFromPattern(mask string) (string, string) {
 	return matches[1], matches[2]
 }
 
+// LocallyFunc searches for files matching a specified glob pattern.
 func LocallyFunc(
 	directory string,
 	base string,
@@ -142,7 +145,8 @@ func LocallyFunc(
 	return result, nil
 }
 
-func GlobFilesLocallyFunc(
+// LocallyFn searches for files matching a specified glob pattern.
+func LocallyFn(
 	directory string,
 	base string,
 	mask string,
@@ -204,4 +208,5 @@ func GlobFilesLocallyFunc(
 	return result, nil
 }
 
-var GlobFilesLocally = GlobFilesLocallyFunc
+// GlobFilesLocally searches for files matching a specified glob pattern.
+var GlobFilesLocally = LocallyFn

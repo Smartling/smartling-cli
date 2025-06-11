@@ -14,12 +14,14 @@ import (
 	sdk "github.com/Smartling/api-sdk-go"
 )
 
+// StatusParams holds the parameters for the RunStatus method.
 type StatusParams struct {
 	URI       string
 	Directory string
 	Format    string
 }
 
+// RunStatus retrieves and outputs the status of files in the Smartling project.
 func (s Service) RunStatus(params StatusParams) error {
 	defaultFormat := params.Format
 	if defaultFormat == "" {

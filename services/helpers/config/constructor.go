@@ -15,6 +15,7 @@ const (
 	defaultConfigName = "smartling.yml"
 )
 
+// Params is parameters for building a configuration object.
 type Params struct {
 	Directory  string
 	File       string
@@ -29,6 +30,8 @@ type Params struct {
 	IsList     bool
 }
 
+// BuildConfigFromFlags returns a Config object based on the provided parameters,
+// and an error if any.
 func BuildConfigFromFlags(params Params) (Config, error) {
 	var err error
 
@@ -45,9 +48,8 @@ func BuildConfigFromFlags(params Params) (Config, error) {
 					`Ensure, that config file exists either in the current `+
 						`directory or in any parent directory.`,
 				)
-			} else {
-				path = "smartling.yml"
 			}
+			path = "smartling.yml"
 		}
 	}
 

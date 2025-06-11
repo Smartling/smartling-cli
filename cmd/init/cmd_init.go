@@ -12,6 +12,7 @@ var (
 	dryRun bool
 )
 
+// NewInitCmd creates a new command to initialize the Smartling CLI.
 func NewInitCmd() *cobra.Command {
 	initCmd := &cobra.Command{
 		Use:     "init",
@@ -20,7 +21,7 @@ func NewInitCmd() *cobra.Command {
 		Long: `Prepares project to work with Smartling,
 essentially, assisting user in creating
 configuration file.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			s, err := GetService()
 			if err != nil {
 				rlog.Errorf("failed to get init service: %s", err)
@@ -38,6 +39,7 @@ configuration file.`,
 	return initCmd
 }
 
+// GetService initializes and returns a new instance of the init service.
 func GetService() (*initialize.Service, error) {
 	client, err := rootcmd.Client()
 	if err != nil {
@@ -47,6 +49,6 @@ func GetService() (*initialize.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	srv := initialize.NewService(&client, cnf, rootcmd.CLIClientConfig())
+	srv := initialize.NewService(&client, cnf)
 	return srv, nil
 }

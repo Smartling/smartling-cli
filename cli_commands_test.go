@@ -13,7 +13,7 @@ import (
 func (suite *MainSuite) TestProjectsList() {
 	suite.Mock.Handler = func(
 		writer http.ResponseWriter,
-		request *http.Request,
+		_ *http.Request,
 	) {
 		list := sdk.ProjectsList{
 			TotalCount: 2,

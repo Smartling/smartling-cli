@@ -7,13 +7,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewFilesCmd creates a new command to access various files sub-commands.
 func NewFilesCmd() *cobra.Command {
 	filesCmd := &cobra.Command{
 		Use:     "files",
 		Aliases: []string{"f"},
 		Short:   "Used to access various files sub-commands.",
 		Long:    `Used to access various files sub-commands.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 
 		},
 	}
@@ -21,6 +22,7 @@ func NewFilesCmd() *cobra.Command {
 	return filesCmd
 }
 
+// InitFilesSrv initializes `files` service with the client and configuration.
 func InitFilesSrv() (*files.Service, error) {
 	client, err := cmd.Client()
 	if err != nil {

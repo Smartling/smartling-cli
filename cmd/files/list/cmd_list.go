@@ -12,12 +12,13 @@ var (
 	short  bool
 )
 
+// NewListCmd creates a new command to list files.
 func NewListCmd() *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list <uri>",
 		Short: "Lists files from specified project.",
 		Long:  `Lists files from specified project.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			if len(args) == 0 {
 				rlog.Error("missing required argument `<uri>`")
 				return

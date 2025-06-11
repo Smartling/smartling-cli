@@ -16,6 +16,7 @@ import (
 	"github.com/tcnksm/go-input"
 )
 
+// RunInit initializes the Smartling CLI.
 func (s Service) RunInit(dryRun bool) error {
 	fmt.Printf("Generating %s...\n\n", s.Config.Path)
 
@@ -51,7 +52,7 @@ func (s Service) RunInit(dryRun bool) error {
 
 		_, err = fmt.Sscanln(read, variable)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to scan input: "+err.Error())
+			fmt.Fprintf(os.Stderr, "failed to scan input: %s", err.Error())
 		}
 	}
 
@@ -129,12 +130,11 @@ func (s Service) RunInit(dryRun bool) error {
 				"Your credentials are invalid. Double check them and run "+
 					"init command again",
 			)
-		} else {
-			return clierror.NewError(
-				hierr.Errorf(err, "failure while testing connection"),
-				"Contact developer for more info",
-			)
 		}
+		return clierror.NewError(
+			hierr.Errorf(err, "failure while testing connection"),
+			"Contact developer for more info",
+		)
 	}
 
 	fmt.Println("Connection is successful.")

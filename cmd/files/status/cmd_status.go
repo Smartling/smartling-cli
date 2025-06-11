@@ -13,12 +13,13 @@ var (
 	directory string
 )
 
+// NewStatusCmd creates a new command to show file translation status.
 func NewStatusCmd() *cobra.Command {
 	statusCmd := &cobra.Command{
 		Use:   "status <uri>",
 		Short: "Shows file translation status.",
 		Long:  `Shows file translation status.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			if len(args) == 0 {
 				rlog.Error("missing required argument `<uri>`")
 				return

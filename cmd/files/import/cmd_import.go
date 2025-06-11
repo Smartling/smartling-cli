@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewImportCmd creates a new command to import translations.
 func NewImportCmd() *cobra.Command {
 	var (
 		published       bool
@@ -20,7 +21,7 @@ func NewImportCmd() *cobra.Command {
 		Use:   "import <uri> <file> <locale>",
 		Short: "Imports translations for given original file URI with.",
 		Long:  `Imports translations for given original file URI with.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			switch len(args) {
 			case 0:
 				rlog.Error("missing required arguments `<uri>`, `<file>`, `<locale>`")

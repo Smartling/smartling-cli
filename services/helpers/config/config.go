@@ -11,6 +11,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// FileConfig is the configuration from file.
 type FileConfig struct {
 	Pull struct {
 		Format string `yaml:"format,omitempty"`
@@ -22,6 +23,7 @@ type FileConfig struct {
 	} `yaml:"push,omitempty"`
 }
 
+// Config is the configuration for the Smartling CLI.
 type Config struct {
 	UserID    string `yaml:"user_id"`
 	Secret    string `yaml:"secret"`
@@ -36,6 +38,7 @@ type Config struct {
 	Path string `yaml:"-"`
 }
 
+// GetFileConfig returns the FileConfig for the given path.
 func (config *Config) GetFileConfig(path string) (FileConfig, error) {
 	var (
 		match FileConfig
@@ -80,6 +83,7 @@ func (config *Config) GetFileConfig(path string) (FileConfig, error) {
 	return match, nil
 }
 
+// LoadConfigFromFile loads the configuration from the specified file.
 func LoadConfigFromFile(filename string) (Config, error) {
 	config := Config{
 		Path: filename,

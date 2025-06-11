@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewPushCmd creates a new command to upload files to the Smartling platform.
 func NewPushCmd() *cobra.Command {
 	var (
 		file       string
@@ -24,7 +25,7 @@ func NewPushCmd() *cobra.Command {
 		Use:   "push <file> <uri>",
 		Short: "Uploads specified file into Smartling platform.",
 		Long:  `Uploads specified file into Smartling platform.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			file = args[0]
 			uri = args[1]
 

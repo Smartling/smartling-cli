@@ -11,6 +11,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// ImportParams holds the parameters for the RunImport method.
 type ImportParams struct {
 	URI             string
 	File            string
@@ -20,6 +21,7 @@ type ImportParams struct {
 	Overwrite       bool
 }
 
+// RunImport imports a file into the Smartling project with the specified parameters.
 func (s Service) RunImport(params ImportParams) error {
 	contents, err := os.ReadFile(params.File)
 	if err != nil {

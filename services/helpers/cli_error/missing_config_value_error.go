@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// MissingConfigValueError is missing config value error
 type MissingConfigValueError struct {
 	ConfigPath string
 	EnvVarName string
@@ -12,6 +13,7 @@ type MissingConfigValueError struct {
 	KeyName    string
 }
 
+// Error returns string representation.
 func (err MissingConfigValueError) Error() string {
 	return NewError(
 		fmt.Errorf(

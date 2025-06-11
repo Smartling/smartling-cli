@@ -8,6 +8,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// ExecutionError is execution error.
 type ExecutionError struct {
 	Cause  error
 	Format string
