@@ -9,7 +9,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/Smartling/smartling-cli/mocks"
@@ -35,28 +37,30 @@ func mockHttpClient(function roundTripFunc) *http.Client {
 }
 
 func TestPushStopUnauthorized(t *testing.T) {
-	args := getArgs("README.md README.md")
+	params := getPushParams("README.md README.md")
 
 	httpClient := getMockHttpClient([]request{{"{}", 401}})
 
-	mockGlobber(args)
+	mockGlobber(params)
 	defer func() {
-		globFilesLocally = globFilesLocallyFunc
+		globfiles.GlobFilesLocally = globfiles.GlobFilesLocallyFunc
 	}()
 
 	client := getClient(httpClient)
 
-	err := doFilesPush(&client, getConfig(), args)
+	filesSrv := files.NewService(&client, getConfig(), config.FileConfig{})
+
+	err := filesSrv.RunPush(params)
 
 	assert.True(t, errors.Is(err, sdk.NotAuthorizedError{}))
 }
 
 func TestPushContinueFakeError(t *testing.T) {
-	args := getArgs("README.md README.md")
+	params := getPushParams("README.md README.md")
 
-	mockGlobber(args)
+	mockGlobber(params)
 	defer func() {
-		globFilesLocally = globFilesLocallyFunc
+		globfiles.GlobFilesLocally = globfiles.GlobFilesLocallyFunc
 	}()
 
 	client := &mocks.ClientInterface{}
@@ -64,7 +68,8 @@ func TestPushContinueFakeError(t *testing.T) {
 		Return(nil, sdk.APIError{Cause: errors.New("some error")}).
 		Times(2)
 
-	err := doFilesPush(client, getConfig(), args)
+	filesSrv := files.NewService(client, getConfig(), config.FileConfig{})
+	err := filesSrv.RunPush(params)
 	assert.EqualError(
 		t,
 		err,
@@ -73,11 +78,11 @@ func TestPushContinueFakeError(t *testing.T) {
 }
 
 func TestPushStopApiError(t *testing.T) {
-	args := getArgs("README.md README.md")
+	params := getPushParams("README.md README.md")
 
-	mockGlobber(args)
+	mockGlobber(params)
 	defer func() {
-		globFilesLocally = globFilesLocallyFunc
+		globfiles.GlobFilesLocally = globfiles.GlobFilesLocallyFunc
 	}()
 
 	client := &mocks.ClientInterface{}
@@ -89,7 +94,8 @@ func TestPushStopApiError(t *testing.T) {
 		Return(nil, expectedError).
 		Once()
 
-	err := doFilesPush(client, getConfig(), args)
+	filesSrv := files.NewService(client, getConfig(), config.FileConfig{})
+	err := filesSrv.RunPush(params)
 
 	assert.True(t, errors.Is(err, expectedError))
 	client.AssertExpectations(t)
@@ -118,12 +124,13 @@ func getMockHttpClient(responses []request) *http.Client {
 	})
 }
 
-func getArgs(file string) map[string]interface{} {
-	args := make(map[string]interface{})
-	args["--authorize"] = false
-	args["--directory"] = ""
-	args["<file>"] = file
-	return args
+func getPushParams(file string) files.PushParams {
+	return files.PushParams{
+		Authorize:  false,
+		Directory:  "",
+		File:       file,
+		Directives: nil,
+	}
 }
 
 func getConfig() config.Config {
@@ -149,12 +156,12 @@ func getClient(httpClient *http.Client) sdk.Client {
 	return *client
 }
 
-func mockGlobber(args map[string]interface{}) {
-	globFilesLocally = func(
+func mockGlobber(params files.PushParams) {
+	globfiles.GlobFilesLocally = func(
 		directory string,
 		base string,
 		mask string,
 	) ([]string, error) {
-		return strings.Split(fmt.Sprintf("%s", args["<file>"]), " "), nil
+		return strings.Split(fmt.Sprintf("%s", params.File), " "), nil
 	}
 }

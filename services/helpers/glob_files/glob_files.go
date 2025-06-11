@@ -142,7 +142,7 @@ func LocallyFunc(
 	return result, nil
 }
 
-func globFilesLocallyFunc(
+func GlobFilesLocallyFunc(
 	directory string,
 	base string,
 	mask string,
@@ -204,4 +204,4 @@ func globFilesLocallyFunc(
 	return result, nil
 }
 
-var globFilesLocally = globFilesLocallyFunc
+var GlobFilesLocally = GlobFilesLocallyFunc
