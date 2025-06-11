@@ -50,9 +50,9 @@ func NewRootCmd() (*cobra.Command, error) {
 
 			path := cmd.CommandPath()
 			isInit = strings.HasPrefix(path, "my-cli init")
-			isFiles = strings.HasPrefix(path, "my-cli init")
-			isProjects = strings.HasPrefix(path, "my-cli init")
-			isList = strings.HasPrefix(path, "my-cli init")
+			isFiles = strings.HasPrefix(path, "my-cli files")
+			isProjects = strings.HasPrefix(path, "my-cli projects")
+			isList = strings.HasPrefix(path, "my-cli list")
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 
