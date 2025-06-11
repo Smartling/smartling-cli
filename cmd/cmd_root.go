@@ -46,6 +46,8 @@ func NewRootCmd() (*cobra.Command, error) {
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			configureLoggerVerbose()
+
 			path := cmd.CommandPath()
 			isInit = strings.HasPrefix(path, "my-cli init")
 			isFiles = strings.HasPrefix(path, "my-cli init")
@@ -98,20 +100,6 @@ func ConfigureLogger() {
 	rlog.ToggleRedact(true)
 	rlog.SetFormat(lorg.NewFormat("* ${time} ${level:[%s]:right} %s"))
 	rlog.SetIndentLines(true)
-	switch verbose {
-	case 0:
-		// nothing do to
-
-	case 1:
-		rlog.SetLevel(lorg.LevelInfo)
-
-	case 2:
-		rlog.SetLevel(lorg.LevelDebug)
-
-	default:
-		rlog.ToggleRedact(false)
-		rlog.SetLevel(lorg.LevelDebug)
-	}
 }
 
 func CLIClientConfig() client.Config {
@@ -157,4 +145,21 @@ func Client() (sdk.Client, error) {
 
 func ConfigFile() string {
 	return configFile
+}
+
+func configureLoggerVerbose() {
+	switch verbose {
+	case 0:
+		// nothing do to
+
+	case 1:
+		rlog.SetLevel(lorg.LevelInfo)
+
+	case 2:
+		rlog.SetLevel(lorg.LevelDebug)
+
+	default:
+		rlog.ToggleRedact(false)
+		rlog.SetLevel(lorg.LevelDebug)
+	}
 }

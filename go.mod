@@ -5,7 +5,6 @@ go 1.24.3
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Smartling/api-sdk-go v0.0.0-20240531162953-75664a8dc8d1
-	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/gobwas/glob v0.2.3
 	github.com/goccy/go-yaml v1.18.0
 	github.com/kovetskiy/lorg v1.2.0
