@@ -141,7 +141,6 @@ func findConfig(name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("dir = ", dir)
 
 	var path string
 
