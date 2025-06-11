@@ -19,6 +19,10 @@ func NewStatusCmd() *cobra.Command {
 		Short: "Shows file translation status.",
 		Long:  `Shows file translation status.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				rlog.Error("missing required argument `<uri>`")
+				return
+			}
 			uri := args[0]
 
 			s, err := filescmd.InitFilesSrv()

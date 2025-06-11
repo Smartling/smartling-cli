@@ -21,6 +21,17 @@ func NewImportCmd() *cobra.Command {
 		Short: "Imports translations for given original file URI with.",
 		Long:  `Imports translations for given original file URI with.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			switch len(args) {
+			case 0:
+				rlog.Error("missing required arguments `<uri>`, `<file>`, `<locale>`")
+				return
+			case 1:
+				rlog.Error("missing two of required arguments `<uri>`, `<file>`, `<locale>`")
+				return
+			case 2:
+				rlog.Error("missing one of required arguments `<uri>`, `<file>`, `<locale>`")
+				return
+			}
 			uri := args[0]
 			file := args[1]
 			locale := args[2]
