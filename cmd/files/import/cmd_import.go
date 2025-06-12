@@ -36,10 +36,11 @@ func NewImportCmd() *cobra.Command {
 			case 2:
 				uri = args[0]
 				file = args[1]
+			default:
+				uri = args[0]
+				file = args[1]
+				locale = args[2]
 			}
-			uri = args[0]
-			file = args[1]
-			locale = args[2]
 
 			s, err := filescmd.InitFilesSrv()
 			if err != nil {
