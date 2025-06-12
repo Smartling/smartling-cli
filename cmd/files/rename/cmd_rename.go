@@ -19,8 +19,12 @@ func NewRenameCmd() *cobra.Command {
 		Short: "Renames given file by old URI into new URI.",
 		Long:  `Renames given file by old URI into new URI.`,
 		Run: func(_ *cobra.Command, args []string) {
-			old = args[0]
-			new = args[1]
+			if len(args) > 0 {
+				old = args[0]
+			}
+			if len(args) > 1 {
+				new = args[1]
+			}
 
 			s, err := filescmd.InitFilesSrv()
 			if err != nil {

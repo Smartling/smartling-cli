@@ -11,8 +11,6 @@ import (
 // NewPushCmd creates a new command to upload files to the Smartling platform.
 func NewPushCmd() *cobra.Command {
 	var (
-		file       string
-		uri        string
 		authorize  bool
 		locales    []string
 		branch     string
@@ -26,8 +24,16 @@ func NewPushCmd() *cobra.Command {
 		Short: "Uploads specified file into Smartling platform.",
 		Long:  `Uploads specified file into Smartling platform.`,
 		Run: func(_ *cobra.Command, args []string) {
-			file = args[0]
-			uri = args[1]
+			var (
+				file string
+				uri  string
+			)
+			if len(args) > 0 {
+				file = args[0]
+			}
+			if len(args) > 1 {
+				uri = args[1]
+			}
 
 			s, err := filescmd.InitFilesSrv()
 			if err != nil {
@@ -57,7 +63,7 @@ func NewPushCmd() *cobra.Command {
 	pushCmd.Flags().StringSliceVarP(&locales, "locales", "l", []string{}, `Authorize only specified locales.`)
 	pushCmd.Flags().StringVarP(&branch, "branch", "b", "", `Prepend specified text to the file uri.`)
 	pushCmd.Flags().StringVarP(&fileType, "type", "t", "", `Specifies file type which will be used instead of automatically deduced from extension.`)
-	pushCmd.Flags().StringSliceVarP(&directives, "directives", "r", []string{}, `Specifies one or more directives to use in push request.`)
+	pushCmd.Flags().StringSliceVarP(&directives, "directive", "r", []string{}, `Specifies one or more directives to use in push request.`)
 
 	return pushCmd
 }

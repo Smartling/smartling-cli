@@ -20,11 +20,10 @@ func NewListCmd() *cobra.Command {
 		Short: "Lists files from specified project.",
 		Long:  `Lists files from specified project.`,
 		Run: func(_ *cobra.Command, args []string) {
-			if len(args) == 0 {
-				rlog.Error("missing required argument `<uri>`")
-				return
+			var uri string
+			if len(args) > 0 {
+				uri = args[0]
 			}
-			uri := args[0]
 
 			s, err := filescmd.InitFilesSrv()
 			if err != nil {

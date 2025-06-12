@@ -27,18 +27,13 @@ func NewImportCmd() *cobra.Command {
 				file   string
 				locale string
 			)
-			switch len(args) {
-			case 0:
-				rlog.Error("missing arguments `<uri>`, `<file>`, `<locale>`")
-				return
-			case 1:
+			if len(args) > 0 {
 				uri = args[0]
-			case 2:
-				uri = args[0]
+			}
+			if len(args) > 1 {
 				file = args[1]
-			default:
-				uri = args[0]
-				file = args[1]
+			}
+			if len(args) > 2 {
 				locale = args[2]
 			}
 

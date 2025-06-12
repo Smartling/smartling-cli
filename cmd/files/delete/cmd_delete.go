@@ -16,7 +16,9 @@ func NewDeleteCmd() *cobra.Command {
 		Short: "Deletes given file from Smartling.",
 		Long:  `Deletes given file from Smartling. This operation can not be undone, so use with care.`,
 		Run: func(_ *cobra.Command, args []string) {
-			uri = args[0]
+			if len(args) > 0 {
+				uri = args[0]
+			}
 
 			s, err := files.InitFilesSrv()
 			if err != nil {

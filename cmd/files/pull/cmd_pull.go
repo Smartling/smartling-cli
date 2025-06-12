@@ -25,7 +25,9 @@ func NewPullCmd() *cobra.Command {
 		Short: "Pulls specified files from server.",
 		Long:  `Pulls specified files from server.`,
 		Run: func(_ *cobra.Command, args []string) {
-			uri = args[0]
+			if len(args) > 0 {
+				uri = args[0]
+			}
 
 			s, err := filescmd.InitFilesSrv()
 			if err != nil {
