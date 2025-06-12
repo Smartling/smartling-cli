@@ -19,14 +19,7 @@ var (
 	account      string
 	user         string
 	secret       string
-	short        string
-	locale       string
 	directory    string
-	authorize    string
-	branch       string
-	typ          string
-	directive    string
-	dryRun       string
 	threads      uint32
 	insecure     bool
 	proxy        string
@@ -72,18 +65,8 @@ This option overrides config value "account_id".`)
 This option overrides config value "user_id".`)
 	rootCmd.PersistentFlags().StringVar(&secret, "secret", "", `Token Secret which will be used for authentication.
 This option overrides config value "secret".`)
-	rootCmd.PersistentFlags().StringVarP(&short, "short", "s", "", `Use short list output, usually outputs only first
-column, e.g. file URI in case of files list.`)
-	rootCmd.PersistentFlags().StringVarP(&locale, "locale", "l", "", "Sets locale to filter by or operate upon. Depends on command.")
 	rootCmd.PersistentFlags().StringVarP(&directory, "directory", "d", "", `Sets directory to operate on, usually, to store or to
 read files.  Depends on command.  [default: .]`)
-	rootCmd.PersistentFlags().StringVarP(&authorize, "authorize", "z", "", `Authorize all locales while pushing file.
-Incompatible with -l option.`)
-	rootCmd.PersistentFlags().StringVarP(&branch, "branch", "b", "", "Prepend specified value to the file URI.")
-	rootCmd.PersistentFlags().StringVarP(&typ, "type", "t", "", "Specify file type. Depends on command.")
-	rootCmd.PersistentFlags().StringVarP(&directive, "directive", "r", "", `Directives to add to push request in form of
-<name>=<value>.`)
-	rootCmd.PersistentFlags().StringVar(&dryRun, "dry-run", "", "Do not actually perform action, just log it.")
 	rootCmd.PersistentFlags().Uint32Var(&threads, "threads", 0, `If command can be executed concurrently, it will be
 executed for at most <number> of threads.
 [default: 4]`)
