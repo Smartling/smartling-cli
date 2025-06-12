@@ -3,14 +3,15 @@ package status
 import (
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
+	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	format    string
-	directory string
+	formatType string
+	directory  string
 )
 
 // NewStatusCmd creates a new command to show file translation status.
@@ -35,7 +36,7 @@ func NewStatusCmd() *cobra.Command {
 			p := files.StatusParams{
 				URI:       uri,
 				Directory: directory,
-				Format:    format,
+				Format:    formatType,
 			}
 
 			err = s.RunStatus(p)
@@ -46,7 +47,8 @@ func NewStatusCmd() *cobra.Command {
 		},
 	}
 
-	statusCmd.Flags().StringVar(&format, "format", "", `Specifies format to use for file status output. [default: $FILE_STATUS_FORMAT]`)
+	statusCmd.Flags().StringVar(&formatType, "format", "", `Specifies format to use for file status output. 
+								Default: `+format.DefaultFileStatusFormat)
 	statusCmd.Flags().StringVar(&directory, "directory", "", `Use another directory as reference to check for local files.`)
 
 	return statusCmd

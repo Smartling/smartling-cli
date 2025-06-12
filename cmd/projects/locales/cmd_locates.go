@@ -2,6 +2,7 @@ package locales
 
 import (
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
+	"github.com/Smartling/smartling-cli/services/helpers/forma
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/projects"
 
@@ -9,9 +10,9 @@ import (
 )
 
 var (
-	short  bool
-	source bool
-	format string
+	short      bool
+	source     bool
+	formatType string
 )
 
 // NewLocatesCmd creates a new command to list locales.
@@ -28,7 +29,7 @@ func NewLocatesCmd() *cobra.Command {
 			}
 
 			params := projects.LocalesParams{
-				Format: format,
+				Format: formatType,
 				Short:  short,
 				Source: source,
 			}
@@ -41,8 +42,8 @@ func NewLocatesCmd() *cobra.Command {
 	}
 	locatesCmd.Flags().BoolVarP(&short, "short", "s", false, "Display only target locale IDs.")
 	locatesCmd.Flags().BoolVar(&source, "source", false, "Source.")
-	locatesCmd.Flags().StringVar(&format, "format", "", `Use specified format for listing locales.
-                           [format: $PROJECTS_LOCALES_FORMAT]`)
+	locatesCmd.Flags().StringVar(&formatType, "format", "", `Use specified format for listing locales.
+                           Format: `+format.DefaultProjectsLocalesFormat)
 
 	return locatesCmd
 }

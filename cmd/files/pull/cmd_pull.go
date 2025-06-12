@@ -3,18 +3,19 @@ package pull
 import (
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
+	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	uri       string
-	source    bool
-	progress  string
-	retrieve  string
-	directory string
-	format    string
+	uri        string
+	source     bool
+	progress   string
+	retrieve   string
+	directory  string
+	formatPath string
 )
 
 // NewPullCmd creates a new command to pull files.
@@ -34,7 +35,7 @@ func NewPullCmd() *cobra.Command {
 
 			params := files.PullParams{
 				URI:       uri,
-				Format:    format,
+				Format:    formatPath,
 				Directory: directory,
 				Source:    source,
 				Locales:   nil,
@@ -53,11 +54,11 @@ func NewPullCmd() *cobra.Command {
 	pullCmd.Flags().StringVar(&progress, "progress", "", `Pulls only translations that are at least specified percent of work complete.`)
 	pullCmd.Flags().StringVar(&retrieve, "retrieve", "", `Retrieval type: pending, published, pseudo or contextMatchingInstrumented.`)
 	pullCmd.Flags().StringVarP(&directory, "directory", "d", "", `Download all files to specified directory.`)
-	pullCmd.Flags().StringVar(&format, "format", "", `Can be used to format path to downloaded files.
+	pullCmd.Flags().StringVar(&formatPath, "format", "", `Can be used to format path to downloaded files.
                            Note, that single file can be translated in
                            different locales, so format should include locale
                            to create several file paths.
-                           [default: $FILE_PULL_FORMAT]`)
+                           Default: `+format.DefaultFilePullFormat)
 
 	return pullCmd
 }

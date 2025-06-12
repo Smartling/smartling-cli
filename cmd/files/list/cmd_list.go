@@ -2,14 +2,15 @@ package list
 
 import (
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
+	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	format string
-	short  bool
+	formatType string
+	short      bool
 )
 
 // NewListCmd creates a new command to list files.
@@ -31,7 +32,7 @@ func NewListCmd() *cobra.Command {
 				return
 			}
 
-			err = s.RunList(format, short, uri)
+			err = s.RunList(formatType, short, uri)
 			if err != nil {
 				rlog.Errorf("failed to run list: %s", err)
 				return
@@ -39,10 +40,10 @@ func NewListCmd() *cobra.Command {
 		},
 	}
 	listCmd.Flags().BoolVarP(&short, "short", "s", false, "Display only project IDs.")
-	listCmd.Flags().StringVar(&format, "format", "", `Can be used to format path to downloaded files.
+	listCmd.Flags().StringVar(&formatType, "format", "", `Can be used to format path to downloaded files.
                            Note, that single file can be translated in
                            different locales, so format should include locale
                            to create several file paths.
-                           [default: $FILE_PULL_FORMAT]`)
+                           Default: `+format.DefaultFilesListFormat)
 	return listCmd
 }

@@ -15,9 +15,12 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/projects/info"
 	listprojects "github.com/Smartling/smartling-cli/cmd/projects/list"
 	"github.com/Smartling/smartling-cli/cmd/projects/locales"
+	"os"
 )
 
 func main() {
+	os.Expand
+
 	cmd.ConfigureLogger()
 	rootCmd, err := cmd.NewRootCmd()
 	if err != nil {
