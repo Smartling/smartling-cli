@@ -2,7 +2,7 @@ package locales
 
 import (
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
-	"github.com/Smartling/smartling-cli/services/helpers/forma
+	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/projects"
 
