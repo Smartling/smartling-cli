@@ -21,7 +21,7 @@ type LocalesParams struct {
 }
 
 // RunLocales retrieves and outputs the locales.
-func (s Service) RunLocales(params LocalesParams) error {
+func (s service) RunLocales(params LocalesParams) error {
 	formatType := params.Format
 	if formatType == "" {
 		formatType = format.DefaultProjectsLocalesFormat

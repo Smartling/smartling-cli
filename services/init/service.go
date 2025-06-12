@@ -6,13 +6,18 @@ import (
 	sdk "github.com/Smartling/api-sdk-go"
 )
 
-// Service provides methods to init Smartling CLI.
-type Service struct {
+// Service defines behavior for initializing the Smartling CLI.
+type Service interface {
+	RunInit(dryRun bool) error
+}
+
+// service provides methods to init Smartling CLI.
+type service struct {
 	Client sdk.ClientInterface
 	Config config.Config
 }
 
 // NewService creates a new instance of the Service with the provided client and configuration.
-func NewService(client sdk.ClientInterface, config config.Config) *Service {
-	return &Service{Client: client, Config: config}
+func NewService(client sdk.ClientInterface, config config.Config) Service {
+	return &service{Client: client, Config: config}
 }

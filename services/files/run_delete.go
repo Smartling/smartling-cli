@@ -12,7 +12,7 @@ import (
 )
 
 // RunDelete deletes files from the Smartling project based on the provided URI.
-func (s Service) RunDelete(uri string) error {
+func (s service) RunDelete(uri string) error {
 	projectID := s.Config.ProjectID
 	var (
 		err   error

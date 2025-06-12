@@ -13,7 +13,7 @@ import (
 
 // RunInfo retrieves and output project details.
 // Returns an error if any
-func (s Service) RunInfo() error {
+func (s service) RunInfo() error {
 	details, err := s.Client.GetProjectDetails(s.Config.ProjectID)
 	if err != nil {
 		if _, ok := err.(sdk.NotFoundError); ok {

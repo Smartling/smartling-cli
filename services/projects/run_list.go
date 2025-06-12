@@ -12,7 +12,7 @@ import (
 )
 
 // RunList lists all projects.
-func (s Service) RunList(short bool) error {
+func (s service) RunList(short bool) error {
 	projects, err := s.Client.ListProjects(s.Config.AccountID, sdk.ProjectsListRequest{})
 	if err != nil {
 		return clierror.NewError(

@@ -30,7 +30,7 @@ type PullParams struct {
 }
 
 // RunPull pulls translations for files from the Smartling based on the provided parameters.
-func (s Service) RunPull(params PullParams) error {
+func (s service) RunPull(params PullParams) error {
 	if params.Format == "" {
 		params.Format = format.DefaultFilePullFormat
 	}
@@ -70,7 +70,7 @@ func (s Service) RunPull(params PullParams) error {
 	return nil
 }
 
-func (s Service) downloadFileTranslations(params PullParams, file sdk.File) error {
+func (s service) downloadFileTranslations(params PullParams, file sdk.File) error {
 	params.Progress = strings.TrimSuffix(params.Progress, "%")
 	if params.Progress == "" {
 		params.Progress = "0"

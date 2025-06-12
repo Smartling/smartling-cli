@@ -22,7 +22,7 @@ type ImportParams struct {
 }
 
 // RunImport imports a file into the Smartling project with the specified parameters.
-func (s Service) RunImport(params ImportParams) error {
+func (s service) RunImport(params ImportParams) error {
 	contents, err := os.ReadFile(params.File)
 	if err != nil {
 		return clierror.NewError(

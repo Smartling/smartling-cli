@@ -22,7 +22,7 @@ type StatusParams struct {
 }
 
 // RunStatus retrieves and outputs the status of files in the Smartling project.
-func (s Service) RunStatus(params StatusParams) error {
+func (s service) RunStatus(params StatusParams) error {
 	defaultFormat := params.Format
 	if defaultFormat == "" {
 		defaultFormat = format.DefaultFileStatusFormat

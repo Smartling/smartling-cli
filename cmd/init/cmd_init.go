@@ -40,7 +40,7 @@ configuration file.`,
 }
 
 // GetService initializes and returns a new instance of the init service.
-func GetService() (*initialize.Service, error) {
+func GetService() (initialize.Service, error) {
 	client, err := rootcmd.Client()
 	if err != nil {
 		return nil, err

@@ -13,7 +13,7 @@ import (
 )
 
 // RunList retrieves and outputs a list of files.
-func (s Service) RunList(formatType string, short bool, uri string) error {
+func (s service) RunList(formatType string, short bool, uri string) error {
 	if formatType == "" {
 		formatType = format.DefaultFilesListFormat
 	}

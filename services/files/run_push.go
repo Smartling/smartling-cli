@@ -28,7 +28,7 @@ type PushParams struct {
 }
 
 // RunPush uploads files to the Smartling project based on the provided parameters.
-func (s Service) RunPush(params PushParams) error {
+func (s service) RunPush(params PushParams) error {
 	var (
 		failedFiles []string
 		project     = s.Config.ProjectID

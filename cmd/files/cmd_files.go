@@ -23,7 +23,7 @@ func NewFilesCmd() *cobra.Command {
 }
 
 // InitFilesSrv initializes `files` service with the client and configuration.
-func InitFilesSrv() (*files.Service, error) {
+func InitFilesSrv() (files.Service, error) {
 	client, err := cmd.Client()
 	if err != nil {
 		return nil, err

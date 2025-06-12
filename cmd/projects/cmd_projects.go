@@ -23,7 +23,7 @@ func NewProjectsCmd() *cobra.Command {
 }
 
 // GetService returns a new instance of projects service.
-func GetService() (*projects.Service, error) {
+func GetService() (projects.Service, error) {
 	client, err := cmd.Client()
 	if err != nil {
 		return nil, err

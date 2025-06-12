@@ -17,7 +17,7 @@ import (
 )
 
 // RunInit initializes the Smartling CLI.
-func (s Service) RunInit(dryRun bool) error {
+func (s service) RunInit(dryRun bool) error {
 	fmt.Printf("Generating %s...\n\n", s.Config.Path)
 
 	prompt := func(
