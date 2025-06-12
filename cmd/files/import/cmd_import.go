@@ -13,7 +13,7 @@ func NewImportCmd() *cobra.Command {
 	var (
 		published       bool
 		postTranslation bool
-		typ             string
+		fileType        string
 		overwrite       bool
 	)
 
@@ -52,7 +52,7 @@ func NewImportCmd() *cobra.Command {
 				URI:             uri,
 				File:            file,
 				Locale:          locale,
-				FileType:        typ,
+				FileType:        fileType,
 				PostTranslation: postTranslation,
 				Overwrite:       overwrite,
 			}
@@ -66,7 +66,7 @@ func NewImportCmd() *cobra.Command {
 
 	importCmd.Flags().BoolVar(&published, "published", false, "Translated content will be published.")
 	importCmd.Flags().BoolVar(&postTranslation, "post-translation", false, `Translated content will be imported into first step of translation. If there are none, it will be published.`)
-	importCmd.Flags().StringVar(&typ, "type", "", "Specify file type. If option is not given, file type will be deduced from extension.")
+	importCmd.Flags().StringVar(&fileType, "type", "", "Specify file type. If option is not given, file type will be deduced from extension.")
 	importCmd.Flags().BoolVar(&overwrite, "overwrite", false, "Overwrite any existing translations.")
 
 	return importCmd

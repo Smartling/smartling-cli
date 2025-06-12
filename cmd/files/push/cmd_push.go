@@ -16,7 +16,7 @@ func NewPushCmd() *cobra.Command {
 		authorize  bool
 		locales    []string
 		branch     string
-		typ        string
+		fileType   string
 		directory  string
 		directives []string
 	)
@@ -42,7 +42,7 @@ func NewPushCmd() *cobra.Command {
 				Locales:    locales,
 				Authorize:  authorize,
 				Directory:  directory,
-				FileType:   typ,
+				FileType:   fileType,
 				Directives: directives,
 			}
 
@@ -56,7 +56,7 @@ func NewPushCmd() *cobra.Command {
 	pushCmd.Flags().BoolVarP(&authorize, "authorize", "z", false, `Automatically authorize all locales in specified file. Incompatible with -l option.`)
 	pushCmd.Flags().StringSliceVarP(&locales, "locales", "l", []string{}, `Authorize only specified locales.`)
 	pushCmd.Flags().StringVarP(&branch, "branch", "b", "", `Prepend specified text to the file uri.`)
-	pushCmd.Flags().StringVarP(&typ, "type", "t", "", `Specifies file type which will be used instead of automatically deduced from extension.`)
+	pushCmd.Flags().StringVarP(&fileType, "type", "t", "", `Specifies file type which will be used instead of automatically deduced from extension.`)
 	pushCmd.Flags().StringSliceVarP(&directives, "directives", "r", []string{}, `Specifies one or more directives to use in push request.`)
 
 	return pushCmd
