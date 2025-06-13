@@ -2,10 +2,10 @@
 // github.com/vektra/mockery
 // template: testify
 
-package initializemocks
+package projectsmocks
 
 import (
-	"github.com/Smartling/smartling-cli/services/init"
+	"github.com/Smartling/smartling-cli/services/projects"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -36,24 +36,24 @@ func (_m *MockSrvInitializer) EXPECT() *MockSrvInitializer_Expecter {
 	return &MockSrvInitializer_Expecter{mock: &_m.Mock}
 }
 
-// InitSrv provides a mock function for the type MockSrvInitializer
-func (_mock *MockSrvInitializer) InitSrv() (initialize.Service, error) {
+// InitProjectsSrv provides a mock function for the type MockSrvInitializer
+func (_mock *MockSrvInitializer) InitProjectsSrv() (projects.Service, error) {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
-		panic("no return value specified for InitSrv")
+		panic("no return value specified for InitProjectsSrv")
 	}
 
-	var r0 initialize.Service
+	var r0 projects.Service
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func() (initialize.Service, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func() (projects.Service, error)); ok {
 		return returnFunc()
 	}
-	if returnFunc, ok := ret.Get(0).(func() initialize.Service); ok {
+	if returnFunc, ok := ret.Get(0).(func() projects.Service); ok {
 		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(initialize.Service)
+			r0 = ret.Get(0).(projects.Service)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func() error); ok {
@@ -64,29 +64,29 @@ func (_mock *MockSrvInitializer) InitSrv() (initialize.Service, error) {
 	return r0, r1
 }
 
-// MockSrvInitializer_InitSrv_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'InitSrv'
-type MockSrvInitializer_InitSrv_Call struct {
+// MockSrvInitializer_InitProjectsSrv_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'InitProjectsSrv'
+type MockSrvInitializer_InitProjectsSrv_Call struct {
 	*mock.Call
 }
 
-// InitSrv is a helper method to define mock.On call
-func (_e *MockSrvInitializer_Expecter) InitSrv() *MockSrvInitializer_InitSrv_Call {
-	return &MockSrvInitializer_InitSrv_Call{Call: _e.mock.On("InitSrv")}
+// InitProjectsSrv is a helper method to define mock.On call
+func (_e *MockSrvInitializer_Expecter) InitProjectsSrv() *MockSrvInitializer_InitProjectsSrv_Call {
+	return &MockSrvInitializer_InitProjectsSrv_Call{Call: _e.mock.On("InitProjectsSrv")}
 }
 
-func (_c *MockSrvInitializer_InitSrv_Call) Run(run func()) *MockSrvInitializer_InitSrv_Call {
+func (_c *MockSrvInitializer_InitProjectsSrv_Call) Run(run func()) *MockSrvInitializer_InitProjectsSrv_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run()
 	})
 	return _c
 }
 
-func (_c *MockSrvInitializer_InitSrv_Call) Return(service initialize.Service, err error) *MockSrvInitializer_InitSrv_Call {
+func (_c *MockSrvInitializer_InitProjectsSrv_Call) Return(service projects.Service, err error) *MockSrvInitializer_InitProjectsSrv_Call {
 	_c.Call.Return(service, err)
 	return _c
 }
 
-func (_c *MockSrvInitializer_InitSrv_Call) RunAndReturn(run func() (initialize.Service, error)) *MockSrvInitializer_InitSrv_Call {
+func (_c *MockSrvInitializer_InitProjectsSrv_Call) RunAndReturn(run func() (projects.Service, error)) *MockSrvInitializer_InitProjectsSrv_Call {
 	_c.Call.Return(run)
 	return _c
 }

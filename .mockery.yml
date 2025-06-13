@@ -20,6 +20,16 @@ packages:
       Service:
         config:
           dir: services/init/mocks
+  github.com/Smartling/smartling-cli/cmd/files:
+    interfaces:
+      SrvInitializer:
+        config:
+          dir: cmd/files/mocks
+  github.com/Smartling/smartling-cli/cmd/projects:
+    interfaces:
+      SrvInitializer:
+        config:
+          dir: cmd/projects/mocks
   github.com/Smartling/smartling-cli/cmd/init:
     interfaces:
       SrvInitializer:
