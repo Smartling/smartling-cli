@@ -14,7 +14,7 @@ func NewInfoCmd() *cobra.Command {
 		Short: "Get project details about specific project.",
 		Long:  `Get project details about specific project.`,
 		Run: func(_ *cobra.Command, _ []string) {
-			s, err := projectscmd.GetService()
+			s, err := projectscmd.InitService()
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
 				return

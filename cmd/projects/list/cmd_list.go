@@ -16,7 +16,7 @@ func NewListCmd() *cobra.Command {
 		Short: "Lists projects for current account.",
 		Long:  `Lists projects for current account.`,
 		Run: func(_ *cobra.Command, _ []string) {
-			s, err := projectscmd.GetService()
+			s, err := projectscmd.InitService()
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
 				return

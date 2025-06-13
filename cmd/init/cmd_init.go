@@ -13,7 +13,7 @@ var (
 )
 
 // NewInitCmd creates a new command to initialize the Smartling CLI.
-func NewInitCmd() *cobra.Command {
+func NewInitCmd(srvInitializer SrvInitializer) *cobra.Command {
 	initCmd := &cobra.Command{
 		Use:     "init",
 		Aliases: []string{"i"},
@@ -22,7 +22,7 @@ func NewInitCmd() *cobra.Command {
 essentially, assisting user in creating
 configuration file.`,
 		Run: func(_ *cobra.Command, _ []string) {
-			s, err := GetService()
+			s, err := srvInitializer.Init()
 			if err != nil {
 				rlog.Errorf("failed to get init service: %s", err)
 				return
@@ -39,8 +39,18 @@ configuration file.`,
 	return initCmd
 }
 
-// GetService initializes and returns a new instance of the init service.
-func GetService() (initialize.Service, error) {
+type SrvInitializer interface {
+	Init() (initialize.Service, error)
+}
+
+func NewSrvInitializer() SrvInitializer {
+	return srvInitializer{}
+}
+
+type srvInitializer struct{}
+
+// Init initializes and returns a new instance of the init service.
+func (s srvInitializer) Init() (initialize.Service, error) {
 	client, err := rootcmd.Client()
 	if err != nil {
 		return nil, err

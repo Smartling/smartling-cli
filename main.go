@@ -24,7 +24,8 @@ func main() {
 		panic(err)
 	}
 
-	initCmd := initialize.NewInitCmd()
+	srvInitializer := initialize.NewSrvInitializer()
+	initCmd := initialize.NewInitCmd(srvInitializer)
 	rootCmd.AddCommand(initCmd)
 
 	filesCmd := files.NewFilesCmd()
