@@ -1,0 +1,27 @@
+template: testify
+formatter: goimports
+pkgname: '{{.SrcPackageName}}mocks'
+filename: '{{.SrcPackageName}}.go'
+template-data:
+  unroll-variadic: true
+packages:
+  github.com/Smartling/smartling-cli/services/files:
+    interfaces:
+      Service:
+        config:
+          dir: services/files/mocks
+  github.com/Smartling/smartling-cli/services/projects:
+    interfaces:
+      Service:
+        config:
+          dir: services/projects/mocks
+  github.com/Smartling/smartling-cli/services/init:
+    interfaces:
+      Service:
+        config:
+          dir: services/init/mocks
+  github.com/Smartling/smartling-cli/cmd/init:
+    interfaces:
+      SrvInitializer:
+        config:
+          dir: cmd/init/mocks

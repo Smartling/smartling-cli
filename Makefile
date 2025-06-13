@@ -61,5 +61,11 @@ _pkg-init:
 %:
 	GOOS=$(basename $@) go build -o bin/smartling.$@
 
+_mockery-install:
+	go install github.com/vektra/mockery/v3@v3.3.4
+
+mockery:
+	mockery --config .mockery.yml
+
 tidy:
 	go mod tidy
