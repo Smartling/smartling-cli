@@ -10,7 +10,7 @@ import (
 var uri string
 
 // NewDeleteCmd creates a new command to delete files.
-func NewDeleteCmd() *cobra.Command {
+func NewDeleteCmd(initializer files.SrvInitializer) *cobra.Command {
 	deleteCmd := &cobra.Command{
 		Use:   "delete <uri>",
 		Short: "Deletes given file from Smartling.",
@@ -20,7 +20,7 @@ func NewDeleteCmd() *cobra.Command {
 				uri = args[0]
 			}
 
-			s, err := files.InitFilesSrv()
+			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				return

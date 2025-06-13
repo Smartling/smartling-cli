@@ -13,7 +13,7 @@ var (
 )
 
 // NewRenameCmd creates a new command to rename files.
-func NewRenameCmd() *cobra.Command {
+func NewRenameCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	renameCmd := &cobra.Command{
 		Use:   "rename <old> <new>",
 		Short: "Renames given file by old URI into new URI.",
@@ -26,7 +26,7 @@ func NewRenameCmd() *cobra.Command {
 				new = args[1]
 			}
 
-			s, err := filescmd.InitFilesSrv()
+			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				return

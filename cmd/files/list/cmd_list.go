@@ -14,7 +14,7 @@ var (
 )
 
 // NewListCmd creates a new command to list files.
-func NewListCmd() *cobra.Command {
+func NewListCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list <uri>",
 		Short: "Lists files from specified project.",
@@ -25,7 +25,7 @@ func NewListCmd() *cobra.Command {
 				uri = args[0]
 			}
 
-			s, err := filescmd.InitFilesSrv()
+			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				return

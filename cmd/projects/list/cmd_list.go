@@ -10,13 +10,13 @@ import (
 var short bool
 
 // NewListCmd creates a new command to list projects.
-func NewListCmd() *cobra.Command {
+func NewListCmd(initializer projectscmd.SrvInitializer) *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list",
 		Short: "Lists projects for current account.",
 		Long:  `Lists projects for current account.`,
 		Run: func(_ *cobra.Command, _ []string) {
-			s, err := projectscmd.InitService()
+			s, err := initializer.InitProjectsSrv()
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
 				return

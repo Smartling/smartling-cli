@@ -15,7 +15,7 @@ var (
 )
 
 // NewStatusCmd creates a new command to show file translation status.
-func NewStatusCmd() *cobra.Command {
+func NewStatusCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	statusCmd := &cobra.Command{
 		Use:   "status <uri>",
 		Short: "Shows file translation status.",
@@ -26,7 +26,7 @@ func NewStatusCmd() *cobra.Command {
 				uri = args[0]
 			}
 
-			s, err := filescmd.InitFilesSrv()
+			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				return
@@ -37,7 +37,6 @@ func NewStatusCmd() *cobra.Command {
 				Directory: directory,
 				Format:    formatType,
 			}
-
 			err = s.RunStatus(p)
 			if err != nil {
 				rlog.Errorf("failed to run status: %s", err)

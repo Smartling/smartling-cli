@@ -9,7 +9,7 @@ import (
 )
 
 // NewImportCmd creates a new command to import translations.
-func NewImportCmd() *cobra.Command {
+func NewImportCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	var (
 		published       bool
 		postTranslation bool
@@ -37,7 +37,7 @@ func NewImportCmd() *cobra.Command {
 				locale = args[2]
 			}
 
-			s, err := filescmd.InitFilesSrv()
+			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				return

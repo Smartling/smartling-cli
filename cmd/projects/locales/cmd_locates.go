@@ -16,13 +16,13 @@ var (
 )
 
 // NewLocatesCmd creates a new command to list locales.
-func NewLocatesCmd() *cobra.Command {
+func NewLocatesCmd(initializer projectscmd.SrvInitializer) *cobra.Command {
 	locatesCmd := &cobra.Command{
 		Use:   "locates",
 		Short: "Display list of target locales.",
 		Long:  `Display list of target locales.`,
 		Run: func(_ *cobra.Command, _ []string) {
-			s, err := projectscmd.InitService()
+			s, err := initializer.InitProjectsSrv()
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
 				return

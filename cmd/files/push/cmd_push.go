@@ -9,7 +9,7 @@ import (
 )
 
 // NewPushCmd creates a new command to upload files to the Smartling platform.
-func NewPushCmd() *cobra.Command {
+func NewPushCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	var (
 		authorize  bool
 		locales    []string
@@ -35,7 +35,7 @@ func NewPushCmd() *cobra.Command {
 				uri = args[1]
 			}
 
-			s, err := filescmd.InitFilesSrv()
+			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				return

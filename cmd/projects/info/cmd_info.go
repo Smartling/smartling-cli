@@ -8,13 +8,13 @@ import (
 )
 
 // NewInfoCmd creates a new command to get project details.
-func NewInfoCmd() *cobra.Command {
+func NewInfoCmd(initializer projectscmd.SrvInitializer) *cobra.Command {
 	infoCmd := &cobra.Command{
 		Use:   "info",
 		Short: "Get project details about specific project.",
 		Long:  `Get project details about specific project.`,
 		Run: func(_ *cobra.Command, _ []string) {
-			s, err := projectscmd.InitService()
+			s, err := initializer.InitProjectsSrv()
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
 				return

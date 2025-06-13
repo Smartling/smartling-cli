@@ -19,7 +19,7 @@ var (
 )
 
 // NewPullCmd creates a new command to pull files.
-func NewPullCmd() *cobra.Command {
+func NewPullCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	pullCmd := &cobra.Command{
 		Use:   "pull <uri>",
 		Short: "Pulls specified files from server.",
@@ -29,7 +29,7 @@ func NewPullCmd() *cobra.Command {
 				uri = args[0]
 			}
 
-			s, err := filescmd.InitFilesSrv()
+			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				return

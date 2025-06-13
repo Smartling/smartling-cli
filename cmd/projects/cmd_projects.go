@@ -22,8 +22,18 @@ func NewProjectsCmd() *cobra.Command {
 	return projectsCmd
 }
 
-// InitService returns a new instance of projects service.
-func InitService() (projects.Service, error) {
+type SrvInitializer interface {
+	InitProjectsSrv() (projects.Service, error)
+}
+
+func NewSrvInitializer() SrvInitializer {
+	return srvInitializer{}
+}
+
+type srvInitializer struct{}
+
+// InitProjectsSrv returns a new instance of projects service.
+func (s srvInitializer) InitProjectsSrv() (projects.Service, error) {
 	client, err := cmd.Client()
 	if err != nil {
 		return nil, err

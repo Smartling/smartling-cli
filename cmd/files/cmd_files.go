@@ -3,7 +3,6 @@ package files
 import (
 	"github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/files"
-
 	"github.com/spf13/cobra"
 )
 
@@ -22,8 +21,18 @@ func NewFilesCmd() *cobra.Command {
 	return filesCmd
 }
 
+type SrvInitializer interface {
+	InitFilesSrv() (files.Service, error)
+}
+
+func NewSrvInitializer() SrvInitializer {
+	return srvInitializer{}
+}
+
+type srvInitializer struct{}
+
 // InitFilesSrv initializes `files` service with the client and configuration.
-func InitFilesSrv() (files.Service, error) {
+func (i srvInitializer) InitFilesSrv() (files.Service, error) {
 	client, err := cmd.Client()
 	if err != nil {
 		return nil, err

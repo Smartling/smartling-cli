@@ -22,7 +22,7 @@ func NewInitCmd(srvInitializer SrvInitializer) *cobra.Command {
 essentially, assisting user in creating
 configuration file.`,
 		Run: func(_ *cobra.Command, _ []string) {
-			s, err := srvInitializer.Init()
+			s, err := srvInitializer.InitSrv()
 			if err != nil {
 				rlog.Errorf("failed to get init service: %s", err)
 				return
@@ -40,7 +40,7 @@ configuration file.`,
 }
 
 type SrvInitializer interface {
-	Init() (initialize.Service, error)
+	InitSrv() (initialize.Service, error)
 }
 
 func NewSrvInitializer() SrvInitializer {
@@ -50,7 +50,7 @@ func NewSrvInitializer() SrvInitializer {
 type srvInitializer struct{}
 
 // Init initializes and returns a new instance of the init service.
-func (s srvInitializer) Init() (initialize.Service, error) {
+func (s srvInitializer) InitSrv() (initialize.Service, error) {
 	client, err := rootcmd.Client()
 	if err != nil {
 		return nil, err
