@@ -15,7 +15,8 @@ import (
 func TestNewListCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
 	projectsSrv := srvmocks.NewMockService(t)
-	projectsSrv.On("RunList", true).Run(func(args mock.Arguments) {
+	shortArg := true
+	projectsSrv.On("RunList", shortArg).Run(func(args mock.Arguments) {
 		fmt.Fprintln(buf, fmt.Sprintf("RunList was called with %d args", len(args)))
 		fmt.Fprintln(buf, fmt.Sprintf("short: %v", args[0]))
 	}).Return(nil)
@@ -27,7 +28,7 @@ func TestNewListCmd(t *testing.T) {
 
 	cmd.SetOut(buf)
 	cmd.SetErr(buf)
-	cmd.SetArgs([]string{"--short", "true"})
+	cmd.SetArgs([]string{"--short", fmt.Sprintf("%v", shortArg)})
 
 	err := cmd.Execute()
 	if err != nil {
@@ -35,9 +36,9 @@ func TestNewListCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := `RunList was called with 1 args
-short: true
-`
+	expected := fmt.Sprintf(`RunList was called with 1 args
+short: %v
+`, shortArg)
 
 	if !strings.Contains(output, expected) {
 		t.Errorf("Expected output to contain %q, got %q", expected, output)

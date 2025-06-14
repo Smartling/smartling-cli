@@ -34,8 +34,8 @@ func TestNewLocatesCmd(t *testing.T) {
 	cmd.SetOut(buf)
 	cmd.SetErr(buf)
 	cmd.SetArgs([]string{
-		"--short", "true",
-		"--format", "any",
+		"--short", fmt.Sprintf("%v", params.Short),
+		"--format", params.Format,
 	})
 
 	err := cmd.Execute()
@@ -44,9 +44,9 @@ func TestNewLocatesCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := `RunLocales was called with 1 args
-params: {any true false}
-`
+	expected := fmt.Sprintf(`RunLocales was called with 1 args
+params: %v
+`, params)
 
 	if !strings.Contains(output, expected) {
 		t.Errorf("Expected output to contain %q, got %q", expected, output)
