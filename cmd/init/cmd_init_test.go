@@ -6,20 +6,20 @@ import (
 	"strings"
 	"testing"
 
-	initializecmdmocks "github.com/Smartling/smartling-cli/cmd/init/mocks"
-	initializemocks "github.com/Smartling/smartling-cli/services/init/mocks"
+	cmdmocks "github.com/Smartling/smartling-cli/cmd/init/mocks"
+	srvmocks "github.com/Smartling/smartling-cli/services/init/mocks"
 
 	"github.com/stretchr/testify/mock"
 )
 
 func TestNewInitCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
-	initSrv := initializemocks.NewMockService(t)
+	initSrv := srvmocks.NewMockService(t)
 	initSrv.On("RunInit", false).Run(func(args mock.Arguments) {
 		fmt.Fprintln(buf, fmt.Sprintf("RunInit was called with: %v", args[0]))
 	}).Return(nil)
 
-	initializer := initializecmdmocks.NewMockSrvInitializer(t)
+	initializer := cmdmocks.NewMockSrvInitializer(t)
 	initializer.On("Init").Return(initSrv, nil)
 
 	cmd := NewInitCmd(initializer)
@@ -43,12 +43,12 @@ func TestNewInitCmd(t *testing.T) {
 
 func TestNewInitCmdDryRun(t *testing.T) {
 	buf := new(bytes.Buffer)
-	initSrv := initializemocks.NewMockService(t)
+	initSrv := srvmocks.NewMockService(t)
 	initSrv.On("RunInit", true).Run(func(args mock.Arguments) {
 		fmt.Fprintln(buf, fmt.Sprintf("RunInit was called with: %v", args[0]))
 	}).Return(nil)
 
-	initializer := initializecmdmocks.NewMockSrvInitializer(t)
+	initializer := cmdmocks.NewMockSrvInitializer(t)
 	initializer.On("Init").Return(initSrv, nil)
 
 	cmd := NewInitCmd(initializer)

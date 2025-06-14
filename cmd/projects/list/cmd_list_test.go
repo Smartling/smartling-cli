@@ -6,21 +6,21 @@ import (
 	"strings"
 	"testing"
 
-	projectscmdmocks "github.com/Smartling/smartling-cli/cmd/projects/mocks"
-	projectsmocks "github.com/Smartling/smartling-cli/services/projects/mocks"
+	cmdmocks "github.com/Smartling/smartling-cli/cmd/projects/mocks"
+	srvmocks "github.com/Smartling/smartling-cli/services/projects/mocks"
 
 	"github.com/stretchr/testify/mock"
 )
 
 func TestNewListCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
-	projectsSrv := projectsmocks.NewMockService(t)
+	projectsSrv := srvmocks.NewMockService(t)
 	projectsSrv.On("RunList", true).Run(func(args mock.Arguments) {
 		fmt.Fprintln(buf, fmt.Sprintf("RunList was called with %d args", len(args)))
 		fmt.Fprintln(buf, fmt.Sprintf("short: %v", args[0]))
 	}).Return(nil)
 
-	initializer := projectscmdmocks.NewMockSrvInitializer(t)
+	initializer := cmdmocks.NewMockSrvInitializer(t)
 	initializer.On("InitProjectsSrv").Return(projectsSrv, nil)
 
 	cmd := NewListCmd(initializer)

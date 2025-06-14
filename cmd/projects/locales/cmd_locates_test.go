@@ -3,17 +3,19 @@ package locales
 import (
 	"bytes"
 	"fmt"
-	projectscmdmocks "github.com/Smartling/smartling-cli/cmd/projects/mocks"
-	"github.com/Smartling/smartling-cli/services/projects"
-	projectsmocks "github.com/Smartling/smartling-cli/services/projects/mocks"
-	"github.com/stretchr/testify/mock"
 	"strings"
 	"testing"
+
+	cmdmocks "github.com/Smartling/smartling-cli/cmd/projects/mocks"
+	"github.com/Smartling/smartling-cli/services/projects"
+	srvmocks "github.com/Smartling/smartling-cli/services/projects/mocks"
+
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNewLocatesCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
-	projectsSrv := projectsmocks.NewMockService(t)
+	projectsSrv := srvmocks.NewMockService(t)
 	params := projects.LocalesParams{
 		Format: "any",
 		Short:  true,
@@ -24,7 +26,7 @@ func TestNewLocatesCmd(t *testing.T) {
 		fmt.Fprintln(buf, fmt.Sprintf("params: %v", args[0]))
 	}).Return(nil)
 
-	initializer := projectscmdmocks.NewMockSrvInitializer(t)
+	initializer := cmdmocks.NewMockSrvInitializer(t)
 	initializer.On("InitProjectsSrv").Return(projectsSrv, nil)
 
 	cmd := NewLocatesCmd(initializer)
