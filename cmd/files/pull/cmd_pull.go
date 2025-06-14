@@ -16,6 +16,7 @@ var (
 	retrieve   string
 	directory  string
 	formatPath string
+	locales    []string
 )
 
 // NewPullCmd creates a new command to pull files.
@@ -40,9 +41,9 @@ func NewPullCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 				Format:    formatPath,
 				Directory: directory,
 				Source:    source,
-				Locales:   nil,
-				Progress:  "",
-				Retrieve:  "",
+				Locales:   locales,
+				Progress:  progress,
+				Retrieve:  retrieve,
 			}
 			err = s.RunPull(params)
 			if err != nil {
@@ -56,6 +57,7 @@ func NewPullCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	pullCmd.Flags().StringVar(&progress, "progress", "", `Pulls only translations that are at least specified percent of work complete.`)
 	pullCmd.Flags().StringVar(&retrieve, "retrieve", "", `Retrieval type: pending, published, pseudo or contextMatchingInstrumented.`)
 	pullCmd.Flags().StringVarP(&directory, "directory", "d", "", `Download all files to specified directory.`)
+	pullCmd.Flags().StringSliceVarP(&locales, "locales", "l", []string{}, `Authorize only specified locales.`)
 	pullCmd.Flags().StringVar(&formatPath, "format", "", `Can be used to format path to downloaded files.
                            Note, that single file can be translated in
                            different locales, so format should include locale
