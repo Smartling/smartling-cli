@@ -22,10 +22,12 @@ func NewProjectsCmd() *cobra.Command {
 	return projectsCmd
 }
 
+// SrvInitializer defines projects service initializer
 type SrvInitializer interface {
 	InitProjectsSrv() (projects.Service, error)
 }
 
+// NewSrvInitializer returns new SrvInitializer implementation
 func NewSrvInitializer() SrvInitializer {
 	return srvInitializer{}
 }

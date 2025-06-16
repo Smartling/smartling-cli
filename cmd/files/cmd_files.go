@@ -21,10 +21,12 @@ func NewFilesCmd() *cobra.Command {
 	return filesCmd
 }
 
+// SrvInitializer defines files service initializer
 type SrvInitializer interface {
 	InitFilesSrv() (files.Service, error)
 }
 
+// NewSrvInitializer returns new SrvInitializer implementation
 func NewSrvInitializer() SrvInitializer {
 	return srvInitializer{}
 }

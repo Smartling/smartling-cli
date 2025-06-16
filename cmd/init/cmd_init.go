@@ -39,10 +39,12 @@ configuration file.`,
 	return initCmd
 }
 
+// SrvInitializer defines service initializer
 type SrvInitializer interface {
 	InitSrv() (initialize.Service, error)
 }
 
+// NewSrvInitializer returns new SrvInitializer implementation
 func NewSrvInitializer() SrvInitializer {
 	return srvInitializer{}
 }

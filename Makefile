@@ -61,6 +61,12 @@ _pkg-init:
 %:
 	GOOS=$(basename $@) go build -o bin/smartling.$@
 
+_linter:
+	go install github.com/mgechev/revive@v1.10.0
+
+lint:
+	revive -config .revive.toml ./...
+
 _mockery-install:
 	go install github.com/vektra/mockery/v3@v3.3.4
 
