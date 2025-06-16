@@ -20,7 +20,7 @@ func TestNewInitCmd(t *testing.T) {
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("Init").Return(initSrv, nil)
+	initializer.On("InitSrv").Return(initSrv, nil)
 
 	cmd := NewInitCmd(initializer)
 
@@ -49,7 +49,7 @@ func TestNewInitCmdDryRun(t *testing.T) {
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("Init").Return(initSrv, nil)
+	initializer.On("InitSrv").Return(initSrv, nil)
 
 	cmd := NewInitCmd(initializer)
 

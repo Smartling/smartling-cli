@@ -67,5 +67,8 @@ _mockery-install:
 mockery:
 	mockery --config .mockery.yml
 
+test_unit:
+	go test ./cmd/...
+
 tidy:
 	go mod tidy
