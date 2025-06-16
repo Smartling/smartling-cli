@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	verbose      uint8
+	smartlingURL string
 	configFile   string
 	project      string
 	account      string
@@ -23,7 +23,7 @@ var (
 	threads      uint32
 	insecure     bool
 	proxy        string
-	smartlingURL string
+	verbose      int
 
 	isInit     bool
 	isFiles    bool
@@ -74,7 +74,7 @@ executed for at most <number> of threads.
 	rootCmd.PersistentFlags().StringVar(&proxy, "proxy", "", "Use specified URL as proxy server.")
 	rootCmd.PersistentFlags().StringVar(&smartlingURL, "smartling-url", "", `Specify base Smartling URL, merely for testing
 purposes.`)
-	rootCmd.PersistentFlags().Uint8VarP(&verbose, "verbose", "v", 0, "Verbose logging")
+	rootCmd.PersistentFlags().CountVarP(&verbose, "verbose", "v", "Verbose logging")
 
 	return rootCmd, nil
 }
@@ -124,7 +124,7 @@ func Client() (sdk.Client, error) {
 	if err != nil {
 		return sdk.Client{}, err
 	}
-	client, err := client.CreateClient(CLIClientConfig(), cnf, verbose)
+	client, err := client.CreateClient(CLIClientConfig(), cnf, uint8(verbose))
 	if err != nil {
 		return sdk.Client{}, err
 	}
