@@ -9,11 +9,11 @@ import (
 func TestProjectInfo_verbose(t *testing.T) {
 	subCommands := []string{"projects", "info"}
 	tests := []struct {
-		name             string
-		args             []string
-		expectedOutput   string
-		unexpectedOutput string
-		wantErr          bool
+		name              string
+		args              []string
+		expectedOutputs   []string
+		unexpectedOutputs []string
+		wantErr           bool
 	}{
 		{
 			name: "debug output with verbose flag",
@@ -21,8 +21,9 @@ func TestProjectInfo_verbose(t *testing.T) {
 				[]string{
 					"-vv",
 				}...),
-			expectedOutput: "DEBUG",
-			wantErr:        false,
+			expectedOutputs:   []string{"DEBUG", "ID", "ACCOUNT", "NAME", "LOCALE", "STATUS"},
+			unexpectedOutputs: []string{"ERROR"},
+			wantErr:           false,
 		},
 		{
 			name: "debug output without verbose flag",
@@ -30,8 +31,9 @@ func TestProjectInfo_verbose(t *testing.T) {
 				[]string{
 					"-v",
 				}...),
-			unexpectedOutput: "DEBUG",
-			wantErr:          false,
+			expectedOutputs:   []string{"ID", "ACCOUNT", "NAME", "LOCALE", "STATUS"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
 		},
 	}
 
@@ -43,14 +45,18 @@ func TestProjectInfo_verbose(t *testing.T) {
 			if err != nil {
 				t.Fatalf("error: %v, output: %s", err, string(out))
 			}
-			if tt.expectedOutput != "" {
-				if !strings.Contains(string(out), tt.expectedOutput) {
-					t.Errorf("output: %s\nwithout expected: %s", string(out), tt.expectedOutput)
+			if len(tt.expectedOutputs) > 0 {
+				for _, expectedOutput := range tt.expectedOutputs {
+					if !strings.Contains(string(out), expectedOutput) {
+						t.Errorf("output: %s\nwithout expected: %s", string(out), expectedOutput)
+					}
 				}
 			}
-			if tt.unexpectedOutput != "" {
-				if strings.Contains(string(out), tt.unexpectedOutput) {
-					t.Errorf("output: %s\nwith unexpected: %s", string(out), tt.expectedOutput)
+			if len(tt.unexpectedOutputs) > 0 {
+				for _, unexpectedOutput := range tt.unexpectedOutputs {
+					if strings.Contains(string(out), unexpectedOutput) {
+						t.Errorf("output: %s\nwith unexpected: %s", string(out), unexpectedOutput)
+					}
 				}
 			}
 		})
