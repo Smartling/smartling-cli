@@ -76,5 +76,9 @@ mockery:
 test_unit:
 	go test ./cmd/...
 
+# add binary and config to tests/cmd/bin/ before run test integration
+test_integration:
+	go test ./tests/...
+
 tidy:
 	go mod tidy
