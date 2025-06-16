@@ -41,9 +41,9 @@ type (
 	}
 )
 
-type ProgressRenderer struct{}
+type Renderer struct{}
 
-func (renderer ProgressRenderer) Render(progress *Progress) error {
+func (r Renderer) Render(progress *Progress) error {
 	var info consoleScreenBufferInfo
 
 	_, _, code := syscall.SyscallN(

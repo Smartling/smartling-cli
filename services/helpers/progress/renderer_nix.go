@@ -7,11 +7,11 @@ import (
 	"os"
 )
 
-// ProgressRenderer is a renderer for progress that outputs to standard error.
-type ProgressRenderer struct{}
+// Renderer is a renderer for progress that outputs to standard error.
+type Renderer struct{}
 
 // Render outputs the progress to standard error.
-func (renderer ProgressRenderer) Render(progress *Progress) error {
+func (r Renderer) Render(progress *Progress) error {
 	_, err := fmt.Fprintf(os.Stderr, "%s\r", progress.String())
 
 	return err

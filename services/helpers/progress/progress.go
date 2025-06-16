@@ -13,7 +13,7 @@ type Progress struct {
 	Current int
 	Total   int
 
-	Renderer ProgressRenderer
+	Renderer Renderer
 }
 
 // String returns string representation of the progress
