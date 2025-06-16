@@ -1,4 +1,4 @@
-package locales
+package locates
 
 import (
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"

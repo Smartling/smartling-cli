@@ -61,6 +61,9 @@ _pkg-init:
 %:
 	GOOS=$(basename $@) go build -o bin/smartling.$@
 
+tidy:
+	go mod tidy
+
 _linter:
 	go install github.com/mgechev/revive@v1.10.0
 
@@ -79,6 +82,3 @@ test_unit:
 # add binary and config to tests/cmd/bin/ before run test integration
 test_integration:
 	go test ./tests/...
-
-tidy:
-	go mod tidy

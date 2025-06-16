@@ -1,4 +1,4 @@
-package locales
+package locates
 
 import (
 	"bytes"
