@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestProjectLocates(t *testing.T) {
+func TestProjectLocales(t *testing.T) {
 	subCommands := []string{"projects", "locales"}
 	tests := []struct {
 		name              string
