@@ -67,7 +67,7 @@ This option overrides config value "user_id".`)
 This option overrides config value "secret".`)
 	rootCmd.PersistentFlags().StringVarP(&directory, "directory", "d", "", `Sets directory to operate on, usually, to store or to
 read files.  Depends on command.  [default: .]`)
-	rootCmd.PersistentFlags().Uint32Var(&threads, "threads", 0, `If command can be executed concurrently, it will be
+	rootCmd.PersistentFlags().Uint32Var(&threads, "threads", 4, `If command can be executed concurrently, it will be
 executed for at most <number> of threads.
 [default: 4]`)
 	rootCmd.PersistentFlags().BoolVarP(&insecure, "insecure", "k", false, "Skip HTTPS certificate validation.")
