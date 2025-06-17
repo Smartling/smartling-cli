@@ -35,6 +35,13 @@ func TestFilesList(t *testing.T) {
 			unexpectedOutputs: []string{"plainText", "DEBUG", "ERROR"},
 			wantErr:           false,
 		},
+		{
+			name:              "Custom output format",
+			args:              append(subCommands, "*.txt", "--format", "{{.FileType}}\\t||\\t{{.FileURI}};\\n"),
+			expectedOutputs:   []string{"plainText", "website_menu.txt", "||"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
+		},
 	}
 
 	for _, tt := range tests {

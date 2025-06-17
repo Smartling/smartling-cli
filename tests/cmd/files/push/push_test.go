@@ -135,12 +135,12 @@ func preparation(t *testing.T, filename, mdFilename string) (func(), func()) {
 		}
 	}
 	after := func() {
-		/*if err := os.Remove(filename); err != nil {
+		if err := os.Remove(filename); err != nil {
 			t.Fatal(err)
 		}
 		if err := os.Remove(mdFilename); err != nil {
 			t.Fatal(err)
-		}*/
+		}
 	}
 	return before, after
 }
