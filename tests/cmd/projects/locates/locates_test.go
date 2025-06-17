@@ -1,4 +1,4 @@
-package cmd
+package locates
 
 import (
 	"os/exec"
@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-func TestProjectInfo_verbose(t *testing.T) {
-	subCommands := []string{"projects", "info"}
+func TestProjectLocates(t *testing.T) {
+	subCommands := []string{"projects", "locates"}
 	tests := []struct {
 		name              string
 		args              []string
@@ -16,23 +16,20 @@ func TestProjectInfo_verbose(t *testing.T) {
 		wantErr           bool
 	}{
 		{
-			name: "debug output with debug verbose flag",
-			args: append(subCommands,
-				[]string{
-					"-vv",
-				}...),
-			expectedOutputs:   []string{"DEBUG", "ID", "ACCOUNT", "NAME", "LOCALE", "STATUS"},
-			unexpectedOutputs: []string{"ERROR"},
+			name:              "full locate",
+			args:              append(subCommands),
+			expectedOutputs:   []string{"(", ")", "true"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
-			name: "debug output without debug verbose flag",
+			name: "short list",
 			args: append(subCommands,
 				[]string{
-					"-v",
+					"-s",
 				}...),
-			expectedOutputs:   []string{"ID", "ACCOUNT", "NAME", "LOCALE", "STATUS"},
-			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			expectedOutputs:   []string{"-"},
+			unexpectedOutputs: []string{"(", ")", "true"},
 			wantErr:           false,
 		},
 	}

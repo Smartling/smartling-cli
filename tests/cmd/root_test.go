@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"os/exec"
-	"strings"
 	"testing"
 )
 
@@ -29,7 +28,7 @@ func TestRoot(t *testing.T) {
 			if err != nil {
 				t.Fatalf("error: %v, output: %s", err, string(out))
 			}
-			if !strings.Contains(string(out), tt.wantOutput) {
+			if string(out) != tt.wantOutput {
 				t.Errorf("unexpected output: %s", string(out))
 			}
 		})
