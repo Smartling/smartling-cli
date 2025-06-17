@@ -10,6 +10,7 @@ import (
 
 func TestFilesPush(t *testing.T) {
 	filename := "website_menu.txt"
+	mdDilename := "readme.md"
 
 	relativeDir := "../../bin/"
 	absDir, err := filepath.Abs(relativeDir)
@@ -17,7 +18,7 @@ func TestFilesPush(t *testing.T) {
 		t.Fatalf("Failed to get abs path: %v", err)
 	}
 
-	before, after := preparation(t, filepath.Join(absDir, filename))
+	before, after := preparation(t, filepath.Join(absDir, filename), filepath.Join(absDir, mdDilename))
 	before()
 	defer after()
 
@@ -57,6 +58,27 @@ func TestFilesPush(t *testing.T) {
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
+		{
+			name:              "Branching versioning",
+			args:              append(subCommands, "../../cmd/bin/**.txt", "-b", "testing"),
+			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
+		},
+		{
+			name:              "Branching @auto",
+			args:              append(subCommands, "../../cmd/bin/**.txt", "-b", "@auto"),
+			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
+		},
+		{
+			name:              "txt and md files",
+			args:              append(subCommands, "../../cmd/bin/**.{txt,md}"),
+			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -85,7 +107,7 @@ func TestFilesPush(t *testing.T) {
 	}
 }
 
-func preparation(t *testing.T, filename string) (func(), func()) {
+func preparation(t *testing.T, filename, mdFilename string) (func(), func()) {
 	before := func() {
 		f, err := os.Create(filename)
 		if err != nil {
@@ -105,11 +127,27 @@ func preparation(t *testing.T, filename string) (func(), func()) {
 		if _, err := f.WriteString("News\n"); err != nil {
 			t.Fatal(err)
 		}
+
+		mdFile, err := os.Create(mdFilename)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			if err := mdFile.Close(); err != nil {
+				t.Fatal(err)
+			}
+		}()
+		if _, err := mdFile.WriteString("Readme\n"); err != nil {
+			t.Fatal(err)
+		}
 	}
 	after := func() {
-		/*if err := os.Remove(filename); err != nil {
+		if err := os.Remove(filename); err != nil {
 			t.Fatal(err)
-		}*/
+		}
+		if err := os.Remove(mdFilename); err != nil {
+			t.Fatal(err)
+		}
 	}
 	return before, after
 }
