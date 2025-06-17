@@ -1,4 +1,4 @@
-package push
+package pull
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestFilesPush(t *testing.T) {
+func TestFilesPull(t *testing.T) {
 	filename := "website_menu.txt"
 	mdDilename := "readme.md"
 
@@ -22,7 +22,7 @@ func TestFilesPush(t *testing.T) {
 	before()
 	defer after()
 
-	subCommands := []string{"files", "push"}
+	subCommands := []string{"files", "pull"}
 	tests := []struct {
 		name              string
 		args              []string
@@ -31,45 +31,17 @@ func TestFilesPush(t *testing.T) {
 		wantErr           bool
 	}{
 		{
-			name:              "Simplest one-file upload",
-			args:              append(subCommands, filename),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
-			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			name:              "Download unavailable files",
+			args:              append(subCommands, "**test.xemel", "--source"),
+			expectedOutputs:   []string{"ERROR", "failed to run pull", "no files found on the remote server"},
+			unexpectedOutputs: []string{"DEBUG"},
 			wantErr:           false,
 		},
 		{
-			name:              "One-file upload with URI",
-			args:              append(subCommands, filename, "/texts/"+filename),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
-			unexpectedOutputs: []string{"DEBUG", "ERROR"},
-			wantErr:           false,
-		},
-		{
-			name:              "Override file type",
-			args:              append(subCommands, filename, "--type", "plaintext"),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
-			unexpectedOutputs: []string{"DEBUG", "ERROR"},
-			wantErr:           false,
-		},
-		{
-			name:              "Upload files by mask",
-			args:              append(subCommands, "../../cmd/bin/**.txt"),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
-			unexpectedOutputs: []string{"DEBUG", "ERROR"},
-			wantErr:           false,
-		},
-		{
-			name:              "Branching versioning",
-			args:              append(subCommands, "../../cmd/bin/**.txt", "-b", "testing"),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
-			unexpectedOutputs: []string{"DEBUG", "ERROR"},
-			wantErr:           false,
-		},
-		{
-			name:              "Branching @auto",
-			args:              append(subCommands, "../../cmd/bin/**.txt", "-b", "@auto"),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
-			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			name:              "Download translated files files",
+			args:              append(subCommands, "*.txt", "-l", "uk-UA"),
+			expectedOutputs:   []string{"downloaded", "txt"},
+			unexpectedOutputs: []string{"ERROR", "DEBUG"},
 			wantErr:           false,
 		},
 	}
@@ -135,12 +107,12 @@ func preparation(t *testing.T, filename, mdFilename string) (func(), func()) {
 		}
 	}
 	after := func() {
-		/*if err := os.Remove(filename); err != nil {
+		if err := os.Remove(filename); err != nil {
 			t.Fatal(err)
 		}
 		if err := os.Remove(mdFilename); err != nil {
 			t.Fatal(err)
-		}*/
+		}
 	}
 	return before, after
 }
