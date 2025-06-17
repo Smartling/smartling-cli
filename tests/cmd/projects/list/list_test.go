@@ -23,11 +23,8 @@ func TestProjectList(t *testing.T) {
 			wantErr:           false,
 		},
 		{
-			name: "short list",
-			args: append(subCommands,
-				[]string{
-					"-s",
-				}...),
+			name:              "short list",
+			args:              append(subCommands, "-s"),
 			expectedOutputs:   []string{},
 			unexpectedOutputs: []string{"en", "CLI", "en-US", "DEBUG", "ERROR"},
 			wantErr:           false,

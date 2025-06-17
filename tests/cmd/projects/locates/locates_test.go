@@ -17,17 +17,14 @@ func TestProjectLocates(t *testing.T) {
 	}{
 		{
 			name:              "full locate",
-			args:              append(subCommands),
+			args:              subCommands,
 			expectedOutputs:   []string{"(", ")", "true"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
-			name: "short list",
-			args: append(subCommands,
-				[]string{
-					"-s",
-				}...),
+			name:              "short list",
+			args:              append(subCommands, "-s"),
 			expectedOutputs:   []string{"-"},
 			unexpectedOutputs: []string{"(", ")", "true"},
 			wantErr:           false,

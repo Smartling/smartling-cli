@@ -16,21 +16,15 @@ func TestProjectInfo_verbose(t *testing.T) {
 		wantErr           bool
 	}{
 		{
-			name: "debug output with debug verbose flag",
-			args: append(subCommands,
-				[]string{
-					"-vv",
-				}...),
+			name:              "debug output with debug verbose flag",
+			args:              append(subCommands, "-vv"),
 			expectedOutputs:   []string{"DEBUG", "ID", "ACCOUNT", "NAME", "LOCALE", "STATUS"},
 			unexpectedOutputs: []string{"ERROR"},
 			wantErr:           false,
 		},
 		{
-			name: "debug output without debug verbose flag",
-			args: append(subCommands,
-				[]string{
-					"-v",
-				}...),
+			name:              "debug output without debug verbose flag",
+			args:              append(subCommands, "-v"),
 			expectedOutputs:   []string{"ID", "ACCOUNT", "NAME", "LOCALE", "STATUS"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
