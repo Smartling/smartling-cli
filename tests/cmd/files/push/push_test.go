@@ -50,13 +50,13 @@ func TestFilesPush(t *testing.T) {
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
-		/*{
+		{
 			name:              "Upload files by mask",
-			args:              append(subCommands, "**.txt"),
+			args:              append(subCommands, "../../cmd/bin/**.txt"),
 			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
-		}, */
+		},
 	}
 
 	for _, tt := range tests {
