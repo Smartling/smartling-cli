@@ -1,4 +1,4 @@
-package locates
+package locales
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestNewLocatesCmd(t *testing.T) {
+func TestNewLocaLesCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
 	projectsSrv := srvmocks.NewMockService(t)
 	params := projects.LocalesParams{
@@ -29,7 +29,7 @@ func TestNewLocatesCmd(t *testing.T) {
 	initializer := cmdmocks.NewMockSrvInitializer(t)
 	initializer.On("InitProjectsSrv").Return(projectsSrv, nil)
 
-	cmd := NewLocatesCmd(initializer)
+	cmd := NewLocalesCmd(initializer)
 
 	cmd.SetOut(buf)
 	cmd.SetErr(buf)

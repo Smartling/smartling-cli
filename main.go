@@ -14,7 +14,7 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/projects"
 	"github.com/Smartling/smartling-cli/cmd/projects/info"
 	listprojects "github.com/Smartling/smartling-cli/cmd/projects/list"
-	"github.com/Smartling/smartling-cli/cmd/projects/locates"
+	"github.com/Smartling/smartling-cli/cmd/projects/locales"
 )
 
 func main() {
@@ -44,7 +44,7 @@ func main() {
 	projectsSrvInitializer := projects.NewSrvInitializer()
 	projectsCmd.AddCommand(listprojects.NewListCmd(projectsSrvInitializer))
 	projectsCmd.AddCommand(info.NewInfoCmd(projectsSrvInitializer))
-	projectsCmd.AddCommand(locates.NewLocatesCmd(projectsSrvInitializer))
+	projectsCmd.AddCommand(locales.NewLocalesCmd(projectsSrvInitializer))
 
 	if err := rootCmd.Execute(); err != nil {
 		panic(err)

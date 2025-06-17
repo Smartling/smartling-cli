@@ -1,4 +1,4 @@
-package locates
+package locales
 
 import (
 	"os/exec"
@@ -7,7 +7,7 @@ import (
 )
 
 func TestProjectLocates(t *testing.T) {
-	subCommands := []string{"projects", "locates"}
+	subCommands := []string{"projects", "locales"}
 	tests := []struct {
 		name              string
 		args              []string
@@ -16,7 +16,7 @@ func TestProjectLocates(t *testing.T) {
 		wantErr           bool
 	}{
 		{
-			name:              "full locate",
+			name:              "full locales",
 			args:              subCommands,
 			expectedOutputs:   []string{"(", ")", "true"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},

@@ -1,4 +1,4 @@
-package locates
+package locales
 
 import (
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
@@ -15,10 +15,10 @@ var (
 	formatType string
 )
 
-// NewLocatesCmd creates a new command to list locales.
-func NewLocatesCmd(initializer projectscmd.SrvInitializer) *cobra.Command {
-	locatesCmd := &cobra.Command{
-		Use:   "locates",
+// NewLocalesCmd creates a new command to list locales.
+func NewLocalesCmd(initializer projectscmd.SrvInitializer) *cobra.Command {
+	localesCmd := &cobra.Command{
+		Use:   "locales",
 		Short: "Display list of target locales.",
 		Long:  `Display list of target locales.`,
 		Run: func(_ *cobra.Command, _ []string) {
@@ -35,15 +35,15 @@ func NewLocatesCmd(initializer projectscmd.SrvInitializer) *cobra.Command {
 			}
 			err = s.RunLocales(params)
 			if err != nil {
-				rlog.Errorf("failed to run locates: %s", err)
+				rlog.Errorf("failed to run locales: %s", err)
 				return
 			}
 		},
 	}
-	locatesCmd.Flags().BoolVarP(&short, "short", "s", false, "Display only target locale IDs.")
-	locatesCmd.Flags().BoolVar(&source, "source", false, "Source.")
-	locatesCmd.Flags().StringVar(&formatType, "format", "", `Use specified format for listing locales.
+	localesCmd.Flags().BoolVarP(&short, "short", "s", false, "Display only target locale IDs.")
+	localesCmd.Flags().BoolVar(&source, "source", false, "Source.")
+	localesCmd.Flags().StringVar(&formatType, "format", "", `Use specified format for listing locales.
                            Format: `+format.DefaultProjectsLocalesFormat)
 
-	return locatesCmd
+	return localesCmd
 }
