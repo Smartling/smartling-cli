@@ -1,0 +1,115 @@
+package push
+
+import (
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+func TestFilesPush(t *testing.T) {
+	filename := "website_menu.txt"
+
+	relativeDir := "../../bin/"
+	absDir, err := filepath.Abs(relativeDir)
+	if err != nil {
+		t.Fatalf("Failed to get abs path: %v", err)
+	}
+
+	before, after := preparation(t, filepath.Join(absDir, filename))
+	before()
+	defer after()
+
+	subCommands := []string{"files", "push"}
+	tests := []struct {
+		name              string
+		args              []string
+		expectedOutputs   []string
+		unexpectedOutputs []string
+		wantErr           bool
+	}{
+		{
+			name:              "Simplest one-file upload",
+			args:              append(subCommands, filename),
+			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
+		},
+		{
+			name:              "One-file upload with URI",
+			args:              append(subCommands, filename, "/texts/"+filename),
+			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
+		},
+		{
+			name:              "Override file type",
+			args:              append(subCommands, filename, "--type", "plaintext"),
+			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
+		},
+		/*{
+			name:              "Upload files by mask",
+			args:              append(subCommands, "**.txt"),
+			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
+		}, */
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCmd := exec.Command("./smartling-cli", tt.args...)
+			testCmd.Dir = absDir
+			out, err := testCmd.CombinedOutput()
+			if err != nil {
+				t.Fatalf("error: %v, output: %s", err, string(out))
+			}
+			if len(tt.expectedOutputs) > 0 {
+				for _, expectedOutput := range tt.expectedOutputs {
+					if !strings.Contains(string(out), expectedOutput) {
+						t.Errorf("output: %s\nwithout expected: %s", string(out), expectedOutput)
+					}
+				}
+			}
+			if len(tt.unexpectedOutputs) > 0 {
+				for _, unexpectedOutput := range tt.unexpectedOutputs {
+					if strings.Contains(string(out), unexpectedOutput) {
+						t.Errorf("output: %s\nwith unexpected: %s", string(out), unexpectedOutput)
+					}
+				}
+			}
+		})
+	}
+}
+
+func preparation(t *testing.T, filename string) (func(), func()) {
+	before := func() {
+		f, err := os.Create(filename)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			if err := f.Close(); err != nil {
+				t.Fatal(err)
+			}
+		}()
+		if _, err := f.WriteString("Home\n"); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.WriteString("About us\n"); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.WriteString("News\n"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	after := func() {
+		/*if err := os.Remove(filename); err != nil {
+			t.Fatal(err)
+		}*/
+	}
+	return before, after
+}
