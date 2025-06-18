@@ -15,13 +15,16 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/projects/info"
 	listprojects "github.com/Smartling/smartling-cli/cmd/projects/list"
 	"github.com/Smartling/smartling-cli/cmd/projects/locales"
+	"log/slog"
+	"os"
 )
 
 func main() {
 	cmd.ConfigureLogger()
 	rootCmd, err := cmd.NewRootCmd()
 	if err != nil {
-		panic(err)
+		slog.Error("failed new command", err)
+		os.Exit(1)
 	}
 
 	initSrvInitializer := initialize.NewSrvInitializer()
@@ -47,6 +50,6 @@ func main() {
 	projectsCmd.AddCommand(locales.NewLocalesCmd(projectsSrvInitializer))
 
 	if err := rootCmd.Execute(); err != nil {
-		panic(err)
+		slog.Error("failed command execution", err)
 	}
 }
