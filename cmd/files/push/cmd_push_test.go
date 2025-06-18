@@ -23,6 +23,7 @@ func TestNewPushCmd(t *testing.T) {
 		Locales:    []string{"en-US", "fr-FR"},
 		Authorize:  true,
 		FileType:   "text",
+		Directory:  ".",
 		Directives: []string{"01", "05"},
 	}
 	filesSrv.On("RunPush", params).Run(func(args mock.Arguments) {

@@ -47,7 +47,7 @@ func NewStatusCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 
 	statusCmd.Flags().StringVar(&formatType, "format", "", `Specifies format to use for file status output. 
 								Default: `+format.DefaultFileStatusFormat)
-	statusCmd.Flags().StringVar(&directory, "directory", "", `Use another directory as reference to check for local files.`)
+	statusCmd.Flags().StringVar(&directory, "directory", ".", `Use another directory as reference to check for local files.`)
 
 	return statusCmd
 }

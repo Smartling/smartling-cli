@@ -65,7 +65,7 @@ This option overrides config value "account_id".`)
 This option overrides config value "user_id".`)
 	rootCmd.PersistentFlags().StringVar(&secret, "secret", "", `Token Secret which will be used for authentication.
 This option overrides config value "secret".`)
-	rootCmd.PersistentFlags().StringVarP(&directory, "directory", "d", "", `Sets directory to operate on, usually, to store or to
+	rootCmd.PersistentFlags().StringVarP(&directory, "directory", "d", ".", `Sets directory to operate on, usually, to store or to
 read files.  Depends on command.  [default: .]`)
 	rootCmd.PersistentFlags().Uint32Var(&threads, "threads", 4, `If command can be executed concurrently, it will be
 executed for at most <number> of threads.
