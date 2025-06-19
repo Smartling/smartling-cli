@@ -30,8 +30,8 @@ func TestFilesDelete(t *testing.T) {
 		},
 		{
 			name:              "Delete files by mask",
-			args:              append(subCommands, "*.md"),
-			expectedOutputs:   []string{".md deleted"},
+			args:              append(subCommands, "*.txt"),
+			expectedOutputs:   []string{".txt deleted"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
