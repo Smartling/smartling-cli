@@ -11,6 +11,9 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/files/rename"
 	"github.com/Smartling/smartling-cli/cmd/files/status"
 	initialize "github.com/Smartling/smartling-cli/cmd/init"
+	"github.com/Smartling/smartling-cli/cmd/mt"
+	"github.com/Smartling/smartling-cli/cmd/mt/detect"
+	"github.com/Smartling/smartling-cli/cmd/mt/translate"
 	"github.com/Smartling/smartling-cli/cmd/projects"
 	"github.com/Smartling/smartling-cli/cmd/projects/info"
 	listprojects "github.com/Smartling/smartling-cli/cmd/projects/list"
@@ -48,6 +51,11 @@ func main() {
 	projectsCmd.AddCommand(listprojects.NewListCmd(projectsSrvInitializer))
 	projectsCmd.AddCommand(info.NewInfoCmd(projectsSrvInitializer))
 	projectsCmd.AddCommand(locales.NewLocalesCmd(projectsSrvInitializer))
+
+	mtCmd := mt.NewMTCmd()
+	rootCmd.AddCommand(mtCmd)
+	mtCmd.AddCommand(detect.NewDetectCmd())
+	mtCmd.AddCommand(translate.NewTranslateCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		slog.Error("failed command execution", err)
