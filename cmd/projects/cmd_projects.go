@@ -2,6 +2,7 @@ package projects
 
 import (
 	"github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/projects"
 
 	"github.com/spf13/cobra"
@@ -14,8 +15,13 @@ func NewProjectsCmd() *cobra.Command {
 		Aliases: []string{"p"},
 		Short:   "Used to access various projects sub-commands.",
 		Long:    `Used to access various projects sub-commands.`,
-		Run: func(_ *cobra.Command, _ []string) {
-
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
+				if err := cmd.Help(); err != nil {
+					rlog.Error(err.Error())
+				}
+				return
+			}
 		},
 	}
 

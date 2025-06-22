@@ -48,8 +48,13 @@ func NewRootCmd() (*cobra.Command, error) {
 			isProjects = strings.HasPrefix(path, "my-cli projects")
 			isList = strings.HasPrefix(path, "my-cli list")
 		},
-		Run: func(_ *cobra.Command, _ []string) {
-
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
+				if err := cmd.Help(); err != nil {
+					rlog.Error(err.Error())
+				}
+				return
+			}
 		},
 	}
 
