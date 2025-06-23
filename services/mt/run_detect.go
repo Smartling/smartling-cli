@@ -2,15 +2,10 @@ package mt
 
 import (
 	"context"
-	"fmt"
-	"io"
-	"os"
 
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
-	"github.com/Smartling/smartling-cli/services/helpers/table"
 
-	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
-	"github.com/reconquest/hierr-go"
+	sdk "github.com/Smartling/api-sdk-go/api/mt"
 )
 
 // DetectParams is the parameters for the RunDetect method.
@@ -18,41 +13,31 @@ type DetectParams struct {
 	FileType      string
 	FormatPath    string
 	FileOrPattern string
+	ProjectID     string
+	AccountUID    sdk.AccountUID
+	URI           string
 }
 
-func (s service) RunDetect(ctx context.Context, p DetectParams) (DetectOutput, error) {
-
-	files, err := globfiles.Remote(s.Client, s.Config.ProjectID, uri)
+func (s service) RunDetect(ctx context.Context, p DetectParams, listAllFilesFn globfiles.ListFilesFn) ([]DetectOutput, error) {
+	files, err := globfiles.Remote(listAllFilesFn, p.ProjectID, p.URI)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	tableWriter := table.NewTableWriter(os.Stdout)
-
+	var res []DetectOutput
 	for _, file := range files {
-		if short {
-			fmt.Fprintf(tableWriter, "%s\n", file.FileURI)
-		} else {
-			row, err := format.Execute(file)
-			if err != nil {
-				return err
-			}
-
-			_, err = io.WriteString(tableWriter, row)
-			if err != nil {
-				return hierr.Errorf(
-					err,
-					"unable to write row to output table",
-				)
-			}
+		detectedLang, err := s.translationControl.DetectFileLanguage(p.AccountUID, sdk.FileUID(file.FileURI))
+		if err != nil {
+			return nil, err
 		}
+		res = append(res, DetectOutput{
+			File:       file.FileURI,
+			Language:   detectedLang.Code,
+			Confidence: "",
+		})
 	}
-	s.translationControl
 
-	s.translationControl.DetectionProgress()
-
-	sdkfile.File{}
-	return DetectOutput{}, nil
+	return res, nil
 }
 
 type DetectOutput struct {

@@ -2,18 +2,18 @@ package projects
 
 import (
 	"fmt"
+	smfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"os"
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/table"
 
-	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
 // RunList lists all projects.
 func (s service) RunList(short bool) error {
-	projects, err := s.Client.ListProjects(s.Config.AccountID, sdk.ProjectsListRequest{})
+	projects, err := s.Client.ListProjects(s.Config.AccountID, smfile.ProjectsListRequest{})
 	if err != nil {
 		return clierror.NewError(
 			hierr.Errorf(err, "unable to list projects"),

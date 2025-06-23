@@ -19,7 +19,7 @@ var version = "1.7"
 
 // CreateClient initializes a new Smartling API client with the provided configurations.
 // Returns the client, and an error if any.
-func CreateClient(clientConfig Config, config config.Config, verbose uint8) (sdk.APIClient, error) {
+func CreateClient(clientConfig Config, config config.Config, verbose uint8) (sdk.HttpAPIClient, error) {
 	client := sdk.NewHttpAPIClient(config.UserID, config.Secret)
 
 	var transport http.Transport
@@ -37,7 +37,7 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (sdk
 	if clientConfig.Proxy != "" {
 		proxy, err := url.Parse(clientConfig.Proxy)
 		if err != nil {
-			return nil, clierror.NewError(
+			return sdk.HttpAPIClient{}, clierror.NewError(
 				hierr.Errorf(
 					err,
 					"unable to parse specified proxy URL",
@@ -66,13 +66,13 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (sdk
 
 	err := client.Authenticate()
 	if err != nil {
-		return nil, clierror.NewError(
+		return sdk.HttpAPIClient{}, clierror.NewError(
 			err,
 			`Your credentials are invalid. Double check it and try to run init.\n`,
 		)
 	}
 
-	return client, nil
+	return *client, nil
 }
 
 func setLogger(client *sdk.HttpAPIClient, logger lorg.Logger, verbosity uint8) {

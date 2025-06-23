@@ -46,7 +46,7 @@ func (s service) RunPull(params PullParams) error {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(s.APIClient, s.Config.ProjectID, params.URI)
+		files, err = globfiles.Remote(s.APIClient.ListAllFiles, s.Config.ProjectID, params.URI)
 		if err != nil {
 			return err
 		}

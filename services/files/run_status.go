@@ -34,7 +34,7 @@ func (s service) RunStatus(params StatusParams) error {
 		return err
 	}
 
-	files, err := globfiles.Remote(s.APIClient, projectID, params.URI)
+	files, err := globfiles.Remote(s.APIClient.ListAllFiles, projectID, params.URI)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package projects
 
 import (
 	"fmt"
+	smerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	"io"
 	"os"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/table"
 
-	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -34,7 +34,7 @@ func (s service) RunLocales(params LocalesParams) error {
 
 	details, err := s.Client.GetProjectDetails(s.Config.ProjectID)
 	if err != nil {
-		if _, ok := err.(sdk.NotFoundError); ok {
+		if _, ok := err.(smerror.NotFoundError); ok {
 			return clierror.ProjectNotFoundError{}
 		}
 

@@ -3,6 +3,7 @@ package mt
 import (
 	"fmt"
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
+	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"slices"
 	"strings"
 
@@ -48,7 +49,7 @@ func NewMTCmd() *cobra.Command {
 
 // SrvInitializer defines files service initializer
 type SrvInitializer interface {
-	InitMTSrv() (srv.Service, error)
+	InitMTSrv() (srv.Service, globfiles.ListFilesFn, error)
 }
 
 // NewSrvInitializer returns new SrvInitializer implementation
@@ -59,15 +60,15 @@ func NewSrvInitializer() SrvInitializer {
 type srvInitializer struct{}
 
 // InitMTSrv initializes `mt` service with the client and configuration.
-func (i srvInitializer) InitMTSrv() (srv.Service, error) {
+func (i srvInitializer) InitMTSrv() (srv.Service, globfiles.ListFilesFn, error) {
 	client, err := rootcmd.Client()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	downloader := api.NewDownloader(client.Client)
 	fileTranslator := api.NewFileTranslator(client.Client)
 	uploader := api.NewUploader(client.Client)
 	translationControl := api.NewTranslationControl(client.Client)
 	mtSrv := srv.NewService(downloader, fileTranslator, uploader, translationControl)
-	return mtSrv, nil
+	return mtSrv, client.ListAllFiles, nil
 }

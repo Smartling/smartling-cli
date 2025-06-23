@@ -44,6 +44,6 @@ func (s srvInitializer) InitProjectsSrv() (projects.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	srv := projects.NewService(client, cnf)
+	srv := projects.NewService(&client, cnf)
 	return srv, nil
 }

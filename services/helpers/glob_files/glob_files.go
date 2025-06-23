@@ -9,7 +9,6 @@ import (
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 
-	sdk "github.com/Smartling/api-sdk-go"
 	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/gobwas/glob"
@@ -18,7 +17,7 @@ import (
 
 // Remote searches for files matching a specified glob pattern on the remote server.
 func Remote(
-	client sdk.APIClient,
+	listAllFilesFn ListFilesFn,
 	project string,
 	uri string,
 ) ([]sdkfile.File, error) {
@@ -37,7 +36,7 @@ func Remote(
 
 	request := sdkfile.FilesListRequest{}
 
-	files, err := client.ListAllFiles(project, request)
+	files, err := listAllFilesFn(project, request)
 	if err != nil {
 		if _, ok := err.(sdkerror.NotFoundError); ok {
 			return nil, clierror.ProjectNotFoundError{}
@@ -212,3 +211,6 @@ func LocallyFn(
 
 // GlobFilesLocally searches for files matching a specified glob pattern.
 var GlobFilesLocally = LocallyFn
+
+// ListFilesFn is function to list files
+type ListFilesFn func(projectID string, request sdkfile.FilesListRequest) ([]sdkfile.File, error)

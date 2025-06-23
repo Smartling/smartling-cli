@@ -55,7 +55,8 @@ func main() {
 
 	mtCmd := mt.NewMTCmd()
 	rootCmd.AddCommand(mtCmd)
-	mtCmd.AddCommand(detect.NewDetectCmd())
+	mtInitializer := mt.NewSrvInitializer()
+	mtCmd.AddCommand(detect.NewDetectCmd(mtInitializer))
 	mtCmd.AddCommand(translate.NewTranslateCmd())
 
 	if err := rootCmd.Execute(); err != nil {

@@ -119,16 +119,16 @@ func Config() (config.Config, error) {
 }
 
 // Client creates a new Smartling API client based on the configuration and CLI params.
-func Client() (sdk.Client, error) {
+func Client() (sdk.HttpAPIClient, error) {
 	cnf, err := Config()
 	if err != nil {
-		return sdk.Client{}, err
+		return sdk.HttpAPIClient{}, err
 	}
 	client, err := client.CreateClient(CLIClientConfig(), cnf, uint8(verbose))
 	if err != nil {
-		return sdk.Client{}, err
+		return sdk.HttpAPIClient{}, err
 	}
-	return *client, nil
+	return client, nil
 }
 
 // ConfigFile returns the path to the configuration file.

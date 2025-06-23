@@ -24,7 +24,7 @@ func (s service) RunDelete(uri string) error {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(s.APIClient, projectID, uri)
+		files, err = globfiles.Remote(s.APIClient.ListAllFiles, projectID, uri)
 		if err != nil {
 			return err
 		}

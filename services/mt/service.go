@@ -3,12 +3,14 @@ package mt
 import (
 	"context"
 
+	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
+
 	api "github.com/Smartling/api-sdk-go/api/mt"
 )
 
 // Service defines behavior for interacting with Smartling MT.
 type Service interface {
-	RunDetect(ctx context.Context, p DetectParams) (DetectOutput, error)
+	RunDetect(ctx context.Context, p DetectParams, listAllFilesFn globfiles.ListFilesFn) ([]DetectOutput, error)
 	RunTranslate(ctx context.Context, p TranslateParams) (TranslateOutput, error)
 }
 

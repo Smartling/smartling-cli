@@ -12,7 +12,7 @@ import (
 
 // DownloadFile downloads a file.
 func DownloadFile(
-	client sdk.ClientInterface,
+	client sdk.APIClient,
 	project string,
 	file sdkfile.File,
 	locale string,
