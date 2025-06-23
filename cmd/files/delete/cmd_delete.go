@@ -2,6 +2,7 @@ package delete
 
 import (
 	"github.com/Smartling/smartling-cli/cmd/files"
+	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
@@ -14,7 +15,21 @@ func NewDeleteCmd(initializer files.SrvInitializer) *cobra.Command {
 	deleteCmd := &cobra.Command{
 		Use:   "delete <uri>",
 		Short: "Deletes given file from Smartling.",
-		Long:  `Deletes given file from Smartling. This operation can not be undone, so use with care.`,
+		Long: `smartling-cli files delete — removes files from project.
+
+Removes files from project according to specified pattern.
+
+<uri> ` + help.GlobPattern + `
+
+If special value of "-" is specified as <uri>, then program will expect
+to read files list from stdin:
+
+  cat files.txt | smartling-cli files delete -
+
+Available options:
+  -p --project <project>
+    Specify project to use.
+` + help.AuthenticationOptions,
 		Run: func(_ *cobra.Command, args []string) {
 			if len(args) > 0 {
 				uri = args[0]

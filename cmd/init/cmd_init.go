@@ -2,6 +2,7 @@ package initialize
 
 import (
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/init"
 
@@ -18,9 +19,41 @@ func NewInitCmd(srvInitializer SrvInitializer) *cobra.Command {
 		Use:     "init",
 		Aliases: []string{"i"},
 		Short:   "Prepares project to work with Smartling",
-		Long: `Prepares project to work with Smartling,
-essentially, assisting user in creating
-configuration file.`,
+		Long: `smartling-cli init — create config file interactively.
+
+Walk down common config file parameters and fill them through dialog.
+
+Init process will inspect if config file already exists and if it is, it will
+be loaded as default values, so init can be used sequentially without config
+is lost.
+
+Options like --user, --secret, --account and --project can be used to specify
+config values prior dialog:
+
+  smartling-cli init --user=your_user_id
+
+Also, --dry-run option can be used to just look at resulting config without
+overwritting anything:
+
+  smartling-cli init --dry-run
+
+By default, smartling.yml file in the local directory will be used as target
+config file, but it can be overriden by using --config option:
+
+  smartling-cli init --config=/path/to/project/smartling.yml
+
+
+Available options:
+  -c --config <file>
+    Specify config file to operate on. Default: smartling.yml
+
+  --dry-run
+    Do not overwrite config file, only output to stdout.
+
+Default config values can be passed via following options:` +
+			help.AuthenticationOptions + `
+  -p --project <project>
+    Specify default project.`,
 		Run: func(_ *cobra.Command, _ []string) {
 			s, err := srvInitializer.InitSrv()
 			if err != nil {

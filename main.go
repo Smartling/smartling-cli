@@ -51,6 +51,6 @@ func main() {
 	projectsCmd.AddCommand(locales.NewLocalesCmd(projectsSrvInitializer))
 
 	if err := rootCmd.Execute(); err != nil {
-		rlog.Error("failed command execution", err)
+		rlog.Debugf("failed command execution ", err)
 	}
 }

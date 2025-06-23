@@ -3,6 +3,7 @@ package importcmd
 import (
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
+	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
@@ -20,7 +21,29 @@ func NewImportCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	importCmd := &cobra.Command{
 		Use:   "import <uri> <file> <locale>",
 		Short: "Imports translations for given original file URI with.",
-		Long:  `Imports translations for given original file URI with.`,
+		Long: `smartling-cli import — import file translations.
+
+Import pre-existent file translations into Smartling. Note, that
+original file should be pushed prior file translations are imported.
+
+Either --published or --post-translation should present to specify state
+of imported translation.  Value indicates the workflow state to import the
+translations into. Content will be imported into the language's default
+workflow.
+
+--overwrite option can be used to replace existent translations.
+
+Available options:
+  --published
+    The translated content is published.
+
+  --post-translation
+   The translated content is imported into the first step after translation
+   If there are none, it will be published.
+
+  --overwrite
+    Overwrite existing translations.
+` + help.AuthenticationOptions,
 		Run: func(_ *cobra.Command, args []string) {
 			var (
 				uri    string

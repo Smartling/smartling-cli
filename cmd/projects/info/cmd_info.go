@@ -2,6 +2,7 @@ package info
 
 import (
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
+	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
@@ -12,7 +13,13 @@ func NewInfoCmd(initializer projectscmd.SrvInitializer) *cobra.Command {
 	infoCmd := &cobra.Command{
 		Use:   "info",
 		Short: "Get project details about specific project.",
-		Long:  `Get project details about specific project.`,
+		Long: `smartling-cli projects info — show detailed project info.
+
+Displays detailed information for specific project.
+
+Project should be specified either in config or via --project option.
+
+Available options:` + help.AuthenticationOptions,
 		Run: func(_ *cobra.Command, _ []string) {
 			s, err := initializer.InitProjectsSrv()
 			if err != nil {
