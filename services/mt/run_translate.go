@@ -19,6 +19,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams) (Translate
 	return TranslateOutput{}, nil
 }
 
+// TranslateOutput is translate output
 type TranslateOutput struct {
 	File      string
 	Locale    string

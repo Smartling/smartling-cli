@@ -46,7 +46,7 @@ func (s service) RunPull(params PullParams) error {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(s.Client, s.Config.ProjectID, params.URI)
+		files, err = globfiles.Remote(s.APIClient, s.Config.ProjectID, params.URI)
 		if err != nil {
 			return err
 		}
@@ -92,7 +92,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 	}
 
 	projectID := s.Config.ProjectID
-	status, err := s.Client.GetFileStatus(projectID, file.FileURI)
+	status, err := s.APIClient.GetFileStatus(projectID, file.FileURI)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -159,7 +159,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 		path = filepath.Join(params.Directory, path)
 
 		err = helpers.DownloadFile(
-			s.Client,
+			s.APIClient,
 			projectID,
 			file,
 			locale.LocaleID,

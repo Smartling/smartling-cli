@@ -12,6 +12,7 @@ type Service interface {
 	RunTranslate(ctx context.Context, p TranslateParams) (TranslateOutput, error)
 }
 
+// NewService creates a new implementation of the Service
 func NewService(downloader api.Downloader, fileTranslator api.FileTranslator,
 	uploader api.Uploader, translationControl api.TranslationControl) Service {
 	return service{

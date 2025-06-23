@@ -19,8 +19,8 @@ var version = "1.7"
 
 // CreateClient initializes a new Smartling API client with the provided configurations.
 // Returns the client, and an error if any.
-func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sdk.Client, error) {
-	client := sdk.NewClient(config.UserID, config.Secret)
+func CreateClient(clientConfig Config, config config.Config, verbose uint8) (sdk.APIClient, error) {
+	client := sdk.NewHttpAPIClient(config.UserID, config.Secret)
 
 	var transport http.Transport
 
@@ -64,7 +64,7 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sd
 		regexp.MustCompile(`"(?:access|refresh)Token": "([^"]+)"`),
 	)
 
-	err := client.Client.Authenticate()
+	err := client.Authenticate()
 	if err != nil {
 		return nil, clierror.NewError(
 			err,
@@ -75,7 +75,7 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sd
 	return client, nil
 }
 
-func setLogger(client *sdk.Client, logger lorg.Logger, verbosity uint8) {
+func setLogger(client *sdk.HttpAPIClient, logger lorg.Logger, verbosity uint8) {
 	switch verbosity {
 	case 0:
 		return

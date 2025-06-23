@@ -18,7 +18,7 @@ import (
 
 // Remote searches for files matching a specified glob pattern on the remote server.
 func Remote(
-	client sdk.ClientInterface,
+	client sdk.APIClient,
 	project string,
 	uri string,
 ) ([]sdkfile.File, error) {

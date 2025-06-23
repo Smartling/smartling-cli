@@ -29,12 +29,12 @@ func (s service) RunStatus(params StatusParams) error {
 	}
 
 	projectID := s.Config.ProjectID
-	info, err := s.Client.GetProjectDetails(projectID)
+	info, err := s.APIClient.GetProjectDetails(projectID)
 	if err != nil {
 		return err
 	}
 
-	files, err := globfiles.Remote(s.Client, projectID, params.URI)
+	files, err := globfiles.Remote(s.APIClient, projectID, params.URI)
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (s service) RunStatus(params StatusParams) error {
 	}
 
 	for _, file := range files {
-		status, err := s.Client.GetFileStatus(projectID, file.FileURI)
+		status, err := s.APIClient.GetFileStatus(projectID, file.FileURI)
 		if err != nil {
 			return err
 		}

@@ -23,7 +23,7 @@ func (s service) RunList(formatType string, short bool, uri string) error {
 		return err
 	}
 
-	files, err := globfiles.Remote(s.Client, s.Config.ProjectID, uri)
+	files, err := globfiles.Remote(s.APIClient, s.Config.ProjectID, uri)
 	if err != nil {
 		return err
 	}

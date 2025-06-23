@@ -7,7 +7,7 @@ import (
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/reader"
 
-	sdk "github.com/Smartling/api-sdk-go"
+	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -16,7 +16,7 @@ func (s service) RunDelete(uri string) error {
 	projectID := s.Config.ProjectID
 	var (
 		err   error
-		files []sdk.File
+		files []sdkfile.File
 	)
 	if uri == "-" {
 		files, err = reader.ReadFilesFromStdin()
@@ -24,7 +24,7 @@ func (s service) RunDelete(uri string) error {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(s.Client, projectID, uri)
+		files, err = globfiles.Remote(s.APIClient, projectID, uri)
 		if err != nil {
 			return err
 		}
@@ -39,7 +39,7 @@ func (s service) RunDelete(uri string) error {
 	}
 
 	for _, file := range files {
-		err := s.Client.DeleteFile(projectID, file.FileURI)
+		err := s.APIClient.DeleteFile(projectID, file.FileURI)
 		if err != nil {
 			return hierr.Errorf(
 				err,

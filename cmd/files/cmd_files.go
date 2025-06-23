@@ -48,7 +48,7 @@ func (i srvInitializer) InitFilesSrv() (files.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	srv := files.NewService(&client, cnf, fileConfig)
+	srv := files.NewService(client, cnf, fileConfig)
 
 	return srv, nil
 }

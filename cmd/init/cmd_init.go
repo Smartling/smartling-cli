@@ -54,15 +54,11 @@ type srvInitializer struct{}
 
 // Init initializes and returns a new instance of the init service.
 func (s srvInitializer) InitSrv() (initialize.Service, error) {
-	/*client, err := rootcmd.Client()
-	if err != nil {
-		return nil, err
-	}
 	cnf, err := rootcmd.Config()
 	if err != nil {
 		return nil, err
 	}
-	smClient := sdk.NewClient(cnf.UserID, cnf.Secret)
-	srv := initialize.NewService(smClient, cnf) */
-	return initialize.Service{}, nil
+	smClient := sdk.NewHttpAPIClient(cnf.UserID, cnf.Secret)
+	srv := initialize.NewService(smClient, cnf)
+	return srv, nil
 }
