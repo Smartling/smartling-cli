@@ -52,11 +52,11 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sd
 	}
 
 	if clientConfig.SmartlingURL != "" {
-		client.BaseURL = clientConfig.SmartlingURL
+		client.Client.BaseURL = clientConfig.SmartlingURL
 	}
 
-	client.HTTP.Transport = &transport
-	client.UserAgent = "smartling-cli/" + version
+	client.Client.HTTP.Transport = &transport
+	client.Client.UserAgent = "smartling-cli/" + version
 
 	setLogger(client, rlog.Logger(), verbose)
 
@@ -64,7 +64,7 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sd
 		regexp.MustCompile(`"(?:access|refresh)Token": "([^"]+)"`),
 	)
 
-	err := client.Authenticate()
+	err := client.Client.Authenticate()
 	if err != nil {
 		return nil, clierror.NewError(
 			err,
@@ -81,9 +81,9 @@ func setLogger(client *sdk.Client, logger lorg.Logger, verbosity uint8) {
 		return
 
 	case 1:
-		client.SetInfoLogger(logger.Infof)
+		client.Client.SetInfoLogger(logger.Infof)
 
 	default:
-		client.SetDebugLogger(logger.Debugf)
+		client.Client.SetDebugLogger(logger.Debugf)
 	}
 }

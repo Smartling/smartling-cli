@@ -42,8 +42,8 @@ func NewTranslateCmd() *cobra.Command {
 
 	translateCmd.Flags().StringVar(&sourceLocale, "source-locale", "", "Explicitly specify source language")
 	translateCmd.Flags().StringVar(&detectLanguage, "detect-language", "", "Auto-detect source language")
-	translateCmd.Flags().StringVar(&targetLocale, "target-locale", "", "Override file type detection")
-	translateCmd.Flags().StringVar(&fileType, "type", "", "Override automatically detected file type.")
+	translateCmd.Flags().StringVar(&targetLocale, "target-locale", "", "Target language(s). Can be specified multiple times")
+	translateCmd.Flags().StringVar(&fileType, "type", "", "Override automatically detected file type")
 	translateCmd.Flags().StringVar(&directory, "directory", "", "Output directory for translated files")
 	translateCmd.Flags().StringVar(&formatPath, "format", "", `Translated file naming template.
 Default: `+format.DefaultFilePullFormat+`
@@ -53,7 +53,7 @@ Default: `+format.DefaultFilePullFormat+`
 {{ext .File}} - File extension
 {{dir .File}} - Directory path`)
 	translateCmd.Flags().StringVar(&directive, "directive", "", "Smartling directive. Can be specified multiple times")
-	translateCmd.Flags().StringVar(&progress, "progress", "", "Override automatically detected file type.")
+	translateCmd.Flags().StringVar(&progress, "progress", "", "Override automatically detected file type")
 
 	if err := translateCmd.MarkFlagRequired("target-locale"); err != nil {
 		rlog.Errorf("failed to mark flag required: %v", err)

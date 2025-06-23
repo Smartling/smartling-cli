@@ -11,7 +11,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
-	sdk "github.com/Smartling/api-sdk-go"
+	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	"github.com/reconquest/hierr-go"
 	"github.com/tcnksm/go-input"
 )
@@ -124,7 +124,7 @@ func (s service) RunInit(dryRun bool) error {
 
 	err = s.Client.Authenticate()
 	if err != nil {
-		if _, ok := err.(sdk.NotAuthorizedError); ok {
+		if _, ok := err.(sdkerror.NotAuthorizedError); ok {
 			return clierror.NewError(
 				errors.New("not authorized"),
 				"Your credentials are invalid. Double check them and run "+

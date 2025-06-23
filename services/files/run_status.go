@@ -11,7 +11,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/progress"
 	"github.com/Smartling/smartling-cli/services/helpers/table"
 
-	sdk "github.com/Smartling/api-sdk-go"
+	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 )
 
 // StatusParams holds the parameters for the RunStatus method.
@@ -57,7 +57,7 @@ func (s service) RunStatus(params StatusParams) error {
 		translations := status.Items
 
 		translations = append(
-			[]sdk.FileStatusTranslation{
+			[]sdkfile.FileStatusTranslation{
 				{
 					CompletedStringCount: status.TotalStringCount,
 					CompletedWordCount:   status.TotalWordCount,

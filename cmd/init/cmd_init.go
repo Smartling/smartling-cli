@@ -1,6 +1,7 @@
 package initialize
 
 import (
+	sdk "github.com/Smartling/api-sdk-go"
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/init"
@@ -53,7 +54,7 @@ type srvInitializer struct{}
 
 // Init initializes and returns a new instance of the init service.
 func (s srvInitializer) InitSrv() (initialize.Service, error) {
-	client, err := rootcmd.Client()
+	/*client, err := rootcmd.Client()
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +62,7 @@ func (s srvInitializer) InitSrv() (initialize.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	srv := initialize.NewService(&client, cnf)
-	return srv, nil
+	smClient := sdk.NewClient(cnf.UserID, cnf.Secret)
+	srv := initialize.NewService(smClient, cnf) */
+	return initialize.Service{}, nil
 }
