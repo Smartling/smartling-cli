@@ -10,12 +10,12 @@ import (
 type TranslateParams struct {
 	SourceLocale   string
 	DetectLanguage string
-	TargetLocale   string
+	TargetLocale   []string
 	Directory      string
-	Directive      string
-	Progress       string
+	Directives     map[string]string
+	Progress       bool
 	FileType       string
-	FormatPath     string
+	OutputFormat   string
 	FileOrPattern  string
 	ProjectID      string
 	AccountUID     sdk.AccountUID

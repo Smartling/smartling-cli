@@ -1,20 +1,21 @@
 package detect
 
 import (
-	sdk "github.com/Smartling/api-sdk-go/api/mt"
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	mtsrv "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
-	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/mt"
 
+	sdk "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
 )
 
+const defaultOutputFormat = "{{.File}}: {{.Language}}"
+
 var (
-	fileType   string
-	formatPath string
+	fileType     string
+	outputFormat string
 )
 
 // NewDetectCmd ...
@@ -48,7 +49,7 @@ func NewDetectCmd(initializer mtsrv.SrvInitializer) *cobra.Command {
 			}
 			params := mt.DetectParams{
 				FileType:      fileType,
-				FormatPath:    formatPath,
+				FormatPath:    outputFormat,
 				FileOrPattern: fileOrPattern,
 				ProjectID:     cnf.ProjectID,
 				AccountUID:    sdk.AccountUID(cnf.AccountID),
@@ -60,7 +61,7 @@ func NewDetectCmd(initializer mtsrv.SrvInitializer) *cobra.Command {
 				return
 			}
 
-			err = output.RenderDetect(out, formatPath)
+			err = output.RenderDetect(out, outputFormat)
 			if err != nil {
 				rlog.Errorf("unable to render detect: %w", err)
 				return
@@ -70,8 +71,8 @@ func NewDetectCmd(initializer mtsrv.SrvInitializer) *cobra.Command {
 	}
 
 	detectCmd.Flags().StringVar(&fileType, "type", "", "Override automatically detected file type.")
-	detectCmd.Flags().StringVar(&formatPath, "format", "", `Output format template.
-Default: `+format.DefaultFilePullFormat+`
+	detectCmd.Flags().StringVar(&outputFormat, "format", "", `Output format template.
+Default: `+defaultOutputFormat+`
 {{.File}} - Original file path
 {{.Language}} - Detected language code
 {{.Confidence}} - Detection confidence (if available)`)

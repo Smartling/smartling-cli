@@ -2,14 +2,14 @@ package mt
 
 import (
 	"fmt"
-	rootcmd "github.com/Smartling/smartling-cli/cmd"
-	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"slices"
 	"strings"
 
-	api "github.com/Smartling/api-sdk-go/api/mt"
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
+	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
+	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
 )
 

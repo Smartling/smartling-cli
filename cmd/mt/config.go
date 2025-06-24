@@ -1,0 +1,48 @@
+package mt
+
+import (
+	"os"
+
+	"github.com/Smartling/smartling-cli/services/helpers/config"
+
+	"github.com/goccy/go-yaml"
+)
+
+// FileConfig defines MT file config
+type FileConfig struct {
+	MT struct {
+		DefaultSourceLocale  *string           `yaml:"default_source_locale"`
+		DefaultTargetLocales []string          `yaml:"default_target_locales"`
+		OutputDirectory      *string           `yaml:"output_directory"`
+		FileFormat           *string           `yaml:"file_format"`
+		Directives           map[string]string `yaml:"directives"`
+		PollInterval         *int              `yaml:"poll_interval"`
+		Timeout              *int              `yaml:"timeout"`
+	} `yaml:"mt"`
+	Files map[string]MTFile `yaml:"files"`
+}
+
+type MTFile struct {
+	MT struct {
+		Type       *string `yaml:"type"`
+		Directives *struct {
+			Namespace *string `yaml:"namespace"`
+		} `yaml:"directives"`
+	} `yaml:"mt"`
+}
+
+func BindFileConfig(dir, filename string) (FileConfig, error) {
+	path, err := config.GetPath(dir, filename, false)
+	var config FileConfig
+	data, err := os.ReadFile(path)
+	if err != nil && os.IsNotExist(err) {
+		return config, nil
+	}
+	if err != nil {
+		return config, err
+	}
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return config, err
+	}
+	return config, nil
+}
