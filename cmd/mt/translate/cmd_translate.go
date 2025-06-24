@@ -1,8 +1,13 @@
 package translate
 
 import (
+	sdk "github.com/Smartling/api-sdk-go/api/mt"
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
+	mtsrv "github.com/Smartling/smartling-cli/cmd/mt"
+	output "github.com/Smartling/smartling-cli/output/mt"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
+	"github.com/Smartling/smartling-cli/services/mt"
 
 	"github.com/spf13/cobra"
 )
@@ -19,24 +24,59 @@ var (
 )
 
 // NewTranslateCmd ...
-func NewTranslateCmd() *cobra.Command {
+func NewTranslateCmd(initializer mtsrv.SrvInitializer) *cobra.Command {
 	translateCmd := &cobra.Command{
 		Use:   "translate <file|pattern>",
 		Short: "Translate files using Smartling's File Machine Translation API.",
 		Long:  `Translate files using Smartling's File Machine Translation API.`,
 
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				rlog.Error("<file|pattern> argument expected")
-				return
-			}
 			if len(args) > 1 {
 				rlog.Errorf("expected one argument, got: %d", len(args))
 				return
 			}
+			fileOrPattern := args[0]
 
 			//output, _ := cmd.Parent().PersistentFlags().GetString("output")
 
+			mtSrv, _, err := initializer.InitMTSrv()
+			if err != nil {
+				rlog.Errorf("unable to initialize MT service: %w", err)
+				return
+			}
+
+			ctx := cmd.Context()
+
+			cnf, err := rootcmd.Config()
+			if err != nil {
+				rlog.Errorf("unable to read config: %w", err)
+				return
+			}
+			params := mt.TranslateParams{
+				SourceLocale:   sourceLocale,
+				DetectLanguage: detectLanguage,
+				TargetLocale:   targetLocale,
+				Directory:      directory,
+				Directive:      directive,
+				Progress:       progress,
+				FileType:       fileType,
+				FormatPath:     formatPath,
+				FileOrPattern:  fileOrPattern,
+				ProjectID:      cnf.ProjectID,
+				AccountUID:     sdk.AccountUID(cnf.AccountID),
+				URI:            "",
+			}
+			out, err := mtSrv.RunTranslate(ctx, params)
+			if err != nil {
+				rlog.Errorf("unable to run translate: %w", err)
+				return
+			}
+
+			err = output.RenderTranslate(out, formatPath)
+			if err != nil {
+				rlog.Errorf("unable to render translate: %w", err)
+				return
+			}
 		},
 	}
 

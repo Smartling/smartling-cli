@@ -57,7 +57,7 @@ func main() {
 	rootCmd.AddCommand(mtCmd)
 	mtInitializer := mt.NewSrvInitializer()
 	mtCmd.AddCommand(detect.NewDetectCmd(mtInitializer))
-	mtCmd.AddCommand(translate.NewTranslateCmd())
+	mtCmd.AddCommand(translate.NewTranslateCmd(mtInitializer))
 
 	if err := rootCmd.Execute(); err != nil {
 		rlog.Error("failed command execution", err)

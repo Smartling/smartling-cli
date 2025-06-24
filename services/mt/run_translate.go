@@ -1,6 +1,10 @@
 package mt
 
-import "context"
+import (
+	"context"
+
+	sdk "github.com/Smartling/api-sdk-go/api/mt"
+)
 
 // TranslateParams is the parameters for the RunTranslate method.
 type TranslateParams struct {
@@ -13,6 +17,9 @@ type TranslateParams struct {
 	FileType       string
 	FormatPath     string
 	FileOrPattern  string
+	ProjectID      string
+	AccountUID     sdk.AccountUID
+	URI            string
 }
 
 func (s service) RunTranslate(ctx context.Context, p TranslateParams) (TranslateOutput, error) {

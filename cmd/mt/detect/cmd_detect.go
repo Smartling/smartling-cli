@@ -24,15 +24,14 @@ func NewDetectCmd(initializer mtsrv.SrvInitializer) *cobra.Command {
 		Short: "Detect the source language of files using Smartling's File MT API.",
 		Long:  `Detect the source language of files using Smartling's File MT API.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				rlog.Error("<file|pattern> argument expected")
-				return
-			}
 			if len(args) > 1 {
 				rlog.Errorf("expected one argument, got: %d", len(args))
 				return
 			}
-			fileOrPattern := args[0]
+			var fileOrPattern string
+			if len(args) == 1 {
+				fileOrPattern = args[0]
+			}
 
 			mtSrv, listAllFilesFn, err := initializer.InitMTSrv()
 			if err != nil {
