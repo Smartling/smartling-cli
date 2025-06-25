@@ -5,7 +5,7 @@ import (
 
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 
-	sdk "github.com/Smartling/api-sdk-go/api/mt"
+	api "github.com/Smartling/api-sdk-go/api/mt"
 )
 
 // DetectParams is the parameters for the RunDetect method.
@@ -13,7 +13,7 @@ type DetectParams struct {
 	FileType      string
 	FileOrPattern string
 	ProjectID     string
-	AccountUID    sdk.AccountUID
+	AccountUID    api.AccountUID
 	URI           string
 }
 
@@ -25,7 +25,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, listAllFilesFn g
 
 	var res []DetectOutput
 	for _, file := range files {
-		detectedLang, err := s.translationControl.DetectFileLanguage(p.AccountUID, sdk.FileUID(file.FileURI))
+		detectedLang, err := s.translationControl.DetectFileLanguage(p.AccountUID, api.FileUID(file.FileURI))
 		if err != nil {
 			return nil, err
 		}

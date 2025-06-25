@@ -2,12 +2,12 @@ package projects
 
 import (
 	"fmt"
-	smerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	"os"
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/table"
 
+	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -16,7 +16,7 @@ import (
 func (s service) RunInfo() error {
 	details, err := s.Client.GetProjectDetails(s.Config.ProjectID)
 	if err != nil {
-		if _, ok := err.(smerror.NotFoundError); ok {
+		if _, ok := err.(sdkerror.NotFoundError); ok {
 			return clierror.ProjectNotFoundError{}
 		}
 

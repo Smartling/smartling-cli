@@ -8,7 +8,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers"
 	"github.com/Smartling/smartling-cli/services/helpers/env"
 
-	sdk "github.com/Smartling/api-sdk-go/api/mt"
+	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
 )
 
@@ -115,26 +115,26 @@ func resolveOutputTemplate(cmd *cobra.Command, fileConfig mtcmd.FileConfig) stri
 	return outputTemplate
 }
 
-func resolveAccountUID(cmd *cobra.Command, cnfAccountID string) (sdk.AccountUID, error) {
+func resolveAccountUID(cmd *cobra.Command, cnfAccountID string) (api.AccountUID, error) {
 	if cmd.Root().Flags().Changed("account") {
 		val, err := cmd.Root().PersistentFlags().GetString("account")
 		if err != nil {
 			return "", err
 		}
-		return sdk.AccountUID(val), nil
+		return api.AccountUID(val), nil
 	}
 	envVarName := env.VarNameFromCLIFlagName("account")
 	if val, isSet := os.LookupEnv(envVarName); isSet {
-		return sdk.AccountUID(val), nil
+		return api.AccountUID(val), nil
 	}
 	if cnfAccountID != "" {
-		return sdk.AccountUID(cnfAccountID), nil
+		return api.AccountUID(cnfAccountID), nil
 	}
 	val, err := cmd.Root().PersistentFlags().GetString("account")
 	if err != nil {
 		return "", err
 	}
-	return sdk.AccountUID(val), nil
+	return api.AccountUID(val), nil
 }
 
 func resolveProjectID(cmd *cobra.Command, cnfProjectID string) (string, error) {
