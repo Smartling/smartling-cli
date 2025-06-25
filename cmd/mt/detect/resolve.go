@@ -4,6 +4,7 @@ import (
 	"os"
 
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
+	"github.com/Smartling/smartling-cli/services/helpers/env"
 
 	sdk "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
@@ -13,7 +14,8 @@ func resolveFileType(cmd *cobra.Command) string {
 	if cmd.Flags().Changed(fileTypeFlag) {
 		return fileType
 	}
-	if val, isSet := os.LookupEnv(fileTypeFlag); isSet {
+	envVarName := env.VarNameFromCLIFlagName(fileTypeFlag)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return val
 	}
 	return fileType
@@ -23,7 +25,8 @@ func resolveOutputTemplate(cmd *cobra.Command, fileConfig mtcmd.FileConfig) stri
 	if cmd.Flags().Changed(outputTemplateFlag) {
 		return outputTemplate
 	}
-	if val, isSet := os.LookupEnv(outputTemplateFlag); isSet {
+	envVarName := env.VarNameFromCLIFlagName(outputTemplateFlag)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return val
 	}
 	if fileConfig.MT.FileFormat != nil {
@@ -40,7 +43,8 @@ func resolveAccountUID(cmd *cobra.Command, cnfAccountID string) (sdk.AccountUID,
 		}
 		return sdk.AccountUID(val), nil
 	}
-	if val, isSet := os.LookupEnv("account"); isSet {
+	envVarName := env.VarNameFromCLIFlagName("account")
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return sdk.AccountUID(val), nil
 	}
 	if cnfAccountID != "" {
@@ -61,7 +65,8 @@ func resolveProjectID(cmd *cobra.Command, cnfProjectID string) (string, error) {
 		}
 		return val, nil
 	}
-	if val, isSet := os.LookupEnv("project"); isSet {
+	envVarName := env.VarNameFromCLIFlagName("project")
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return val, nil
 	}
 	if cnfProjectID != "" {

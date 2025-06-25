@@ -6,6 +6,7 @@ import (
 
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	"github.com/Smartling/smartling-cli/services/helpers"
+	"github.com/Smartling/smartling-cli/services/helpers/env"
 
 	sdk "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
@@ -15,7 +16,8 @@ func resolveSourceLocale(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string
 	if cmd.Flags().Changed(sourceLocaleFlag) {
 		return sourceLocale
 	}
-	if val, isSet := os.LookupEnv(sourceLocaleFlag); isSet {
+	envVarName := env.VarNameFromCLIFlagName(sourceLocaleFlag)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return val
 	}
 	if fileConfig.MT.DefaultSourceLocale != nil {
@@ -28,7 +30,8 @@ func resolveDetectLanguage(cmd *cobra.Command) bool {
 	if cmd.Flags().Changed(detectLanguageFlag) {
 		return detectLanguage
 	}
-	if _, isSet := os.LookupEnv(detectLanguageFlag); isSet {
+	envVarName := env.VarNameFromCLIFlagName(detectLanguageFlag)
+	if _, isSet := os.LookupEnv(envVarName); isSet {
 		return true
 	}
 	return detectLanguage
@@ -38,7 +41,8 @@ func resolveTargetLocale(cmd *cobra.Command, fileConfig mtcmd.FileConfig) []stri
 	if cmd.Flags().Changed(targetLocaleFlag) {
 		return targetLocales
 	}
-	if val, isSet := os.LookupEnv(targetLocaleFlag); isSet {
+	envVarName := env.VarNameFromCLIFlagName(targetLocaleFlag)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return strings.Split(val, ",")
 	}
 	if len(fileConfig.MT.DefaultTargetLocales) > 0 {
@@ -51,7 +55,8 @@ func resolveOutputDirectory(cmd *cobra.Command, fileConfig mtcmd.FileConfig) str
 	if cmd.Flags().Changed(outputDirectoryFlag) {
 		return outputDirectory
 	}
-	if val, isSet := os.LookupEnv(outputDirectoryFlag); isSet {
+	envVarName := env.VarNameFromCLIFlagName(outputDirectoryFlag)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return val
 	}
 	if fileConfig.MT.OutputDirectory != nil {
@@ -64,7 +69,8 @@ func resolveDirectives(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (map[str
 	if cmd.Flags().Changed(directiveFlag) {
 		return helpers.MKeyValueToMap(directive)
 	}
-	if val, isSet := os.LookupEnv(directiveFlag); isSet {
+	envVarName := env.VarNameFromCLIFlagName(directiveFlag)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return helpers.MKeyValueToMap(strings.Split(val, ","))
 	}
 	if len(fileConfig.MT.Directives) > 0 {
@@ -77,7 +83,8 @@ func resolveProgress(cmd *cobra.Command) bool {
 	if cmd.Flags().Changed(progressFlag) {
 		return progress
 	}
-	if _, isSet := os.LookupEnv(progressFlag); isSet {
+	envVarName := env.VarNameFromCLIFlagName(progressFlag)
+	if _, isSet := os.LookupEnv(envVarName); isSet {
 		return true
 	}
 	return progress
@@ -87,7 +94,8 @@ func resolveOverrideTypeDetection(cmd *cobra.Command) bool {
 	if cmd.Flags().Changed(overrideTypeDetectionFlag) {
 		return overrideTypeDetection
 	}
-	if _, isSet := os.LookupEnv(overrideTypeDetectionFlag); isSet {
+	envVarName := env.VarNameFromCLIFlagName(overrideTypeDetectionFlag)
+	if _, isSet := os.LookupEnv(envVarName); isSet {
 		return true
 	}
 	return overrideTypeDetection
@@ -97,7 +105,8 @@ func resolveOutputTemplate(cmd *cobra.Command, fileConfig mtcmd.FileConfig) stri
 	if cmd.Flags().Changed(outputTemplateFlag) {
 		return outputTemplate
 	}
-	if val, isSet := os.LookupEnv(outputTemplateFlag); isSet {
+	envVarName := env.VarNameFromCLIFlagName(outputTemplateFlag)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return val
 	}
 	if fileConfig.MT.FileFormat != nil {
@@ -114,7 +123,8 @@ func resolveAccountUID(cmd *cobra.Command, cnfAccountID string) (sdk.AccountUID,
 		}
 		return sdk.AccountUID(val), nil
 	}
-	if val, isSet := os.LookupEnv("account"); isSet {
+	envVarName := env.VarNameFromCLIFlagName("account")
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return sdk.AccountUID(val), nil
 	}
 	if cnfAccountID != "" {
@@ -135,7 +145,8 @@ func resolveProjectID(cmd *cobra.Command, cnfProjectID string) (string, error) {
 		}
 		return val, nil
 	}
-	if val, isSet := os.LookupEnv("project"); isSet {
+	envVarName := env.VarNameFromCLIFlagName("project")
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return val, nil
 	}
 	if cnfProjectID != "" {

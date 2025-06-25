@@ -10,12 +10,12 @@ import (
 	"github.com/Smartling/smartling-cli/services/mt"
 )
 
-const defaultDetectFormat = `{{.File}}\t{{.Language}}\n`
+const DefaultDetectTemplate = `{{.File}}\t{{.Language}}\n`
 
 // RenderDetect render detect output
 func RenderDetect(detectOutputs []mt.DetectOutput, outputFormat, outputTemplate string) error {
 	if outputTemplate == "" {
-		outputTemplate = defaultDetectFormat
+		outputTemplate = DefaultDetectTemplate
 	}
 
 	format, err := format.Compile(outputTemplate)

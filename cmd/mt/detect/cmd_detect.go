@@ -13,8 +13,6 @@ import (
 const (
 	fileTypeFlag       = "type"
 	outputTemplateFlag = "format"
-
-	defaultOutputFormat = "{{.File}}: {{.Language}}"
 )
 
 var (
@@ -93,7 +91,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 	detectCmd.Flags().StringVar(&fileType, fileTypeFlag, "", "Override automatically detected file type.")
 	detectCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, "", `Output format template.
-Default: `+defaultOutputFormat+`
+Default: `+output.DefaultDetectTemplate+`
 {{.File}} - Original file path
 {{.Language}} - Detected language code
 {{.Confidence}} - Detection confidence (if available)`)
