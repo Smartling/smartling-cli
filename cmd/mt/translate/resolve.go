@@ -29,7 +29,7 @@ func resolveDetectLanguage(cmd *cobra.Command) bool {
 		return detectLanguage
 	}
 	if _, isSet := os.LookupEnv(detectLanguageFlag); isSet {
-		return isSet
+		return true
 	}
 	return detectLanguage
 }
@@ -83,14 +83,14 @@ func resolveProgress(cmd *cobra.Command) bool {
 	return progress
 }
 
-func resolveFileType(cmd *cobra.Command) string {
-	if cmd.Flags().Changed(fileTypeFlag) {
-		return fileType
+func resolveOverrideTypeDetection(cmd *cobra.Command) bool {
+	if cmd.Flags().Changed(overrideTypeDetectionFlag) {
+		return overrideTypeDetection
 	}
-	if val, isSet := os.LookupEnv(fileTypeFlag); isSet {
-		return val
+	if _, isSet := os.LookupEnv(overrideTypeDetectionFlag); isSet {
+		return true
 	}
-	return fileType
+	return overrideTypeDetection
 }
 
 func resolveOutputTemplate(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string {

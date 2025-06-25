@@ -11,27 +11,27 @@ import (
 )
 
 const (
-	sourceLocaleFlag    = "source-locale"
-	detectLanguageFlag  = "detect-language"
-	targetLocaleFlag    = "target-locale"
-	outputDirectoryFlag = "output-directory"
-	directiveFlag       = "directive"
-	progressFlag        = "progress"
-	fileTypeFlag        = "type"
-	outputTemplateFlag  = "format"
+	sourceLocaleFlag          = "source-locale"
+	detectLanguageFlag        = "detect-language"
+	targetLocaleFlag          = "target-locale"
+	outputDirectoryFlag       = "output-directory"
+	directiveFlag             = "directive"
+	progressFlag              = "progress"
+	overrideTypeDetectionFlag = "type"
+	outputTemplateFlag        = "format"
 
 	defaultOutputFormat = "{{name .File}}_{{.Locale}}{{ext .File}}"
 )
 
 var (
-	sourceLocale    string
-	detectLanguage  bool
-	targetLocales   []string
-	outputDirectory string
-	directive       []string
-	progress        bool
-	fileType        string
-	outputTemplate  string
+	sourceLocale          string
+	detectLanguage        bool
+	targetLocales         []string
+	outputDirectory       string
+	directive             []string
+	progress              bool
+	overrideTypeDetection bool
+	outputTemplate        string
 )
 
 // NewTranslateCmd ...
@@ -68,14 +68,14 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			}
 
 			params := srv.TranslateParams{
-				SourceLocale:    resolveSourceLocale(cmd, fileConfig),
-				DetectLanguage:  resolveDetectLanguage(cmd),
-				TargetLocales:   resolveTargetLocale(cmd, fileConfig),
-				OutputDirectory: resolveOutputDirectory(cmd, fileConfig),
-				Progress:        resolveProgress(cmd),
-				FileType:        resolveFileType(cmd),
-				FileOrPattern:   fileOrPattern,
-				URI:             "",
+				SourceLocale:          resolveSourceLocale(cmd, fileConfig),
+				DetectLanguage:        resolveDetectLanguage(cmd),
+				TargetLocales:         resolveTargetLocale(cmd, fileConfig),
+				OutputDirectory:       resolveOutputDirectory(cmd, fileConfig),
+				Progress:              resolveProgress(cmd),
+				OverrideTypeDetection: resolveOverrideTypeDetection(cmd),
+				FileOrPattern:         fileOrPattern,
+				URI:                   "",
 			}
 			params.Directives, err = resolveDirectives(cmd, fileConfig)
 			if err != nil {
@@ -112,7 +112,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 	translateCmd.Flags().StringVar(&sourceLocale, sourceLocaleFlag, "", "Explicitly specify source language")
 	translateCmd.Flags().BoolVar(&detectLanguage, detectLanguageFlag, false, "Auto-detect source language")
 	translateCmd.Flags().StringArrayVar(&targetLocales, targetLocaleFlag, nil, "Target language(s). Can be specified multiple times")
-	translateCmd.Flags().StringVar(&fileType, fileTypeFlag, "", "Override automatically detected file type")
+	translateCmd.Flags().BoolVar(&overrideTypeDetection, overrideTypeDetectionFlag, false, "Override automatically detected file type")
 	translateCmd.Flags().StringVar(&outputDirectory, outputDirectoryFlag, "", "Output directory for translated files")
 	translateCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, "", `Translated file naming template.
 Default: `+defaultOutputFormat+`
