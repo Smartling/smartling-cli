@@ -13,12 +13,12 @@ import (
 const defaultDetectFormat = `{{.File}}\t{{.Language}}\n`
 
 // RenderDetect render detect output
-func RenderDetect(detectOutputs []mt.DetectOutput, formatType string) error {
-	if formatType == "" {
-		formatType = defaultDetectFormat
+func RenderDetect(detectOutputs []mt.DetectOutput, outputFormat, outputTemplate string) error {
+	if outputTemplate == "" {
+		outputTemplate = defaultDetectFormat
 	}
 
-	format, err := format.Compile(formatType)
+	format, err := format.Compile(outputTemplate)
 	if err != nil {
 		return err
 	}

@@ -11,7 +11,6 @@ import (
 // DetectParams is the parameters for the RunDetect method.
 type DetectParams struct {
 	FileType      string
-	FormatPath    string
 	FileOrPattern string
 	ProjectID     string
 	AccountUID    sdk.AccountUID

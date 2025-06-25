@@ -15,7 +15,6 @@ type TranslateParams struct {
 	Directives     map[string]string
 	Progress       bool
 	FileType       string
-	OutputFormat   string
 	FileOrPattern  string
 	ProjectID      string
 	AccountUID     sdk.AccountUID

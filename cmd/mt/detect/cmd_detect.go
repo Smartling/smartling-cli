@@ -2,24 +2,28 @@ package detect
 
 import (
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
-	mtsrv "github.com/Smartling/smartling-cli/cmd/mt"
+	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
-	"github.com/Smartling/smartling-cli/services/mt"
+	srv "github.com/Smartling/smartling-cli/services/mt"
 
-	sdk "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
 )
 
-const defaultOutputFormat = "{{.File}}: {{.Language}}"
+const (
+	fileTypeFlag       = "type"
+	outputTemplateFlag = "format"
+
+	defaultOutputFormat = "{{.File}}: {{.Language}}"
+)
 
 var (
-	fileType     string
-	outputFormat string
+	fileType       string
+	outputTemplate string
 )
 
 // NewDetectCmd ...
-func NewDetectCmd(initializer mtsrv.SrvInitializer) *cobra.Command {
+func NewDetectCmd(initializer mtcmd.SrvInitializer, fileConfig mtcmd.FileConfig) *cobra.Command {
 	detectCmd := &cobra.Command{
 		Use:   "detect <file|pattern>",
 		Short: "Detect the source language of files using Smartling's File MT API.",
@@ -47,13 +51,18 @@ func NewDetectCmd(initializer mtsrv.SrvInitializer) *cobra.Command {
 				rlog.Errorf("unable to read config: %w", err)
 				return
 			}
-			params := mt.DetectParams{
-				FileType:      fileType,
-				FormatPath:    outputFormat,
+			params := srv.DetectParams{
+				FileType:      resolveFileType(cmd),
 				FileOrPattern: fileOrPattern,
-				ProjectID:     cnf.ProjectID,
-				AccountUID:    sdk.AccountUID(cnf.AccountID),
 				URI:           "",
+			}
+			params.AccountUID, err = resolveAccountUID(cmd, cnf.AccountID)
+			if err != nil {
+				rlog.Errorf("unable to resolve AccountUID: %w", err)
+			}
+			params.ProjectID, err = resolveProjectID(cmd, cnf.ProjectID)
+			if err != nil {
+				rlog.Errorf("unable to resolve ProjectID: %w", err)
 			}
 			out, err := mtSrv.RunDetect(ctx, params, listAllFilesFn)
 			if err != nil {
@@ -61,7 +70,13 @@ func NewDetectCmd(initializer mtsrv.SrvInitializer) *cobra.Command {
 				return
 			}
 
-			err = output.RenderDetect(out, outputFormat)
+			outputFormat, err := cmd.Parent().PersistentFlags().GetString("output")
+			if err != nil {
+				rlog.Errorf("unable to get output: %w", err)
+				return
+			}
+			outTemplate := resolveOutputTemplate(cmd, fileConfig)
+			err = output.RenderDetect(out, outputFormat, outTemplate)
 			if err != nil {
 				rlog.Errorf("unable to render detect: %w", err)
 				return
@@ -70,8 +85,8 @@ func NewDetectCmd(initializer mtsrv.SrvInitializer) *cobra.Command {
 		},
 	}
 
-	detectCmd.Flags().StringVar(&fileType, "type", "", "Override automatically detected file type.")
-	detectCmd.Flags().StringVar(&outputFormat, "format", "", `Output format template.
+	detectCmd.Flags().StringVar(&fileType, fileTypeFlag, "", "Override automatically detected file type.")
+	detectCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, "", `Output format template.
 Default: `+defaultOutputFormat+`
 {{.File}} - Original file path
 {{.Language}} - Detected language code

@@ -93,17 +93,17 @@ func resolveFileType(cmd *cobra.Command) string {
 	return fileType
 }
 
-func resolveOutputFormat(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string {
-	if cmd.Flags().Changed(outputFormatFlag) {
-		return outputFormat
+func resolveOutputTemplate(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string {
+	if cmd.Flags().Changed(outputTemplateFlag) {
+		return outputTemplate
 	}
-	if val, isSet := os.LookupEnv(outputFormatFlag); isSet {
+	if val, isSet := os.LookupEnv(outputTemplateFlag); isSet {
 		return val
 	}
 	if fileConfig.MT.FileFormat != nil {
 		return *fileConfig.MT.FileFormat
 	}
-	return outputFormat
+	return outputTemplate
 }
 
 func resolveAccountUID(cmd *cobra.Command, cnfAccountID string) (sdk.AccountUID, error) {

@@ -18,7 +18,7 @@ const (
 	directiveFlag      = "directive"
 	progressFlag       = "progress"
 	fileTypeFlag       = "type"
-	outputFormatFlag   = "format"
+	outputTemplateFlag = "format"
 
 	defaultOutputFormat = "{{name .File}}_{{.Locale}}{{ext .File}}"
 )
@@ -31,7 +31,7 @@ var (
 	directive      []string
 	progress       bool
 	fileType       string
-	outputFormat   string
+	outputTemplate string
 )
 
 // NewTranslateCmd ...
@@ -48,8 +48,6 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer, fileConfig mtcmd.FileConf
 				return
 			}
 			fileOrPattern := args[0]
-
-			//output, _ := cmd.Parent().PersistentFlags().GetString("output")
 
 			mtSrv, _, err := initializer.InitMTSrv()
 			if err != nil {
@@ -69,7 +67,6 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer, fileConfig mtcmd.FileConf
 				Directory:      resolveDirectory(cmd, fileConfig),
 				Progress:       resolveProgress(cmd),
 				FileType:       resolveFileType(cmd),
-				OutputFormat:   resolveOutputFormat(cmd, fileConfig),
 				FileOrPattern:  fileOrPattern,
 				URI:            "",
 			}
@@ -91,7 +88,13 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer, fileConfig mtcmd.FileConf
 				return
 			}
 
-			err = output.RenderTranslate(out, outputFormat)
+			outFormat, err := cmd.Parent().PersistentFlags().GetString("output")
+			if err != nil {
+				rlog.Errorf("unable to get output: %w", err)
+				return
+			}
+			outTemplate := resolveOutputTemplate(cmd, fileConfig)
+			err = output.RenderTranslate(out, outFormat, outTemplate)
 			if err != nil {
 				rlog.Errorf("unable to render translate: %w", err)
 				return
@@ -104,7 +107,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer, fileConfig mtcmd.FileConf
 	translateCmd.Flags().StringArrayVar(&targetLocale, targetLocaleFlag, nil, "Target language(s). Can be specified multiple times")
 	translateCmd.Flags().StringVar(&fileType, fileTypeFlag, "", "Override automatically detected file type")
 	translateCmd.Flags().StringVar(&directory, directoryFlag, "", "Output directory for translated files")
-	translateCmd.Flags().StringVar(&outputFormat, outputFormatFlag, "", `Translated file naming template.
+	translateCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, "", `Translated file naming template.
 Default: `+defaultOutputFormat+`
 {{.File}} - Original file path
 {{.Locale}} - Target locale
