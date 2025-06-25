@@ -15,7 +15,6 @@ import (
 
 var (
 	output         string
-	noProgress     bool
 	allowedOutputs = []string{
 		"table",
 		"json",
@@ -42,7 +41,6 @@ func NewMTCmd() *cobra.Command {
 	}
 
 	mtCmd.PersistentFlags().StringVar(&output, "output", "simple", "Output format: "+joinedAllowedOutputs)
-	mtCmd.PersistentFlags().BoolVar(&noProgress, "no-progress", false, "Disable progress indicators")
 
 	return mtCmd
 }
