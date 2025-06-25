@@ -24,19 +24,19 @@ func resolveSourceLocale(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string
 	return sourceLocale
 }
 
-func resolveDetectLanguage(cmd *cobra.Command) string {
+func resolveDetectLanguage(cmd *cobra.Command) bool {
 	if cmd.Flags().Changed(detectLanguageFlag) {
 		return detectLanguage
 	}
-	if val, isSet := os.LookupEnv(detectLanguageFlag); isSet {
-		return val
+	if _, isSet := os.LookupEnv(detectLanguageFlag); isSet {
+		return isSet
 	}
 	return detectLanguage
 }
 
 func resolveTargetLocale(cmd *cobra.Command, fileConfig mtcmd.FileConfig) []string {
 	if cmd.Flags().Changed(targetLocaleFlag) {
-		return targetLocale
+		return targetLocales
 	}
 	if val, isSet := os.LookupEnv(targetLocaleFlag); isSet {
 		return strings.Split(val, ",")
@@ -44,20 +44,20 @@ func resolveTargetLocale(cmd *cobra.Command, fileConfig mtcmd.FileConfig) []stri
 	if len(fileConfig.MT.DefaultTargetLocales) > 0 {
 		return fileConfig.MT.DefaultTargetLocales
 	}
-	return targetLocale
+	return targetLocales
 }
 
-func resolveDirectory(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string {
-	if cmd.Flags().Changed(directoryFlag) {
-		return directory
+func resolveOutputDirectory(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string {
+	if cmd.Flags().Changed(outputDirectoryFlag) {
+		return outputDirectory
 	}
-	if val, isSet := os.LookupEnv(directoryFlag); isSet {
+	if val, isSet := os.LookupEnv(outputDirectoryFlag); isSet {
 		return val
 	}
 	if fileConfig.MT.OutputDirectory != nil {
 		return *fileConfig.MT.OutputDirectory
 	}
-	return directory
+	return outputDirectory
 }
 
 func resolveDirectives(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (map[string]string, error) {

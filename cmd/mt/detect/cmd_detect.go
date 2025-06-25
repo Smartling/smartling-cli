@@ -23,7 +23,7 @@ var (
 )
 
 // NewDetectCmd ...
-func NewDetectCmd(initializer mtcmd.SrvInitializer, fileConfig mtcmd.FileConfig) *cobra.Command {
+func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 	detectCmd := &cobra.Command{
 		Use:   "detect <file|pattern>",
 		Short: "Detect the source language of files using Smartling's File MT API.",
@@ -73,6 +73,12 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer, fileConfig mtcmd.FileConfig)
 			outputFormat, err := cmd.Parent().PersistentFlags().GetString("output")
 			if err != nil {
 				rlog.Errorf("unable to get output: %w", err)
+				return
+			}
+
+			fileConfig, err := mtcmd.BindFileConfig(cmd)
+			if err != nil {
+				rlog.Errorf("unable to bind config: %w", err)
 				return
 			}
 			outTemplate := resolveOutputTemplate(cmd, fileConfig)

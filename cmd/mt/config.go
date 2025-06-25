@@ -6,6 +6,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 
 	"github.com/goccy/go-yaml"
+	"github.com/spf13/cobra"
 )
 
 // FileConfig defines MT file config
@@ -31,7 +32,15 @@ type MTFile struct {
 	} `yaml:"mt"`
 }
 
-func BindFileConfig(dir, filename string) (FileConfig, error) {
+func BindFileConfig(cmd *cobra.Command) (FileConfig, error) {
+	dir, err := resolveConfigDirectory(cmd)
+	if err != nil {
+		return FileConfig{}, err
+	}
+	filename, err := resolveConfigFile(cmd)
+	if err != nil {
+		return FileConfig{}, err
+	}
 	path, err := config.GetPath(dir, filename, false)
 	var config FileConfig
 	data, err := os.ReadFile(path)
@@ -45,4 +54,40 @@ func BindFileConfig(dir, filename string) (FileConfig, error) {
 		return config, err
 	}
 	return config, nil
+}
+
+func resolveConfigDirectory(cmd *cobra.Command) (string, error) {
+	if cmd.Root().Flags().Changed("directory") {
+		val, err := cmd.Root().PersistentFlags().GetString("directory")
+		if err != nil {
+			return "", err
+		}
+		return val, nil
+	}
+	if val, isSet := os.LookupEnv("directory"); isSet {
+		return val, nil
+	}
+	val, err := cmd.Root().PersistentFlags().GetString("directory")
+	if err != nil {
+		return "", err
+	}
+	return val, nil
+}
+
+func resolveConfigFile(cmd *cobra.Command) (string, error) {
+	if cmd.Root().Flags().Changed("config") {
+		val, err := cmd.Root().PersistentFlags().GetString("config")
+		if err != nil {
+			return "", err
+		}
+		return val, nil
+	}
+	if val, isSet := os.LookupEnv("config"); isSet {
+		return val, nil
+	}
+	val, err := cmd.Root().PersistentFlags().GetString("config")
+	if err != nil {
+		return "", err
+	}
+	return val, nil
 }
