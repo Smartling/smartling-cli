@@ -20,6 +20,7 @@ var (
 		"table",
 		"json",
 		"simple",
+		"template",
 	}
 	joinedAllowedOutputs = strings.Join(allowedOutputs, ", ")
 )
