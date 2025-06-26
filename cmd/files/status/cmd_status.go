@@ -1,6 +1,8 @@
 package status
 
 import (
+	"os"
+
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
@@ -70,7 +72,7 @@ Available options:
 			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
-				return
+				os.Exit(1)
 			}
 
 			p := files.StatusParams{
@@ -81,7 +83,7 @@ Available options:
 			err = s.RunStatus(p)
 			if err != nil {
 				rlog.Errorf("failed to run status: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}

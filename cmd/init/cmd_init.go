@@ -1,6 +1,8 @@
 package initialize
 
 import (
+	"os"
+
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
@@ -58,12 +60,12 @@ Default config values can be passed via following options:` +
 			s, err := srvInitializer.InitSrv()
 			if err != nil {
 				rlog.Errorf("failed to get init service: %s", err)
-				return
+				os.Exit(1)
 			}
 			err = s.RunInit(dryRun)
 			if err != nil {
 				rlog.Errorf("failed to run init: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}

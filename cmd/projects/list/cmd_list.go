@@ -1,6 +1,8 @@
 package list
 
 import (
+	"os"
+
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
@@ -38,13 +40,13 @@ Available options:
 			s, err := initializer.InitProjectsSrv()
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
-				return
+				os.Exit(1)
 			}
 
 			err = s.RunList(short)
 			if err != nil {
 				rlog.Errorf("failed to run list: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}

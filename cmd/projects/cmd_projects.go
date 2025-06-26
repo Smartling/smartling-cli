@@ -1,6 +1,8 @@
 package projects
 
 import (
+	"os"
+
 	"github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/projects"
@@ -19,6 +21,7 @@ func NewProjectsCmd() *cobra.Command {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
 				if err := cmd.Help(); err != nil {
 					rlog.Error(err.Error())
+					os.Exit(1)
 				}
 				return
 			}

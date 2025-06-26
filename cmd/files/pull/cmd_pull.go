@@ -1,6 +1,8 @@
 package pull
 
 import (
+	"os"
+
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
@@ -91,7 +93,7 @@ Available options:
 			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
-				return
+				os.Exit(1)
 			}
 
 			params := files.PullParams{
@@ -106,7 +108,7 @@ Available options:
 			err = s.RunPull(params)
 			if err != nil {
 				rlog.Errorf("failed to run pull: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}

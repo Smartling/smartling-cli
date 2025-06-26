@@ -1,6 +1,8 @@
 package locales
 
 import (
+	"os"
+
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
@@ -48,7 +50,7 @@ Available options:
 			s, err := initializer.InitProjectsSrv()
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
-				return
+				os.Exit(1)
 			}
 
 			params := projects.LocalesParams{
@@ -59,7 +61,7 @@ Available options:
 			err = s.RunLocales(params)
 			if err != nil {
 				rlog.Errorf("failed to run locales: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}

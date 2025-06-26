@@ -25,7 +25,7 @@ func main() {
 	rootCmd, err := cmd.NewRootCmd()
 	if err != nil {
 		rlog.Errorf("failed new root command: %w", err)
-		os.Exit(0)
+		os.Exit(1)
 	}
 
 	initSrvInitializer := initialize.NewSrvInitializer()

@@ -1,6 +1,8 @@
 package push
 
 import (
+	"os"
+
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
@@ -81,7 +83,7 @@ Available options:
 			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
-				return
+				os.Exit(1)
 			}
 
 			p := files.PushParams{
@@ -97,7 +99,7 @@ Available options:
 
 			if err := s.RunPush(p); err != nil {
 				rlog.Errorf("failed to run push: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}

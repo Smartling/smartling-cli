@@ -1,6 +1,8 @@
 package list
 
 import (
+	"os"
+
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
@@ -62,13 +64,13 @@ Available options:
 			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
-				return
+				os.Exit(1)
 			}
 
 			err = s.RunList(formatType, short, uri)
 			if err != nil {
 				rlog.Errorf("failed to run list: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}

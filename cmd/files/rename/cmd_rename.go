@@ -1,6 +1,8 @@
 package rename
 
 import (
+	"os"
+
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
@@ -37,13 +39,13 @@ Available options:
 			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
-				return
+				os.Exit(1)
 			}
 
 			err = s.RunRename(old, new)
 			if err != nil {
 				rlog.Errorf("failed to run rename: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}

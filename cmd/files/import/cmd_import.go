@@ -1,6 +1,8 @@
 package importcmd
 
 import (
+	"os"
+
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
@@ -63,7 +65,7 @@ Available options:
 			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
-				return
+				os.Exit(1)
 			}
 
 			params := files.ImportParams{
@@ -77,7 +79,7 @@ Available options:
 			err = s.RunImport(params)
 			if err != nil {
 				rlog.Errorf("failed to run import: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}

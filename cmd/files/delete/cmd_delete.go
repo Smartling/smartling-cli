@@ -1,6 +1,8 @@
 package delete
 
 import (
+	"os"
+
 	"github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
@@ -38,13 +40,13 @@ Available options:
 			s, err := initializer.InitFilesSrv()
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
-				return
+				os.Exit(1)
 			}
 
 			err = s.RunDelete(uri)
 			if err != nil {
 				rlog.Errorf("failed to run delete: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}
