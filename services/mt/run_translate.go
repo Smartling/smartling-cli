@@ -2,8 +2,18 @@ package mt
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
-	sdk "github.com/Smartling/api-sdk-go/api/mt"
+	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
+
+	api "github.com/Smartling/api-sdk-go/api/mt"
+	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
+	"github.com/reconquest/hierr-go"
 )
 
 // TranslateParams is the parameters for the RunTranslate method.
@@ -17,12 +27,125 @@ type TranslateParams struct {
 	OverrideFileType string
 	FileOrPattern    string
 	ProjectID        string
-	AccountUID       sdk.AccountUID
-	URI              string
+	AccountUID       api.AccountUID
 }
 
 func (s service) RunTranslate(ctx context.Context, p TranslateParams) ([]TranslateOutput, error) {
-	return nil, nil
+	var res []TranslateOutput
+
+	base, pattern := globfiles.GetDirectoryFromPattern(p.FileOrPattern)
+	files, err := globfiles.LocallyFunc(
+		p.OutputDirectory,
+		base,
+		pattern,
+	)
+	if err != nil {
+		return nil, clierror.NewError(
+			hierr.Errorf(
+				err,
+				`unable to find matching files to upload`,
+			),
+
+			`Check, that specified pattern is valid and refer to help for`+
+				` more information about glob patterns.`,
+		)
+	}
+
+	if len(files) == 0 {
+		return nil, clierror.NewError(
+			fmt.Errorf(`no files found by specified patterns`),
+
+			`Check command line pattern if any and configuration file for`+
+				` more patterns to search for.`,
+		)
+	}
+
+	base = filepath.Dir(base)
+
+	for _, file := range files {
+		name, err := filepath.Abs(file)
+		if err != nil {
+			return nil, clierror.NewError(
+				hierr.Errorf(
+					err,
+					`unable to resolve absolute path to file: %q`,
+					file,
+				),
+
+				`Check, that file exists and you have proper permissions `+
+					`to access it.`,
+			)
+		}
+
+		if relPath, err := filepath.Rel(base, name); err != nil || strings.HasPrefix(relPath, "..") {
+			return nil, clierror.NewError(
+				errors.New(
+					`you are trying to push file outside project directory`,
+				),
+				`Check file path and path to configuration file and try again.`,
+			)
+		}
+
+		name, err = filepath.Rel(base, name)
+		if err != nil {
+			return nil, clierror.NewError(
+				hierr.Errorf(
+					err,
+					`unable to resolve relative path to file: %q`,
+					file,
+				),
+
+				`Check, that file exists and you have proper permissions `+
+					`to access it.`,
+			)
+		}
+
+		contents, err := os.ReadFile(file)
+		if err != nil {
+			return nil, clierror.NewError(
+				hierr.Errorf(
+					err,
+					`unable to read file contents "%s"`,
+					file,
+				),
+
+				`Check that file exists and readable by current user.`,
+			)
+		}
+		request := sdkfile.FileUploadRequest{
+			File:               contents,
+			LocalesToAuthorize: []string{p.SourceLocale},
+		}
+		uploadFileResponse, err := s.uploader.UploadFile(p.AccountUID, p.ProjectID, request)
+		if err != nil {
+			return nil, err
+		}
+		translatorStartResponse, err := s.fileTranslator.Start(p.AccountUID, uploadFileResponse.FileUID)
+		if err != nil {
+			return nil, err
+		}
+
+		var translated bool
+		for !translated {
+			progressResponse, err := s.fileTranslator.Progress(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
+			if err != nil {
+				return nil, err
+			}
+			translated = strings.ToUpper(progressResponse.Code) == api.CompletedTranslatedState
+			if translated {
+				res = append(res, TranslateOutput{
+					File:      file,
+					Locale:    progressResponse.State,
+					Name:      "",
+					Ext:       "",
+					Directory: "",
+				})
+			}
+		}
+
+		return res, nil
+	}
+	return res, nil
 }
 
 // TranslateOutput is translate output

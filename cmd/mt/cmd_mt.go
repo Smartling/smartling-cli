@@ -2,13 +2,13 @@ package mt
 
 import (
 	"fmt"
-	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"os"
 	"slices"
 	"strings"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
