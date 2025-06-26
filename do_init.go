@@ -45,7 +45,10 @@ func doInit(config Config, args map[string]interface{}) error {
 			}
 		}
 
-		fmt.Sscanln(read, variable)
+		_, err = fmt.Sscanln(read, variable)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to scan input: "+err.Error())
+		}
 	}
 
 	var input Config

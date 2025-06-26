@@ -2,7 +2,6 @@ package main
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -243,17 +242,29 @@ func (suite *MainSuite) TestFilesPull() {
 			case "/Rick/portal-gun.java":
 				switch {
 				case strings.Contains(request.URL.Path, "/de-DE/"):
-					io.WriteString(writer, "Rick:de-DE\n")
+					_, err := io.WriteString(writer, "Rick:de-DE\n")
+					if err != nil {
+						panic(err)
+					}
 				default:
-					io.WriteString(writer, "Rick:original\n")
+					_, err := io.WriteString(writer, "Rick:original\n")
+					if err != nil {
+						panic(err)
+					}
 				}
 
 			case "/Morty/stupidness.txt":
 				switch {
 				case strings.Contains(request.URL.Path, "/es/"):
-					io.WriteString(writer, "Morty:es\n")
+					_, err := io.WriteString(writer, "Morty:es\n")
+					if err != nil {
+						panic(err)
+					}
 				default:
-					io.WriteString(writer, "Morty:original\n")
+					_, err := io.WriteString(writer, "Morty:original\n")
+					if err != nil {
+						panic(err)
+					}
 				}
 			}
 
@@ -313,7 +324,7 @@ func (suite *MainSuite) TestFilesPull() {
 	}
 
 	assertFileEquals := func(path string, contents string) {
-		output, err := ioutil.ReadFile(path)
+		output, err := os.ReadFile(path)
 		assert.NoError(suite.T(), err)
 		assert.Equal(suite.T(), string(output), contents)
 	}
@@ -402,7 +413,7 @@ func (suite *MainSuite) TestFilesPush() {
 		reader, _, err := request.FormFile("file")
 		assert.NoError(suite.T(), err)
 
-		file, err := ioutil.ReadAll(reader)
+		file, err := io.ReadAll(reader)
 		assert.NoError(suite.T(), err)
 
 		form := request.PostForm
@@ -443,7 +454,7 @@ func (suite *MainSuite) TestFilesPush() {
 		assert.NoError(suite.T(), err)
 	}()
 
-	err = ioutil.WriteFile(
+	err = os.WriteFile(
 		"_test/test.txt",
 		[]byte("giggity giggity goo"),
 		0644,
@@ -761,7 +772,7 @@ func (suite *MainSuite) TestFilesImport() {
 		reader, _, err := request.FormFile("file")
 		assert.NoError(suite.T(), err)
 
-		file, err := ioutil.ReadAll(reader)
+		file, err := io.ReadAll(reader)
 		assert.NoError(suite.T(), err)
 
 		form := request.PostForm
@@ -794,7 +805,7 @@ func (suite *MainSuite) TestFilesImport() {
 		assert.NoError(suite.T(), err)
 	}()
 
-	err = ioutil.WriteFile(
+	err = os.WriteFile(
 		"_test/test.txt",
 		[]byte("giggity giggity goo"),
 		0644,

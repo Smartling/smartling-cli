@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/Smartling/api-sdk-go"
@@ -22,7 +22,7 @@ func doFilesImport(
 		fileType, _ = args["--type"].(string)
 	)
 
-	contents, err := ioutil.ReadFile(file)
+	contents, err := os.ReadFile(file)
 	if err != nil {
 		return NewError(
 			hierr.Errorf(err, "unable to read file for import"),

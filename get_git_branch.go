@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -44,7 +43,7 @@ func getGitBranch() (string, error) {
 		}
 	}
 
-	head, err := ioutil.ReadFile(filepath.Join(dir, ".git", "HEAD"))
+	head, err := os.ReadFile(filepath.Join(dir, ".git", "HEAD"))
 	if err != nil {
 		return "", hierr.Errorf(
 			err,

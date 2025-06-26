@@ -60,3 +60,6 @@ _pkg-init:
 
 %:
 	GOOS=$(basename $@) go build -o bin/smartling.$@
+
+tidy:
+	go mod tidy
