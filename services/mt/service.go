@@ -11,7 +11,7 @@ import (
 // Service defines behavior for interacting with Smartling MT.
 type Service interface {
 	RunDetect(ctx context.Context, p DetectParams, listAllFilesFn globfiles.ListFilesFn) ([]DetectOutput, error)
-	RunTranslate(ctx context.Context, p TranslateParams) (TranslateOutput, error)
+	RunTranslate(ctx context.Context, p TranslateParams) ([]TranslateOutput, error)
 }
 
 // NewService creates a new implementation of the Service

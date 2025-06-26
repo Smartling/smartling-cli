@@ -2,6 +2,8 @@ package mt
 
 import (
 	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
+	"os"
 	"slices"
 	"strings"
 
@@ -35,8 +37,14 @@ func NewMTCmd() *cobra.Command {
 			}
 			return nil
 		},
-		Run: func(_ *cobra.Command, _ []string) {
-
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
+				if err := cmd.Help(); err != nil {
+					rlog.Error(err.Error())
+					os.Exit(1)
+				}
+				return
+			}
 		},
 	}
 

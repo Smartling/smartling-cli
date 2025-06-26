@@ -72,7 +72,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				OutputDirectory:  resolveOutputDirectory(cmd, fileConfig),
 				Progress:         resolveProgress(cmd),
 				OverrideFileType: resolveOverrideFileType(cmd),
-				FileOrPattern:    []string{fileOrPattern},
+				FileOrPattern:    fileOrPattern,
 				URI:              "",
 			}
 			params.Directives, err = resolveDirectives(cmd, fileConfig)
