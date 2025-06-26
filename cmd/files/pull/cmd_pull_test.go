@@ -42,7 +42,8 @@ func TestNewPullCmd(t *testing.T) {
 		"--format", params.Format,
 		"--directory", params.Directory,
 		"--source", fmt.Sprintf("%v", params.Source),
-		"--locales", strings.Join(params.Locales, ","),
+		"--locale", params.Locales[0],
+		"--locale", params.Locales[1],
 		"--progress", params.Progress,
 		"--retrieve", params.Retrieve,
 	})

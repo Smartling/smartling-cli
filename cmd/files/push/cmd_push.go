@@ -103,7 +103,7 @@ Available options:
 	}
 
 	pushCmd.Flags().BoolVarP(&authorize, "authorize", "z", false, `Automatically authorize all locales in specified file. Incompatible with -l option.`)
-	pushCmd.Flags().StringSliceVarP(&locales, "locales", "l", []string{}, `Authorize only specified locales.`)
+	pushCmd.Flags().StringArrayVarP(&locales, "locale", "l", []string{}, `Authorize only specified locales.`)
 	pushCmd.Flags().StringVarP(&branch, "branch", "b", "", `Prepend specified text to the file uri.`)
 	pushCmd.Flags().StringVarP(&fileType, "type", "t", "", `Specifies file type which will be used instead of automatically deduced from extension.`)
 	pushCmd.Flags().StringArrayVarP(&directives, "directive", "r", []string{}, `Specifies one or more directives to use in push request.`)

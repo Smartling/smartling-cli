@@ -128,7 +128,7 @@ func TestFilesPushWithDirective(t *testing.T) {
 			args: append(subCommands, "custom.json",
 				"--directive", directiveValue,
 			),
-			command:           `./smartling-cli  files push custom.json --directive=` + "`translate_paths=\"{\\\"path\\\":\\\"*/string\\\",\\\"key\\\":\\\"{*}/string\\\",\\\"instruction\\\":\\\"*/instruction\\\"}\"`",
+			command:           `./smartling-cli  files push custom.json `,
 			expectedOutputs:   []string{filename, "(json)", "strings", "words"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
