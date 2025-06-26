@@ -6,6 +6,12 @@
 .tags
 .tags1
 /_test/
+/tests/cmd/bin/
+/tests/post-release-tests/snapshots
+/tests/post-release-tests/test-workflow
+/tests/post-release-tests/test_files
+/tests/post-release-tests/smartling.yml
+/tests/post-release-tests/smartling-cli
 .DS_Store
 
 # IDEs
