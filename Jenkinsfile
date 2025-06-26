@@ -3,11 +3,23 @@ pipeline {
         label 'master'
     }
 
+    environment {
+        TARGET_BRANCH = 'master'
+    }
+
     stages {
         stage('Build') {
             steps {
                 sh "docker pull golang"
                 sh "docker run -t --rm -v ${WORKSPACE}:/go/src/cli -w /go/src/cli golang make"
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                branch env.TARGET_BRANCH
+            }
+            steps {
                 sh "aws-profile connectors-staging aws s3 cp ${WORKSPACE}/bin s3://smartling-connectors-releases/cli/ --recursive --acl public-read"
             }
         }
