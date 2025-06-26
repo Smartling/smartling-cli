@@ -71,10 +71,9 @@ This option overrides config value "user_id".`)
 	rootCmd.PersistentFlags().StringVar(&secret, "secret", "", `Token Secret which will be used for authentication.
 This option overrides config value "secret".`)
 	rootCmd.PersistentFlags().StringVarP(&directory, "directory", "d", ".", `Sets directory to operate on, usually, to store or to
-read files.  Depends on command.  [default: .]`)
+read files.  Depends on command.`)
 	rootCmd.PersistentFlags().Uint32Var(&threads, "threads", 4, `If command can be executed concurrently, it will be
-executed for at most <number> of threads.
-[default: 4]`)
+executed for at most <number> of threads.`)
 	rootCmd.PersistentFlags().BoolVarP(&insecure, "insecure", "k", false, "Skip HTTPS certificate validation.")
 	rootCmd.PersistentFlags().StringVar(&proxy, "proxy", "", "Use specified URL as proxy server.")
 	rootCmd.PersistentFlags().StringVar(&smartlingURL, "smartling-url", "", `Specify base Smartling URL, merely for testing
