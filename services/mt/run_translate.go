@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -151,10 +152,15 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams) ([]Transla
 						Directory: "",
 					})
 				}
+				reader, err := s.downloader.Batch(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
+				if err != nil {
+					return nil, err
+				}
+				if err := saveToFile(reader, filepath.Join(p.OutputDirectory, file)); err != nil {
+					return nil, err
+				}
 			}
 		}
-
-		return res, nil
 	}
 	return res, nil
 }
@@ -166,4 +172,15 @@ type TranslateOutput struct {
 	Name      string
 	Ext       string
 	Directory string
+}
+
+func saveToFile(r io.Reader, filepath string) error {
+	outFile, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	_, err = io.Copy(outFile, r)
+	return err
 }
