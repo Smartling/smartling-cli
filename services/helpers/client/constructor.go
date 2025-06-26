@@ -15,7 +15,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
-var version = "1.7"
+var version = "2.0"
 
 // CreateClient initializes a new Smartling API client with the provided configurations.
 // Returns the client, and an error if any.

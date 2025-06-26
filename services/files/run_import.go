@@ -2,12 +2,12 @@ package files
 
 import (
 	"fmt"
-	smfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"os"
 	"path/filepath"
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 
+	smfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
 )
 

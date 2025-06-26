@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 	"strings"
 
 	"github.com/Smartling/smartling-cli/services/helpers/client"
@@ -36,7 +37,7 @@ func NewRootCmd() (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:     "smartling-cli",
 		Short:   "Manage translation files using Smartling CLI.",
-		Version: "1.7",
+		Version: "2.0",
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
 		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
@@ -48,8 +49,14 @@ func NewRootCmd() (*cobra.Command, error) {
 			isProjects = strings.HasPrefix(path, "my-cli projects")
 			isList = strings.HasPrefix(path, "my-cli list")
 		},
-		Run: func(_ *cobra.Command, _ []string) {
-
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
+				if err := cmd.Help(); err != nil {
+					rlog.Error(err.Error())
+					os.Exit(1)
+				}
+				return
+			}
 		},
 	}
 
@@ -66,10 +73,9 @@ This option overrides config value "user_id".`)
 	rootCmd.PersistentFlags().StringVar(&secret, "secret", "", `Token Secret which will be used for authentication.
 This option overrides config value "secret".`)
 	rootCmd.PersistentFlags().StringVar(&operationDirectory, "operation-directory", ".", `Sets directory to operate on, usually, to store or to
-read files.  Depends on command.  [default: .]`)
+read files.  Depends on command.`)
 	rootCmd.PersistentFlags().Uint32Var(&threads, "threads", 4, `If command can be executed concurrently, it will be
-executed for at most <number> of threads.
-[default: 4]`)
+executed for at most <number> of threads.`)
 	rootCmd.PersistentFlags().BoolVarP(&insecure, "insecure", "k", false, "Skip HTTPS certificate validation.")
 	rootCmd.PersistentFlags().StringVar(&proxy, "proxy", "", "Use specified URL as proxy server.")
 	rootCmd.PersistentFlags().StringVar(&smartlingURL, "smartling-url", "", `Specify base Smartling URL, merely for testing

@@ -2,13 +2,14 @@ package projects
 
 import (
 	"fmt"
-	smfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"os"
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/table"
 
+	smfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
+	sdk "github.com/Smartling/api-sdk-go"
 )
 
 // RunList lists all projects.

@@ -42,10 +42,12 @@ func TestNewPushCmd(t *testing.T) {
 		params.File,
 		params.URI,
 		"--authorize",
-		"--locales", strings.Join(params.Locales, ","),
+		"--locale", params.Locales[0],
+		"--locale", params.Locales[1],
 		"--branch", params.Branch,
 		"--type", params.FileType,
-		"--directive", strings.Join(params.Directives, ","),
+		"--directive", params.Directives[0],
+		"--directive", params.Directives[1],
 	})
 
 	err := cmd.Execute()

@@ -1,7 +1,10 @@
 package list
 
 import (
+	"os"
+
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
+	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
@@ -14,18 +17,36 @@ func NewListCmd(initializer projectscmd.SrvInitializer) *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list",
 		Short: "Lists projects for current account.",
-		Long:  `Lists projects for current account.`,
+		Long: `smartling-cli projects list — list projects from account.
+
+Command will list projects from specified account in tabular format with
+following information:
+
+  > Project ID
+  > Project Description
+  > Project Source Locale ID
+
+Only project IDs will be listed if --short option is specified.
+
+Note, that you should specify account ID either in config file or via --account
+option to be able to see projects list.
+
+
+Available options:
+  -s --short
+    List only project IDs.
+` + help.AuthenticationOptions,
 		Run: func(_ *cobra.Command, _ []string) {
 			s, err := initializer.InitProjectsSrv()
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
-				return
+				os.Exit(1)
 			}
 
 			err = s.RunList(short)
 			if err != nil {
 				rlog.Errorf("failed to run list: %s", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}
