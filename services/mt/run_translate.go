@@ -125,21 +125,32 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams) ([]Transla
 			return nil, err
 		}
 
-		var translated bool
-		for !translated {
+		var processed bool
+		for !processed {
 			progressResponse, err := s.fileTranslator.Progress(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
 			if err != nil {
 				return nil, err
 			}
-			translated = strings.ToUpper(progressResponse.Code) == api.CompletedTranslatedState
-			if translated {
-				res = append(res, TranslateOutput{
-					File:      file,
-					Locale:    progressResponse.State,
-					Name:      "",
-					Ext:       "",
-					Directory: "",
-				})
+			switch progressResponse.State {
+			case api.QueuedTranslatedState, api.ProcessingTranslatedState:
+				continue
+			case api.FailedTranslatedState:
+				processed = true
+			case api.CanceledTranslatedState:
+				processed = true
+			case api.CompletedTranslatedState:
+				processed = true
+			}
+			if processed && progressResponse.State == api.CompletedTranslatedState {
+				for _, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
+					res = append(res, TranslateOutput{
+						File:      file,
+						Locale:    localeProcessStatus.LocaleID,
+						Name:      "",
+						Ext:       "",
+						Directory: "",
+					})
+				}
 			}
 		}
 

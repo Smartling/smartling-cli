@@ -14,6 +14,8 @@ github.com/Smartling/api-sdk-go v0.0.0-20250626195138-38548b7db30d h1:oeFV3Nx0d+
 github.com/Smartling/api-sdk-go v0.0.0-20250626195138-38548b7db30d/go.mod h1:Uu7XGCVLASRHzJN8crKL+fe0W9Moeu0vyZycfFkQbDc=
 github.com/Smartling/api-sdk-go v0.0.0-20250626200841-fd54c128de5f h1:cQfS67scx+REsAoVt6a0FonaCZG8Hn5m9QQ40LMxk2I=
 github.com/Smartling/api-sdk-go v0.0.0-20250626200841-fd54c128de5f/go.mod h1:Uu7XGCVLASRHzJN8crKL+fe0W9Moeu0vyZycfFkQbDc=
+github.com/Smartling/api-sdk-go v0.0.0-20250626205315-cc6cfd9ff4c0 h1:aLopR3fYMzZhY2iOSdwynBQxVmWCGWCrwvoTBUvJoZE=
+github.com/Smartling/api-sdk-go v0.0.0-20250626205315-cc6cfd9ff4c0/go.mod h1:Uu7XGCVLASRHzJN8crKL+fe0W9Moeu0vyZycfFkQbDc=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
