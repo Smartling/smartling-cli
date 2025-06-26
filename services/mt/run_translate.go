@@ -142,23 +142,24 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams) ([]Transla
 			case api.CompletedTranslatedState:
 				processed = true
 			}
-			if processed && progressResponse.State == api.CompletedTranslatedState {
-				for _, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
-					res = append(res, TranslateOutput{
-						File:      file,
-						Locale:    localeProcessStatus.LocaleID,
-						Name:      "",
-						Ext:       "",
-						Directory: "",
-					})
-				}
-				reader, err := s.downloader.Batch(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
-				if err != nil {
-					return nil, err
-				}
-				if err := saveToFile(reader, filepath.Join(p.OutputDirectory, file)); err != nil {
-					return nil, err
-				}
+			if processed && progressResponse.State != api.CompletedTranslatedState {
+				continue
+			}
+			for _, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
+				res = append(res, TranslateOutput{
+					File:      file,
+					Locale:    localeProcessStatus.LocaleID,
+					Name:      "",
+					Ext:       "",
+					Directory: "",
+				})
+			}
+			reader, err := s.downloader.Batch(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
+			if err != nil {
+				return nil, err
+			}
+			if err := saveToFile(reader, filepath.Join(p.OutputDirectory, file)); err != nil {
+				return nil, err
 			}
 		}
 	}
