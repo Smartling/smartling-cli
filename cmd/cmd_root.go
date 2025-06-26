@@ -37,7 +37,7 @@ func NewRootCmd() (*cobra.Command, error) {
 	rootCmd := &cobra.Command{
 		Use:     "smartling-cli",
 		Short:   "Manage translation files using Smartling CLI.",
-		Version: "1.7",
+		Version: "2.0",
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
 		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
