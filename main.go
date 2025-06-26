@@ -24,8 +24,8 @@ func main() {
 	cmd.ConfigureLogger()
 	rootCmd, err := cmd.NewRootCmd()
 	if err != nil {
-		rlog.Error("failed new command", err)
-		os.Exit(1)
+		rlog.Errorf("failed new root command: %w", err)
+		os.Exit(0)
 	}
 
 	initSrvInitializer := initialize.NewSrvInitializer()
