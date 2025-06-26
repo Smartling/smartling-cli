@@ -90,15 +90,15 @@ func resolveProgress(cmd *cobra.Command) bool {
 	return progress
 }
 
-func resolveOverrideTypeDetection(cmd *cobra.Command) bool {
-	if cmd.Flags().Changed(overrideTypeDetectionFlag) {
-		return overrideTypeDetection
+func resolveOverrideFileType(cmd *cobra.Command) string {
+	if cmd.Flags().Changed(overrideFileTypeFlag) {
+		return overrideFileType
 	}
-	envVarName := env.VarNameFromCLIFlagName(overrideTypeDetectionFlag)
-	if _, isSet := os.LookupEnv(envVarName); isSet {
-		return true
+	envVarName := env.VarNameFromCLIFlagName(overrideFileTypeFlag)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
+		return val
 	}
-	return overrideTypeDetection
+	return overrideFileType
 }
 
 func resolveOutputTemplate(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string {
