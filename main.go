@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/cmd/docs"
 	"github.com/Smartling/smartling-cli/cmd/files"
 	deletecmd "github.com/Smartling/smartling-cli/cmd/files/delete"
 	importcmd "github.com/Smartling/smartling-cli/cmd/files/import"
@@ -49,6 +50,9 @@ func main() {
 	projectsCmd.AddCommand(listprojects.NewListCmd(projectsSrvInitializer))
 	projectsCmd.AddCommand(info.NewInfoCmd(projectsSrvInitializer))
 	projectsCmd.AddCommand(locales.NewLocalesCmd(projectsSrvInitializer))
+
+	docsCmd := docs.NewDocsCmd()
+	rootCmd.AddCommand(docsCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		rlog.Debugf("failed command execution ", err)
