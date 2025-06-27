@@ -2,6 +2,7 @@ package docs
 
 import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
@@ -15,9 +16,10 @@ func NewDocsCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			err := doc.GenMarkdownTree(cmd.Root(), "./docs")
 			if err != nil {
-				rlog.Errorf("Failed to generate docs: %v", err)
+				rlog.Errorf("failed to generate docs: %v", err)
+				os.Exit(1)
 			}
-			rlog.Infof("Markdown docs generated in ./docs/")
+			rlog.Infof("markdown docs generated in ./docs/")
 		},
 	}
 
