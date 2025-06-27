@@ -22,6 +22,7 @@ type TranslateParams struct {
 	SourceLocale     string
 	DetectLanguage   bool
 	TargetLocales    []string
+	InputDirectory   string
 	OutputDirectory  string
 	Directives       map[string]string
 	Progress         bool
@@ -36,7 +37,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams) ([]Transla
 
 	base, pattern := globfiles.GetDirectoryFromPattern(p.FileOrPattern)
 	files, err := globfiles.LocallyFunc(
-		p.OutputDirectory,
+		p.InputDirectory,
 		base,
 		pattern,
 	)
@@ -78,7 +79,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams) ([]Transla
 			)
 		}
 
-		if relPath, err := filepath.Rel(base, name); err != nil || strings.HasPrefix(relPath, "..") {
+		if relPath, err := filepath.Rel(p.InputDirectory, name); err != nil || strings.HasPrefix(relPath, "..") {
 			return nil, clierror.NewError(
 				errors.New(
 					`you are trying to push file outside project directory`,
@@ -87,7 +88,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams) ([]Transla
 			)
 		}
 
-		name, err = filepath.Rel(base, name)
+		name, err = filepath.Rel(p.InputDirectory, name)
 		if err != nil {
 			return nil, clierror.NewError(
 				hierr.Errorf(
@@ -116,6 +117,14 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams) ([]Transla
 		request := sdkfile.FileUploadRequest{
 			File:               contents,
 			LocalesToAuthorize: []string{p.SourceLocale},
+			FileType:           sdkfile.FileTypePlaintext,
+			Smartling: struct {
+				Namespace   string
+				FileCharset string
+				Directives  map[string]string
+			}{
+				Directives: p.Directives,
+			},
 		}
 		uploadFileResponse, err := s.uploader.UploadFile(p.AccountUID, p.ProjectID, request)
 		if err != nil {

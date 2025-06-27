@@ -16,6 +16,7 @@ type FileConfig struct {
 	MT struct {
 		DefaultSourceLocale  *string           `yaml:"default_source_locale,omitempty"`
 		DefaultTargetLocales []string          `yaml:"default_target_locales,omitempty"`
+		InputDirectory       *string           `yaml:"input_directory,omitempty"`
 		OutputDirectory      *string           `yaml:"output_directory,omitempty"`
 		FileFormat           *string           `yaml:"file_format,omitempty"`
 		Directives           map[string]string `yaml:"directives,omitempty"`

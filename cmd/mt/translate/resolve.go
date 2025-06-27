@@ -52,6 +52,20 @@ func resolveTargetLocale(cmd *cobra.Command, fileConfig mtcmd.FileConfig) []stri
 	return targetLocales
 }
 
+func resolveInputDirectory(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string {
+	if cmd.Flags().Changed(inputDirectoryFlag) {
+		return inputDirectory
+	}
+	envVarName := env.VarNameFromCLIFlagName(inputDirectoryFlag)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
+		return val
+	}
+	if fileConfig.MT.InputDirectory != nil {
+		return *fileConfig.MT.InputDirectory
+	}
+	return inputDirectory
+}
+
 func resolveOutputDirectory(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string {
 	if cmd.Flags().Changed(outputDirectoryFlag) {
 		return outputDirectory
