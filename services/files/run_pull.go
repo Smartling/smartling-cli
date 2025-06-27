@@ -15,6 +15,7 @@ import (
 	threadpool "github.com/Smartling/smartling-cli/services/helpers/thread_pool"
 
 	sdk "github.com/Smartling/api-sdk-go"
+	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -37,7 +38,7 @@ func (s service) RunPull(params PullParams) error {
 
 	var (
 		err   error
-		files []sdk.File
+		files []sdkfile.File
 	)
 	if params.URI == "-" {
 		files, err = reader.ReadFilesFromStdin()
@@ -45,7 +46,7 @@ func (s service) RunPull(params PullParams) error {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(s.Client, s.Config.ProjectID, params.URI)
+		files, err = globfiles.Remote(s.APIClient.ListAllFiles, s.Config.ProjectID, params.URI)
 		if err != nil {
 			return err
 		}
@@ -55,7 +56,7 @@ func (s service) RunPull(params PullParams) error {
 
 	for _, file := range files {
 		// func closure required to pass different file objects to goroutines
-		func(file sdk.File) {
+		func(file sdkfile.File) {
 			pool.Do(func() {
 				err := s.downloadFileTranslations(params, file)
 				if err != nil {
@@ -70,7 +71,7 @@ func (s service) RunPull(params PullParams) error {
 	return nil
 }
 
-func (s service) downloadFileTranslations(params PullParams, file sdk.File) error {
+func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) error {
 	params.Progress = strings.TrimSuffix(params.Progress, "%")
 	if params.Progress == "" {
 		params.Progress = "0"
@@ -91,7 +92,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdk.File) erro
 	}
 
 	projectID := s.Config.ProjectID
-	status, err := s.Client.GetFileStatus(projectID, file.FileURI)
+	status, err := s.APIClient.GetFileStatus(projectID, file.FileURI)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -101,10 +102,10 @@ func (s service) downloadFileTranslations(params PullParams, file sdk.File) erro
 		)
 	}
 
-	var translations []sdk.FileStatusTranslation
+	var translations []sdkfile.FileStatusTranslation
 
 	if params.Source {
-		translations = []sdk.FileStatusTranslation{
+		translations = []sdkfile.FileStatusTranslation{
 			{LocaleID: ""},
 		}
 	} else {
@@ -158,7 +159,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdk.File) erro
 		path = filepath.Join(params.Directory, path)
 
 		err = helpers.DownloadFile(
-			s.Client,
+			s.APIClient,
 			projectID,
 			file,
 			locale.LocaleID,

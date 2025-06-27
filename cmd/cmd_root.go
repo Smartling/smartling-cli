@@ -14,17 +14,17 @@ import (
 )
 
 var (
-	smartlingURL string
-	configFile   string
-	project      string
-	account      string
-	user         string
-	secret       string
-	directory    string
-	threads      uint32
-	insecure     bool
-	proxy        string
-	verbose      int
+	smartlingURL       string
+	configFile         string
+	project            string
+	account            string
+	user               string
+	secret             string
+	operationDirectory string
+	threads            uint32
+	insecure           bool
+	proxy              string
+	verbose            int
 
 	isInit     bool
 	isFiles    bool
@@ -72,7 +72,7 @@ This option overrides config value "account_id".`)
 This option overrides config value "user_id".`)
 	rootCmd.PersistentFlags().StringVar(&secret, "secret", "", `Token Secret which will be used for authentication.
 This option overrides config value "secret".`)
-	rootCmd.PersistentFlags().StringVarP(&directory, "directory", "d", ".", `Sets directory to operate on, usually, to store or to
+	rootCmd.PersistentFlags().StringVar(&operationDirectory, "operation-directory", ".", `Sets directory to operate on, usually, to store or to
 read files.  Depends on command.`)
 	rootCmd.PersistentFlags().Uint32Var(&threads, "threads", 4, `If command can be executed concurrently, it will be
 executed for at most <number> of threads.`)
@@ -105,7 +105,7 @@ func CLIClientConfig() client.Config {
 // Config returns a config.Config based on the CLI flags.
 func Config() (config.Config, error) {
 	params := config.Params{
-		Directory:  directory,
+		Directory:  operationDirectory,
 		File:       configFile,
 		User:       user,
 		Secret:     secret,
@@ -125,16 +125,16 @@ func Config() (config.Config, error) {
 }
 
 // Client creates a new Smartling API client based on the configuration and CLI params.
-func Client() (sdk.Client, error) {
+func Client() (sdk.HttpAPIClient, error) {
 	cnf, err := Config()
 	if err != nil {
-		return sdk.Client{}, err
+		return sdk.HttpAPIClient{}, err
 	}
 	client, err := client.CreateClient(CLIClientConfig(), cnf, uint8(verbose))
 	if err != nil {
-		return sdk.Client{}, err
+		return sdk.HttpAPIClient{}, err
 	}
-	return *client, nil
+	return client, nil
 }
 
 // ConfigFile returns the path to the configuration file.

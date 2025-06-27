@@ -3,14 +3,14 @@ package format
 import (
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 
-	sdk "github.com/Smartling/api-sdk-go"
+	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 )
 
 // ExecuteFileFormat executes a file format using the provided configuration and data.
 // It returns the rendered string, and an error if any.
 func ExecuteFileFormat(
 	config config.Config,
-	file sdk.File,
+	file sdkfile.File,
 	fallback string,
 	getter func(config config.FileConfig) string,
 	data interface{},
