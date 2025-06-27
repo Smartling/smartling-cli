@@ -1,6 +1,7 @@
 package detect
 
 import (
+	"fmt"
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
@@ -45,24 +46,9 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 			ctx := cmd.Context()
 
-			cnf, err := rootcmd.Config()
+			params, err := resolveParams(cmd, fileOrPattern)
 			if err != nil {
-				rlog.Errorf("unable to read config: %w", err)
-				os.Exit(1)
-			}
-			params := srv.DetectParams{
-				FileType:      resolveFileType(cmd),
-				FileOrPattern: fileOrPattern,
-				URI:           "",
-			}
-			params.AccountUID, err = resolveAccountUID(cmd, cnf.AccountID)
-			if err != nil {
-				rlog.Errorf("unable to resolve AccountUID: %w", err)
-				os.Exit(1)
-			}
-			params.ProjectID, err = resolveProjectID(cmd, cnf.ProjectID)
-			if err != nil {
-				rlog.Errorf("unable to resolve ProjectID: %w", err)
+				rlog.Error(err)
 				os.Exit(1)
 			}
 			out, err := mtSrv.RunDetect(ctx, params, listAllFilesFn)
@@ -100,4 +86,25 @@ Default: `+output.DefaultDetectTemplate+`
 {{.Confidence}} - Detection confidence (if available)`)
 
 	return detectCmd
+}
+
+func resolveParams(cmd *cobra.Command, fileOrPattern string) (srv.DetectParams, error) {
+	cnf, err := rootcmd.Config()
+	if err != nil {
+		return srv.DetectParams{}, fmt.Errorf("unable to read config: %w", err)
+	}
+	params := srv.DetectParams{
+		FileType:      resolveFileType(cmd),
+		FileOrPattern: fileOrPattern,
+		URI:           "",
+	}
+	params.AccountUID, err = resolveAccountUID(cmd, cnf.AccountID)
+	if err != nil {
+		return srv.DetectParams{}, fmt.Errorf("unable to resolve AccountUID: %w", err)
+	}
+	params.ProjectID, err = resolveProjectID(cmd, cnf.ProjectID)
+	if err != nil {
+		return srv.DetectParams{}, fmt.Errorf("unable to resolve ProjectID: %w", err)
+	}
+	return params, nil
 }

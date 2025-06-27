@@ -1,6 +1,8 @@
 package translate
 
 import (
+	"fmt"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"os"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
@@ -67,28 +69,9 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				os.Exit(1)
 			}
 
-			params := srv.TranslateParams{
-				SourceLocale:     resolveSourceLocale(cmd, fileConfig),
-				DetectLanguage:   resolveDetectLanguage(cmd),
-				TargetLocales:    resolveTargetLocale(cmd, fileConfig),
-				OutputDirectory:  resolveOutputDirectory(cmd, fileConfig),
-				Progress:         resolveProgress(cmd),
-				OverrideFileType: resolveOverrideFileType(cmd),
-				FileOrPattern:    fileOrPattern,
-			}
-			params.Directives, err = resolveDirectives(cmd, fileConfig)
+			params, err := resolveParams(cmd, fileConfig, cnf, fileOrPattern)
 			if err != nil {
-				rlog.Errorf("unable to resolve directives: %w", err)
-				os.Exit(1)
-			}
-			params.AccountUID, err = resolveAccountUID(cmd, cnf.AccountID)
-			if err != nil {
-				rlog.Errorf("unable to resolve AccountUID: %w", err)
-				os.Exit(1)
-			}
-			params.ProjectID, err = resolveProjectID(cmd, cnf.ProjectID)
-			if err != nil {
-				rlog.Errorf("unable to resolve ProjectID: %w", err)
+				rlog.Error(err)
 				os.Exit(1)
 			}
 			out, err := mtSrv.RunTranslate(ctx, params)
@@ -131,4 +114,31 @@ Default: `+output.DefaultTranslateTemplate+`
 	}
 
 	return translateCmd
+}
+
+func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, cnf config.Config, fileOrPattern string) (srv.TranslateParams, error) {
+	var err error
+	params := srv.TranslateParams{
+		SourceLocale:     resolveSourceLocale(cmd, fileConfig),
+		DetectLanguage:   resolveDetectLanguage(cmd),
+		TargetLocales:    resolveTargetLocale(cmd, fileConfig),
+		OutputDirectory:  resolveOutputDirectory(cmd, fileConfig),
+		Progress:         resolveProgress(cmd),
+		OverrideFileType: resolveOverrideFileType(cmd),
+		FileOrPattern:    fileOrPattern,
+	}
+	params.Directives, err = resolveDirectives(cmd, fileConfig)
+	if err != nil {
+		return srv.TranslateParams{}, fmt.Errorf("unable to resolve directives: %w", err)
+	}
+	params.AccountUID, err = resolveAccountUID(cmd, cnf.AccountID)
+	if err != nil {
+		return srv.TranslateParams{}, fmt.Errorf("unable to resolve AccountUID: %w", err)
+
+	}
+	params.ProjectID, err = resolveProjectID(cmd, cnf.ProjectID)
+	if err != nil {
+		return srv.TranslateParams{}, fmt.Errorf("unable to resolve ProjectID: %w", err)
+	}
+	return params, nil
 }
