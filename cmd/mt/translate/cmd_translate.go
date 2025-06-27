@@ -1,6 +1,8 @@
 package translate
 
 import (
+	"os"
+
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
@@ -43,26 +45,26 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			ctx := cmd.Context()
 			if len(args) > 1 {
 				rlog.Errorf("expected one argument, got: %d", len(args))
-				return
+				os.Exit(1)
 			}
 			fileOrPattern := args[0]
 
 			mtSrv, _, err := initializer.InitMTSrv()
 			if err != nil {
 				rlog.Errorf("unable to initialize MT service: %w", err)
-				return
+				os.Exit(1)
 			}
 
 			cnf, err := rootcmd.Config()
 			if err != nil {
 				rlog.Errorf("unable to read config: %w", err)
-				return
+				os.Exit(1)
 			}
 
 			fileConfig, err := mtcmd.BindFileConfig(cmd)
 			if err != nil {
 				rlog.Errorf("unable to bind config: %w", err)
-				return
+				os.Exit(1)
 			}
 
 			params := srv.TranslateParams{
@@ -77,31 +79,34 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			params.Directives, err = resolveDirectives(cmd, fileConfig)
 			if err != nil {
 				rlog.Errorf("unable to resolve directives: %w", err)
+				os.Exit(1)
 			}
 			params.AccountUID, err = resolveAccountUID(cmd, cnf.AccountID)
 			if err != nil {
 				rlog.Errorf("unable to resolve AccountUID: %w", err)
+				os.Exit(1)
 			}
 			params.ProjectID, err = resolveProjectID(cmd, cnf.ProjectID)
 			if err != nil {
 				rlog.Errorf("unable to resolve ProjectID: %w", err)
+				os.Exit(1)
 			}
 			out, err := mtSrv.RunTranslate(ctx, params)
 			if err != nil {
 				rlog.Errorf("unable to run translate: %w", err)
-				return
+				os.Exit(1)
 			}
 
 			outFormat, err := cmd.Parent().PersistentFlags().GetString("output")
 			if err != nil {
 				rlog.Errorf("unable to get output: %w", err)
-				return
+				os.Exit(1)
 			}
 			outTemplate := resolveOutputTemplate(cmd, fileConfig)
 			err = output.RenderTranslate(out, outFormat, outTemplate)
 			if err != nil {
 				rlog.Errorf("unable to render translate: %w", err)
-				return
+				os.Exit(1)
 			}
 		},
 	}
@@ -110,7 +115,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 	translateCmd.Flags().BoolVar(&detectLanguage, detectLanguageFlag, false, "Auto-detect source language")
 	translateCmd.Flags().StringArrayVar(&targetLocales, targetLocaleFlag, nil, "Target language(s). Can be specified multiple times")
 	translateCmd.Flags().StringVar(&overrideFileType, overrideFileTypeFlag, "", "Set file type to override automatically detected file type. More info: https://help.smartling.com/hc/en-us/articles/360007998893--Supported-File-Types")
-	translateCmd.Flags().StringVar(&outputDirectory, outputDirectoryFlag, "", "Output directory for translated files")
+	translateCmd.Flags().StringVar(&outputDirectory, outputDirectoryFlag, ".", "Output directory for translated files")
 	translateCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, "", `Translated file naming template.
 Default: `+output.DefaultTranslateTemplate+`
 {{.File}} - Original file path

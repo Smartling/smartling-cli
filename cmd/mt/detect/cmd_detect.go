@@ -6,6 +6,7 @@ import (
 	output "github.com/Smartling/smartling-cli/output/mt"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -29,7 +30,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) > 1 {
 				rlog.Errorf("expected one argument, got: %d", len(args))
-				return
+				os.Exit(1)
 			}
 			var fileOrPattern string
 			if len(args) == 1 {
@@ -39,7 +40,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			mtSrv, listAllFilesFn, err := initializer.InitMTSrv()
 			if err != nil {
 				rlog.Errorf("unable to initialize MT service: %w", err)
-				return
+				os.Exit(1)
 			}
 
 			ctx := cmd.Context()
@@ -47,7 +48,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			cnf, err := rootcmd.Config()
 			if err != nil {
 				rlog.Errorf("unable to read config: %w", err)
-				return
+				os.Exit(1)
 			}
 			params := srv.DetectParams{
 				FileType:      resolveFileType(cmd),
@@ -57,33 +58,35 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			params.AccountUID, err = resolveAccountUID(cmd, cnf.AccountID)
 			if err != nil {
 				rlog.Errorf("unable to resolve AccountUID: %w", err)
+				os.Exit(1)
 			}
 			params.ProjectID, err = resolveProjectID(cmd, cnf.ProjectID)
 			if err != nil {
 				rlog.Errorf("unable to resolve ProjectID: %w", err)
+				os.Exit(1)
 			}
 			out, err := mtSrv.RunDetect(ctx, params, listAllFilesFn)
 			if err != nil {
 				rlog.Errorf("unable to run detect: %w", err)
-				return
+				os.Exit(1)
 			}
 
 			outputFormat, err := cmd.Parent().PersistentFlags().GetString("output")
 			if err != nil {
 				rlog.Errorf("unable to get output: %w", err)
-				return
+				os.Exit(1)
 			}
 
 			fileConfig, err := mtcmd.BindFileConfig(cmd)
 			if err != nil {
 				rlog.Errorf("unable to bind config: %w", err)
-				return
+				os.Exit(1)
 			}
 			outTemplate := resolveOutputTemplate(cmd, fileConfig)
 			err = output.RenderDetect(out, outputFormat, outTemplate)
 			if err != nil {
 				rlog.Errorf("unable to render detect: %w", err)
-				return
+				os.Exit(1)
 			}
 
 		},
