@@ -1,9 +1,11 @@
 package mt
 
 import (
+	"errors"
 	"os"
 
 	"github.com/Smartling/smartling-cli/services/helpers/config"
+	"github.com/Smartling/smartling-cli/services/helpers/env"
 
 	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
@@ -12,14 +14,14 @@ import (
 // FileConfig defines MT file config
 type FileConfig struct {
 	MT struct {
-		DefaultSourceLocale  *string           `yaml:"default_source_locale"`
-		DefaultTargetLocales []string          `yaml:"default_target_locales"`
-		OutputDirectory      *string           `yaml:"output_directory"`
-		FileFormat           *string           `yaml:"file_format"`
-		Directives           map[string]string `yaml:"directives"`
-		PollInterval         *int              `yaml:"poll_interval"`
-		Timeout              *int              `yaml:"timeout"`
-	} `yaml:"mt"`
+		DefaultSourceLocale  *string           `yaml:"default_source_locale,omitempty"`
+		DefaultTargetLocales []string          `yaml:"default_target_locales,omitempty"`
+		OutputDirectory      *string           `yaml:"output_directory,omitempty"`
+		FileFormat           *string           `yaml:"file_format,omitempty"`
+		Directives           map[string]string `yaml:"directives,omitempty"`
+		PollInterval         *int              `yaml:"poll_interval,omitempty"`
+		Timeout              *int              `yaml:"timeout,omitempty"`
+	} `yaml:"mt,omitempty"`
 	Files map[string]MTFileConfig `yaml:"files"`
 }
 
@@ -55,37 +57,31 @@ func BindFileConfig(cmd *cobra.Command) (FileConfig, error) {
 }
 
 func resolveConfigDirectory(cmd *cobra.Command) (string, error) {
-	if cmd.Root().Flags().Changed("directory") {
-		val, err := cmd.Root().PersistentFlags().GetString("directory")
-		if err != nil {
-			return "", err
-		}
+	flag := cmd.Root().PersistentFlags().Lookup("operation-directory")
+	if flag == nil {
+		return "", errors.New("flag is not defined")
+	}
+	if flag.Changed {
+		return flag.Value.String(), nil
+	}
+	envVarName := env.VarNameFromCLIFlagName("operation-directory")
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return val, nil
 	}
-	if val, isSet := os.LookupEnv("directory"); isSet {
-		return val, nil
-	}
-	val, err := cmd.Root().PersistentFlags().GetString("directory")
-	if err != nil {
-		return "", err
-	}
-	return val, nil
+	return flag.DefValue, nil
 }
 
 func resolveConfigFile(cmd *cobra.Command) (string, error) {
-	if cmd.Root().Flags().Changed("config") {
-		val, err := cmd.Root().PersistentFlags().GetString("config")
-		if err != nil {
-			return "", err
-		}
+	flag := cmd.Root().PersistentFlags().Lookup("config")
+	if flag == nil {
+		return "", errors.New("flag is not defined")
+	}
+	if flag.Changed {
+		return flag.Value.String(), nil
+	}
+	envVarName := env.VarNameFromCLIFlagName("config")
+	if val, isSet := os.LookupEnv(envVarName); isSet {
 		return val, nil
 	}
-	if val, isSet := os.LookupEnv("config"); isSet {
-		return val, nil
-	}
-	val, err := cmd.Root().PersistentFlags().GetString("config")
-	if err != nil {
-		return "", err
-	}
-	return val, nil
+	return flag.DefValue, nil
 }

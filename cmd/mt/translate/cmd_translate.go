@@ -2,12 +2,12 @@ package translate
 
 import (
 	"fmt"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"os"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
+	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
@@ -45,7 +45,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := cmd.Context()
-			if len(args) > 1 {
+			if len(args) != 1 {
 				rlog.Errorf("expected one argument, got: %d", len(args))
 				os.Exit(1)
 			}

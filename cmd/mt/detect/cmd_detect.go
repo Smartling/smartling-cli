@@ -2,12 +2,13 @@ package detect
 
 import (
 	"fmt"
+	"os"
+
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
-	"os"
 
 	"github.com/spf13/cobra"
 )
