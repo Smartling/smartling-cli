@@ -3,6 +3,7 @@ package mt
 import (
 	"context"
 	"errors"
+	"github.com/Smartling/smartling-cli/services/helpers/pointer"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,9 +25,10 @@ type DetectParams struct {
 	URI            string
 }
 
-func (s service) RunDetect(ctx context.Context, files []string, p DetectParams) ([]DetectOutput, error) {
+func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, updates chan DetectUpdates) ([]DetectOutput, error) {
+	defer close(updates)
 	var res []DetectOutput
-	for _, file := range files {
+	for fileID, file := range files {
 		name, err := filepath.Abs(file)
 		if err != nil {
 			return nil, clierror.NewError(
@@ -83,14 +85,22 @@ func (s service) RunDetect(ctx context.Context, files []string, p DetectParams) 
 
 			FileType: sdkfile.FileType(fileType.String()),
 		}
+		update := DetectUpdates{ID: uint32(fileID)}
 		uploadFileResponse, err := s.uploader.UploadFile(p.AccountUID, filepath.Base(file), request)
 		if err != nil {
 			return nil, err
 		}
+
+		update.Upload = pointer.NewP(true)
+		updates <- update
+
 		detectFileLanguageResponse, err := s.translationControl.DetectFileLanguage(p.AccountUID, uploadFileResponse.FileUID)
 		if err != nil {
 			return nil, err
 		}
+
+		update.Detect = pointer.NewP("start")
+		updates <- update
 
 		//
 		var processed bool
@@ -99,6 +109,9 @@ func (s service) RunDetect(ctx context.Context, files []string, p DetectParams) 
 			if err != nil {
 				return nil, err
 			}
+
+			update.Detect = pointer.NewP(detectionProgressResponse.State)
+			updates <- update
 
 			switch strings.ToUpper(detectionProgressResponse.State) {
 			case api.QueuedTranslatedState, api.ProcessingTranslatedState:
@@ -111,16 +124,18 @@ func (s service) RunDetect(ctx context.Context, files []string, p DetectParams) 
 			if detectionProgressResponse.State != api.CompletedTranslatedState {
 				break
 			}
+			var languageIDs []string
 			for _, detectedSourceLanguages := range detectionProgressResponse.DetectedSourceLanguages {
 				filename := filepath.Base(file)
 				res = append(res, DetectOutput{
 					File:     filename,
 					Language: detectedSourceLanguages.LanguageID,
 				})
+				languageIDs = append(languageIDs, detectedSourceLanguages.LanguageID)
 			}
 
-			/*update.Locale = pointer.NewP(strings.Join(localeIDs, ","))
-			updates <- update*/
+			update.Language = pointer.NewP(strings.Join(languageIDs, ","))
+			updates <- update
 
 		}
 		//
@@ -139,4 +154,11 @@ type DetectOutput struct {
 	File       string
 	Language   string
 	Confidence string
+}
+
+type DetectUpdates struct {
+	ID       uint32
+	Language *string
+	Upload   *bool
+	Detect   *string
 }

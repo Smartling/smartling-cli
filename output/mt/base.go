@@ -11,6 +11,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const done = "✓"
+
 var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
 	BorderForeground(lipgloss.Color("240"))
@@ -26,8 +28,10 @@ func (m Model) Init() tea.Cmd { return nil }
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
-	case UpdateRow:
-		RenderUpdates(&m.table, msg.Coords, msg.Updates)
+	case TranslateUpdateRow:
+		RenderTranslateUpdates(&m.table, msg.Coords, msg.Updates)
+	case DetectUpdateRow:
+		RenderDetectUpdates(&m.table, msg.Coords, msg.Updates)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":

@@ -85,7 +85,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			}
 			outTemplate := resolveOutputTemplate(cmd, fileConfig)
 
-			program, cellCoords, err := output.RenderFiles(files, outFormat, outTemplate)
+			program, cellCoords, err := output.RenderTranslateFiles(files, outFormat, outTemplate)
 			if err != nil {
 				rlog.Errorf("unable to render translate: %w", err)
 				os.Exit(1)
@@ -109,7 +109,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 			go func() {
 				for update := range updates {
-					updateRow := output.UpdateRow{
+					updateRow := output.TranslateUpdateRow{
 						Coords:  cellCoords,
 						Updates: update,
 					}

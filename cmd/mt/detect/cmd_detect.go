@@ -43,7 +43,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 			mtSrv, _, err := initializer.InitMTSrv()
 			if err != nil {
-				rlog.Errorf("unable to initialize MT service: %w", err)
+				rlog.Errorf("unable to initialize MT service: %s", err)
 				os.Exit(1)
 			}
 
@@ -51,7 +51,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 			fileConfig, err := mtcmd.BindFileConfig(cmd)
 			if err != nil {
-				rlog.Errorf("unable to bind config: %w", err)
+				rlog.Errorf("unable to bind config: %s", err)
 				os.Exit(1)
 			}
 
@@ -67,25 +67,44 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				os.Exit(1)
 			}
 
-			out, err := mtSrv.RunDetect(ctx, files, params)
-			if err != nil {
-				rlog.Errorf("unable to run detect: %w", err)
-				os.Exit(1)
-			}
-
 			outputFormat, err := cmd.Parent().PersistentFlags().GetString("output")
 			if err != nil {
-				rlog.Errorf("unable to get output: %w", err)
+				rlog.Errorf("unable to get output: %s", err)
 				os.Exit(1)
 			}
 
 			outTemplate := resolveOutputTemplate(cmd, fileConfig)
-			err = output.RenderDetect(out, outputFormat, outTemplate)
+			program, cellCoords, err := output.RenderDetectFiles(files, outputFormat, outTemplate)
 			if err != nil {
-				rlog.Errorf("unable to render detect: %w", err)
+				rlog.Errorf("unable to render detect: %s", err)
 				os.Exit(1)
 			}
 
+			updates := make(chan srv.DetectUpdates)
+
+			go func() {
+				_, err := mtSrv.RunDetect(ctx, files, params, updates)
+				if err != nil {
+					rlog.Errorf("unable to run detect: %s", err)
+					os.Exit(1)
+				}
+			}()
+
+			go func() {
+				for update := range updates {
+					updateRow := output.DetectUpdateRow{
+						Coords:  cellCoords,
+						Updates: update,
+					}
+					program.Send(updateRow)
+				}
+				program.Quit()
+			}()
+
+			if _, err := program.Run(); err != nil {
+				rlog.Errorf("unable to program run: %w", err)
+				os.Exit(1)
+			}
 		},
 	}
 

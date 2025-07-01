@@ -15,15 +15,28 @@ import (
 
 const (
 	DefaultTranslateTemplate = "{{name .File}}_{{.Locale}}{{ext .File}}"
-	done                     = "✓"
 )
 
-func RenderUpdates(t *table.Model, cellCoords CellCoords, val mt.TranslateUpdates) {
+type TranslateCellCoords struct {
+	LocaleCol    *uint8
+	UploadCol    *uint8
+	TranslateCol *uint8
+	DownloadCol  *uint8
+}
+
+type TranslateUpdateRow struct {
+	Coords  TranslateCellCoords
+	Updates mt.TranslateUpdates
+}
+
+func RenderTranslateUpdates(t *table.Model, cellCoords TranslateCellCoords, val mt.TranslateUpdates) {
 	rows := t.Rows()
 	if val.ID < 0 || val.ID >= uint32(len(rows)) {
 		rlog.Debugf("row out of range: %d > %d", val.ID, len(rows))
 		return
 	}
+
+	t.SetCursor(int(val.ID))
 
 	updatedRow := make([]string, len(rows[val.ID]))
 	copy(updatedRow, rows[val.ID])
@@ -48,20 +61,8 @@ func RenderUpdates(t *table.Model, cellCoords CellCoords, val mt.TranslateUpdate
 	t.SetRows(updatedRows)
 }
 
-type CellCoords struct {
-	LocaleCol    *uint8
-	UploadCol    *uint8
-	TranslateCol *uint8
-	DownloadCol  *uint8
-}
-
-type UpdateRow struct {
-	Coords  CellCoords
-	Updates mt.TranslateUpdates
-}
-
-// RenderFiles renders files
-func RenderFiles(files []string, outputFormat, outputTemplate string) (*tea.Program, CellCoords, error) {
+// RenderTranslateFiles renders files
+func RenderTranslateFiles(files []string, outputFormat, outputTemplate string) (*tea.Program, TranslateCellCoords, error) {
 	columns := []table.Column{
 		{Title: "File", Width: 10},
 		{Title: "Locale", Width: 10},
@@ -72,13 +73,13 @@ func RenderFiles(files []string, outputFormat, outputTemplate string) (*tea.Prog
 		{Title: "Translate", Width: 10},
 		{Title: "Download", Width: 10},
 	}
-	cellCoords := CellCoords{
+	cellCoords := TranslateCellCoords{
 		LocaleCol:    pointer.NewP(uint8(1)),
 		UploadCol:    pointer.NewP(uint8(5)),
 		TranslateCol: pointer.NewP(uint8(6)),
 		DownloadCol:  pointer.NewP(uint8(7)),
 	}
-	rows := toTableRows(files)
+	rows := toTranslateTableRows(files)
 	t := table.New(
 		table.WithColumns(columns),
 		table.WithRows(rows),
@@ -94,8 +95,8 @@ func RenderFiles(files []string, outputFormat, outputTemplate string) (*tea.Prog
 		BorderBottom(true).
 		Bold(true)
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("229")).
-		Background(lipgloss.Color("57")).
+		Foreground(lipgloss.Color("#000000")).
+		Background(lipgloss.Color("#c5c5c5")).
 		Bold(false)
 	t.SetStyles(s)
 
@@ -105,15 +106,15 @@ func RenderFiles(files []string, outputFormat, outputTemplate string) (*tea.Prog
 	return program, cellCoords, nil
 }
 
-func toTableRows(files []string) []table.Row {
+func toTranslateTableRows(files []string) []table.Row {
 	res := make([]table.Row, len(files))
 	for i, v := range files {
-		res[i] = toTableRow(v)
+		res[i] = toTranslateTableRow(v)
 	}
 	return res
 }
 
-func toTableRow(file string) table.Row {
+func toTranslateTableRow(file string) table.Row {
 	filename := filepath.Base(file)
 	ext := filepath.Ext(filename)
 	name := strings.TrimSuffix(filename, ext)
