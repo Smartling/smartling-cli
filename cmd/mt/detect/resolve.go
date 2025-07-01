@@ -73,3 +73,17 @@ func resolveProjectID(cmd *cobra.Command, cnfProjectID string) (string, error) {
 	}
 	return flag.DefValue, nil
 }
+
+func resolveInputDirectory(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string {
+	if cmd.Flags().Changed(inputDirectoryFlag) {
+		return inputDirectory
+	}
+	envVarName := env.VarNameFromCLIFlagName(inputDirectoryFlag)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
+		return val
+	}
+	if fileConfig.MT.InputDirectory != nil {
+		return *fileConfig.MT.InputDirectory
+	}
+	return inputDirectory
+}

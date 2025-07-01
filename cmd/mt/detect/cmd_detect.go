@@ -16,11 +16,13 @@ import (
 const (
 	fileTypeFlag       = "type"
 	outputTemplateFlag = "format"
+	inputDirectoryFlag = "input-directory"
 )
 
 var (
 	fileType       string
 	outputTemplate string
+	inputDirectory string
 )
 
 // NewDetectCmd ...
@@ -39,7 +41,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				fileOrPattern = args[0]
 			}
 
-			mtSrv, listAllFilesFn, err := initializer.InitMTSrv()
+			mtSrv, _, err := initializer.InitMTSrv()
 			if err != nil {
 				rlog.Errorf("unable to initialize MT service: %w", err)
 				os.Exit(1)
@@ -47,12 +49,25 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 			ctx := cmd.Context()
 
-			params, err := resolveParams(cmd, fileOrPattern)
+			fileConfig, err := mtcmd.BindFileConfig(cmd)
+			if err != nil {
+				rlog.Errorf("unable to bind config: %w", err)
+				os.Exit(1)
+			}
+
+			params, err := resolveParams(cmd, fileConfig, fileOrPattern)
 			if err != nil {
 				rlog.Error(err)
 				os.Exit(1)
 			}
-			out, err := mtSrv.RunDetect(ctx, params, listAllFilesFn)
+
+			files, err := mtSrv.GetFiles(params.InputDirectory, fileOrPattern)
+			if err != nil {
+				rlog.Error(err)
+				os.Exit(1)
+			}
+
+			out, err := mtSrv.RunDetect(ctx, files, params)
 			if err != nil {
 				rlog.Errorf("unable to run detect: %w", err)
 				os.Exit(1)
@@ -64,11 +79,6 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				os.Exit(1)
 			}
 
-			fileConfig, err := mtcmd.BindFileConfig(cmd)
-			if err != nil {
-				rlog.Errorf("unable to bind config: %w", err)
-				os.Exit(1)
-			}
 			outTemplate := resolveOutputTemplate(cmd, fileConfig)
 			err = output.RenderDetect(out, outputFormat, outTemplate)
 			if err != nil {
@@ -80,6 +90,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 	}
 
 	detectCmd.Flags().StringVar(&fileType, fileTypeFlag, "", "Override automatically detected file type.")
+	detectCmd.Flags().StringVar(&inputDirectory, inputDirectoryFlag, ".", "Input directory with files")
 	detectCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, "", `Output format template.
 Default: `+output.DefaultDetectTemplate+`
 {{.File}} - Original file path
@@ -89,15 +100,16 @@ Default: `+output.DefaultDetectTemplate+`
 	return detectCmd
 }
 
-func resolveParams(cmd *cobra.Command, fileOrPattern string) (srv.DetectParams, error) {
+func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, fileOrPattern string) (srv.DetectParams, error) {
 	cnf, err := rootcmd.Config()
 	if err != nil {
 		return srv.DetectParams{}, fmt.Errorf("unable to read config: %w", err)
 	}
 	params := srv.DetectParams{
-		FileType:      resolveFileType(cmd),
-		FileOrPattern: fileOrPattern,
-		URI:           "",
+		FileType:       resolveFileType(cmd),
+		InputDirectory: resolveInputDirectory(cmd, fileConfig),
+		FileOrPattern:  fileOrPattern,
+		URI:            "",
 	}
 	params.AccountUID, err = resolveAccountUID(cmd, cnf.AccountID)
 	if err != nil {

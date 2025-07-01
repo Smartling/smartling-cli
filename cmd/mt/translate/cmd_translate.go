@@ -71,14 +71,10 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				os.Exit(1)
 			}
 
-			params, err := resolveParams(cmd, fileConfig, cnf, fileOrPattern)
+			inputDirectoryParam := resolveInputDirectory(cmd, fileConfig)
+			files, err := mtSrv.GetFiles(inputDirectoryParam, fileOrPattern)
 			if err != nil {
 				rlog.Error(err)
-				os.Exit(1)
-			}
-			out, err := mtSrv.RunTranslate(ctx, params)
-			if err != nil {
-				rlog.Errorf("unable to run translate: %w", err)
 				os.Exit(1)
 			}
 
@@ -88,11 +84,45 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				os.Exit(1)
 			}
 			outTemplate := resolveOutputTemplate(cmd, fileConfig)
-			err = output.RenderTranslate(out, outFormat, outTemplate)
+
+			program, cellCoords, err := output.RenderFiles(files, outFormat, outTemplate)
 			if err != nil {
 				rlog.Errorf("unable to render translate: %w", err)
 				os.Exit(1)
 			}
+
+			params, err := resolveParams(cmd, fileConfig, cnf)
+			if err != nil {
+				rlog.Error(err)
+				os.Exit(1)
+			}
+			params.InputDirectory = inputDirectoryParam
+			updates := make(chan srv.TranslateUpdates)
+
+			go func() {
+				_, err := mtSrv.RunTranslate(ctx, params, files, updates)
+				if err != nil {
+					rlog.Errorf("unable to run translate: %w", err)
+					os.Exit(1)
+				}
+			}()
+
+			go func() {
+				for update := range updates {
+					updateRow := output.UpdateRow{
+						Coords:  cellCoords,
+						Updates: update,
+					}
+					program.Send(updateRow)
+				}
+				program.Quit()
+			}()
+
+			if _, err := program.Run(); err != nil {
+				rlog.Errorf("unable to program run: %w", err)
+				os.Exit(1)
+			}
+
 		},
 	}
 
@@ -119,17 +149,15 @@ Default: `+output.DefaultTranslateTemplate+`
 	return translateCmd
 }
 
-func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, cnf config.Config, fileOrPattern string) (srv.TranslateParams, error) {
+func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, cnf config.Config) (srv.TranslateParams, error) {
 	var err error
 	params := srv.TranslateParams{
 		SourceLocale:     resolveSourceLocale(cmd, fileConfig),
 		DetectLanguage:   resolveDetectLanguage(cmd),
 		TargetLocales:    resolveTargetLocale(cmd, fileConfig),
-		InputDirectory:   resolveInputDirectory(cmd, fileConfig),
 		OutputDirectory:  resolveOutputDirectory(cmd, fileConfig),
 		Progress:         resolveProgress(cmd),
 		OverrideFileType: resolveOverrideFileType(cmd),
-		FileOrPattern:    fileOrPattern,
 	}
 	params.Directives, err = resolveDirectives(cmd, fileConfig)
 	if err != nil {
