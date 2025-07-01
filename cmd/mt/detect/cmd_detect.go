@@ -115,9 +115,5 @@ func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, fileOrPatter
 	if err != nil {
 		return srv.DetectParams{}, fmt.Errorf("unable to resolve AccountUID: %w", err)
 	}
-	params.ProjectID, err = resolveProjectID(cmd, cnf.ProjectID)
-	if err != nil {
-		return srv.DetectParams{}, fmt.Errorf("unable to resolve ProjectID: %w", err)
-	}
 	return params, nil
 }

@@ -20,7 +20,6 @@ type DetectParams struct {
 	InputDirectory string
 	FileType       string
 	FileOrPattern  string
-	ProjectID      string
 	AccountUID     api.AccountUID
 	URI            string
 }

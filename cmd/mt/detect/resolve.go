@@ -55,25 +55,6 @@ func resolveAccountUID(cmd *cobra.Command, cnfAccountID string) (api.AccountUID,
 	return api.AccountUID(flag.DefValue), nil
 }
 
-func resolveProjectID(cmd *cobra.Command, cnfProjectID string) (string, error) {
-	flagName := "project"
-	flag := cmd.Root().PersistentFlags().Lookup(flagName)
-	if flag == nil {
-		return "", errors.New(flagName + " flag is not defined")
-	}
-	if flag.Changed {
-		return flag.Value.String(), nil
-	}
-	envVarName := env.VarNameFromCLIFlagName(flagName)
-	if val, isSet := os.LookupEnv(envVarName); isSet {
-		return val, nil
-	}
-	if cnfProjectID != "" {
-		return cnfProjectID, nil
-	}
-	return flag.DefValue, nil
-}
-
 func resolveInputDirectory(cmd *cobra.Command, fileConfig mtcmd.FileConfig) string {
 	if cmd.Flags().Changed(inputDirectoryFlag) {
 		return inputDirectory

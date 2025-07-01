@@ -29,7 +29,6 @@ type TranslateParams struct {
 	Directives       map[string]string
 	Progress         bool
 	OverrideFileType string
-	ProjectID        string
 	AccountUID       api.AccountUID
 }
 
