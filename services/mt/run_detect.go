@@ -21,7 +21,6 @@ type DetectParams struct {
 	FileType       string
 	FileOrPattern  string
 	AccountUID     api.AccountUID
-	URI            string
 }
 
 func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, updates chan DetectUpdates) ([]DetectOutput, error) {

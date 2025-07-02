@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	api "github.com/Smartling/api-sdk-go/api/mt"
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
@@ -71,7 +73,10 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				os.Exit(1)
 			}
 
-			inputDirectoryParam := resolveInputDirectory(cmd, fileConfig)
+			inputDirectoryParam := resolve.FallbackString(cmd.Flags().Lookup(inputDirectoryFlag), resolve.StringParam{
+				FlagName: inputDirectoryFlag,
+				Config:   fileConfig.MT.InputDirectory,
+			})
 			files, err := mtSrv.GetFiles(inputDirectoryParam, fileOrPattern)
 			if err != nil {
 				rlog.Error(err)
@@ -83,7 +88,10 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				rlog.Errorf("unable to get output: %w", err)
 				os.Exit(1)
 			}
-			outTemplate := resolveOutputTemplate(cmd, fileConfig)
+			outTemplate := resolve.FallbackString(cmd.Flags().Lookup(outputTemplateFlag), resolve.StringParam{
+				FlagName: outputTemplateFlag,
+				Config:   fileConfig.MT.FileFormat,
+			})
 
 			program, cellCoords, err := output.RenderTranslateFiles(files, outFormat, outTemplate)
 			if err != nil {
@@ -151,22 +159,46 @@ Default: `+output.DefaultTranslateTemplate+`
 
 func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, cnf config.Config) (srv.TranslateParams, error) {
 	var err error
+
+	sourceLocaleParam := resolve.FallbackString(cmd.Flags().Lookup(sourceLocaleFlag), resolve.StringParam{
+		FlagName: sourceLocaleFlag,
+		Config:   fileConfig.MT.DefaultSourceLocale,
+	})
+	detectLanguageParam := resolve.FallbackBool(cmd.Flags().Lookup(detectLanguageFlag), resolve.BoolParam{
+		FlagName: detectLanguageFlag,
+	})
+	outputDirectoryParam := resolve.FallbackString(cmd.Flags().Lookup(outputDirectoryFlag), resolve.StringParam{
+		FlagName: outputDirectoryFlag,
+		Config:   fileConfig.MT.OutputDirectory,
+	})
+	progressParam := resolve.FallbackBool(cmd.Flags().Lookup(progressFlag), resolve.BoolParam{
+		FlagName: progressFlag,
+	})
+	overrideFileTypeParam := resolve.FallbackString(cmd.Flags().Lookup(overrideFileTypeFlag), resolve.StringParam{
+		FlagName: overrideFileTypeFlag,
+	})
+
+	var accountIDConfig *string
+	if cnf.AccountID != "" {
+		accountIDConfig = &cnf.AccountID
+	}
+	accountUIDParam := resolve.FallbackString(cmd.Root().PersistentFlags().Lookup("account"), resolve.StringParam{
+		FlagName: "account",
+		Config:   accountIDConfig,
+	})
 	params := srv.TranslateParams{
-		SourceLocale:     resolveSourceLocale(cmd, fileConfig),
-		DetectLanguage:   resolveDetectLanguage(cmd),
+		SourceLocale:     sourceLocaleParam,
+		DetectLanguage:   detectLanguageParam,
 		TargetLocales:    resolveTargetLocale(cmd, fileConfig),
-		OutputDirectory:  resolveOutputDirectory(cmd, fileConfig),
-		Progress:         resolveProgress(cmd),
-		OverrideFileType: resolveOverrideFileType(cmd),
+		OutputDirectory:  outputDirectoryParam,
+		Progress:         progressParam,
+		OverrideFileType: overrideFileTypeParam,
+		AccountUID:       api.AccountUID(accountUIDParam),
 	}
 	params.Directives, err = resolveDirectives(cmd, fileConfig)
 	if err != nil {
 		return srv.TranslateParams{}, fmt.Errorf("unable to resolve directives: %w", err)
 	}
-	params.AccountUID, err = resolveAccountUID(cmd, cnf.AccountID)
-	if err != nil {
-		return srv.TranslateParams{}, fmt.Errorf("unable to resolve AccountUID: %w", err)
 
-	}
 	return params, nil
 }

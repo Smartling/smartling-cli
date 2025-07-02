@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	api "github.com/Smartling/api-sdk-go/api/mt"
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
@@ -73,7 +75,10 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				os.Exit(1)
 			}
 
-			outTemplate := resolveOutputTemplate(cmd, fileConfig)
+			outTemplate := resolve.FallbackString(cmd.Flags().Lookup(outputTemplateFlag), resolve.StringParam{
+				FlagName: outputTemplateFlag,
+				Config:   fileConfig.MT.FileFormat,
+			})
 			program, cellCoords, err := output.RenderDetectFiles(files, outputFormat, outTemplate)
 			if err != nil {
 				rlog.Errorf("unable to render detect: %s", err)
@@ -120,19 +125,29 @@ Default: `+output.DefaultDetectTemplate+`
 }
 
 func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, fileOrPattern string) (srv.DetectParams, error) {
+	fileTypeParam := resolve.FallbackString(cmd.Flags().Lookup(fileTypeFlag), resolve.StringParam{
+		FlagName: fileTypeFlag,
+	})
+	inputDirectoryParam := resolve.FallbackString(cmd.Flags().Lookup(inputDirectoryFlag), resolve.StringParam{
+		FlagName: inputDirectoryFlag,
+		Config:   fileConfig.MT.InputDirectory,
+	})
 	cnf, err := rootcmd.Config()
 	if err != nil {
 		return srv.DetectParams{}, fmt.Errorf("unable to read config: %w", err)
 	}
-	params := srv.DetectParams{
-		FileType:       resolveFileType(cmd),
-		InputDirectory: resolveInputDirectory(cmd, fileConfig),
+	var accountIDConfig *string
+	if cnf.AccountID != "" {
+		accountIDConfig = &cnf.AccountID
+	}
+	accountUIDParam := resolve.FallbackString(cmd.Root().PersistentFlags().Lookup("account"), resolve.StringParam{
+		FlagName: "account",
+		Config:   accountIDConfig,
+	})
+	return srv.DetectParams{
+		FileType:       fileTypeParam,
+		InputDirectory: inputDirectoryParam,
 		FileOrPattern:  fileOrPattern,
-		URI:            "",
-	}
-	params.AccountUID, err = resolveAccountUID(cmd, cnf.AccountID)
-	if err != nil {
-		return srv.DetectParams{}, fmt.Errorf("unable to resolve AccountUID: %w", err)
-	}
-	return params, nil
+		AccountUID:     api.AccountUID(accountUIDParam),
+	}, nil
 }
