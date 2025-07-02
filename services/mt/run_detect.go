@@ -3,16 +3,15 @@ package mt
 import (
 	"context"
 	"errors"
-	"github.com/Smartling/smartling-cli/services/helpers/pointer"
 	"os"
 	"path/filepath"
 	"strings"
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	"github.com/Smartling/smartling-cli/services/helpers/pointer"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
-	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -80,10 +79,9 @@ func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, 
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
 		}
-		request := sdkfile.FileUploadRequest{
-			File: contents,
-
-			FileType: sdkfile.FileType(fileType.String()),
+		request := api.UploadFileRequest{
+			File:     contents,
+			FileType: fileType,
 		}
 		update := DetectUpdates{ID: uint32(fileID)}
 		uploadFileResponse, err := s.uploader.UploadFile(p.AccountUID, filepath.Base(file), request)

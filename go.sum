@@ -8,6 +8,10 @@ github.com/Smartling/api-sdk-go v0.0.0-20250701113729-02a5ecd7d4a7 h1:900ga7B8l/
 github.com/Smartling/api-sdk-go v0.0.0-20250701113729-02a5ecd7d4a7/go.mod h1:Uu7XGCVLASRHzJN8crKL+fe0W9Moeu0vyZycfFkQbDc=
 github.com/Smartling/api-sdk-go v0.0.0-20250701175414-42d924b62a15 h1:8wmYumB+Tok4OvtSEi5YwG88kgmbHO9mtHsps4/eJMk=
 github.com/Smartling/api-sdk-go v0.0.0-20250701175414-42d924b62a15/go.mod h1:Uu7XGCVLASRHzJN8crKL+fe0W9Moeu0vyZycfFkQbDc=
+github.com/Smartling/api-sdk-go v0.0.0-20250702120011-653adb28defd h1:tM2a50OrG2VAczjMQ3z2buPoQEh0YAMiX4D/J7xH2oM=
+github.com/Smartling/api-sdk-go v0.0.0-20250702120011-653adb28defd/go.mod h1:Uu7XGCVLASRHzJN8crKL+fe0W9Moeu0vyZycfFkQbDc=
+github.com/Smartling/api-sdk-go v0.0.0-20250702120647-8359d5af0081 h1:8XoLOd/yhDFb+gODFEQpx7YLkV1COF1/qFDUX1nvoNI=
+github.com/Smartling/api-sdk-go v0.0.0-20250702120647-8359d5af0081/go.mod h1:Uu7XGCVLASRHzJN8crKL+fe0W9Moeu0vyZycfFkQbDc=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/aymanbagabas/go-udiff v0.2.0 h1:TK0fH4MteXUDspT88n8CKzvK0X9O2xu9yQjWpi6yML8=

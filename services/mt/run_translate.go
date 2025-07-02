@@ -15,7 +15,6 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
-	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -87,17 +86,11 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
 		}
-		request := sdkfile.FileUploadRequest{
+		request := api.UploadFileRequest{
 			File:               contents,
 			LocalesToAuthorize: []string{p.SourceLocale},
-			FileType:           sdkfile.FileType(fileType.String()),
-			Smartling: struct {
-				Namespace   string
-				FileCharset string
-				Directives  map[string]string
-			}{
-				Directives: p.Directives,
-			},
+			FileType:           fileType,
+			Directives:         p.Directives,
 		}
 		uploadFileResponse, err := s.uploader.UploadFile(p.AccountUID, filepath.Base(file), request)
 		if err != nil {
