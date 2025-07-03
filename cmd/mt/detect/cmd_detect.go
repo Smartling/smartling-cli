@@ -85,7 +85,10 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				}
 			}
 
-			render := mtcmd.InitRender(cmd, fileConfig.MT.FileFormat, files)
+			render, err := mtcmd.InitRender(cmd, fileConfig.MT.FileFormat, files)
+			if err != nil {
+				return err
+			}
 			renderRun := make(chan struct{})
 			go func() {
 				close(renderRun)
