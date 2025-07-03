@@ -18,6 +18,12 @@ type Model struct {
 	OutputTemplate string
 }
 
+type OutputParams struct {
+	Mode     string
+	Format   string
+	Template string
+}
+
 func RenderAndExitIfErr(err error) {
 	if err == nil {
 		return

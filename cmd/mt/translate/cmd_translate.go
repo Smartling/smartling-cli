@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
-	srv "github.com/Smartling/smartling-cli/services/mt"
 
-	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/errgroup"
 )
@@ -89,8 +86,12 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				})
 			}
 
+			outputParams, err := mtcmd.ResolveOutputParams(cmd, fileConfig.MT.FileFormat)
+			if err != nil {
+				return err
+			}
 			var dataProvider output.TranslateDataProvider
-			render, err := mtcmd.InitRender(cmd, dataProvider, fileConfig.MT.FileFormat, files)
+			render, err := mtcmd.InitRender(outputParams, dataProvider, files)
 			if err != nil {
 				return err
 			}
@@ -175,57 +176,4 @@ Default: `+output.DefaultTranslateTemplate+`
 	}
 
 	return translateCmd
-}
-
-func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (srv.TranslateParams, error) {
-	cnf, err := rootcmd.Config()
-	if err != nil {
-		output.RenderAndExitIfErr(clierror.UIError{
-			Operation:   "config",
-			Err:         err,
-			Description: "failed to read config",
-		})
-	}
-
-	sourceLocaleParam := resolve.FallbackString(cmd.Flags().Lookup(sourceLocaleFlag), resolve.StringParam{
-		FlagName: sourceLocaleFlag,
-		Config:   fileConfig.MT.DefaultSourceLocale,
-	})
-	detectLanguageParam := resolve.FallbackBool(cmd.Flags().Lookup(detectLanguageFlag), resolve.BoolParam{
-		FlagName: detectLanguageFlag,
-	})
-	outputDirectoryParam := resolve.FallbackString(cmd.Flags().Lookup(outputDirectoryFlag), resolve.StringParam{
-		FlagName: outputDirectoryFlag,
-		Config:   fileConfig.MT.OutputDirectory,
-	})
-	progressParam := resolve.FallbackBool(cmd.Flags().Lookup(progressFlag), resolve.BoolParam{
-		FlagName: progressFlag,
-	})
-	overrideFileTypeParam := resolve.FallbackString(cmd.Flags().Lookup(overrideFileTypeFlag), resolve.StringParam{
-		FlagName: overrideFileTypeFlag,
-	})
-
-	var accountIDConfig *string
-	if cnf.AccountID != "" {
-		accountIDConfig = &cnf.AccountID
-	}
-	accountUIDParam := resolve.FallbackString(cmd.Root().PersistentFlags().Lookup("account"), resolve.StringParam{
-		FlagName: "account",
-		Config:   accountIDConfig,
-	})
-	params := srv.TranslateParams{
-		SourceLocale:     sourceLocaleParam,
-		DetectLanguage:   detectLanguageParam,
-		TargetLocales:    resolveTargetLocale(cmd, fileConfig),
-		OutputDirectory:  outputDirectoryParam,
-		Progress:         progressParam,
-		OverrideFileType: overrideFileTypeParam,
-		AccountUID:       api.AccountUID(accountUIDParam),
-	}
-	params.Directives, err = resolveDirectives(cmd, fileConfig)
-	if err != nil {
-		return srv.TranslateParams{}, fmt.Errorf("unable to resolve directives: %w", err)
-	}
-
-	return params, nil
 }

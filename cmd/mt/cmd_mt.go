@@ -12,6 +12,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	outputFormatFlag = "output"
+	outputModeFlag   = "output-mode"
+)
+
 var (
 	outputFormat   string
 	allowedOutputs = []string{
@@ -48,8 +53,8 @@ func NewMTCmd() *cobra.Command {
 		},
 	}
 
-	mtCmd.PersistentFlags().StringVar(&outputFormat, "output", "simple", "Output format: "+joinedAllowedOutputs)
-	mtCmd.PersistentFlags().StringVar(&outputMode, "output-mode", "static", "Output mode: "+joinedAllowedOutputModes)
+	mtCmd.PersistentFlags().StringVar(&outputFormat, outputFormatFlag, "simple", "Output format: "+joinedAllowedOutputs)
+	mtCmd.PersistentFlags().StringVar(&outputMode, outputModeFlag, "static", "Output mode: "+joinedAllowedOutputModes)
 
 	return mtCmd
 }

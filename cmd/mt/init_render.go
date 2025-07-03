@@ -1,42 +1,15 @@
 package mt
 
 import (
-	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	output "github.com/Smartling/smartling-cli/output/mt"
-	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
-
-	"github.com/spf13/cobra"
 )
 
 // InitRender inits render for mt subcommands
-func InitRender(cmd *cobra.Command, dataProvider output.TableDataProvider, fileConfigMTFileFormat *string, files []string) (output.Renderer, error) {
-	const outputTemplateFlag = "format"
-	outFormat, err := cmd.Parent().PersistentFlags().GetString("output")
-	if err != nil {
-		return nil, clierror.UIError{
-			Operation:   "get output",
-			Err:         err,
-			Description: "unable to get output param",
-		}
-	}
-	outTemplate := resolve.FallbackString(cmd.Flags().Lookup(outputTemplateFlag), resolve.StringParam{
-		FlagName: outputTemplateFlag,
-		Config:   fileConfigMTFileFormat,
-	})
-
-	outMode, err := cmd.Parent().PersistentFlags().GetString("output-mode")
-	if err != nil {
-		return nil, clierror.UIError{
-			Operation:   "get output mode",
-			Err:         err,
-			Description: "unable to get output mode param",
-		}
-	}
+func InitRender(outputParams output.OutputParams, dataProvider output.TableDataProvider, files []string) (output.Renderer, error) {
 	var render output.Renderer = &output.Static{}
-	if outMode == "dynamic" {
+	if outputParams.Mode == "dynamic" {
 		render = &output.Dynamic{}
 	}
-
-	render.Init(dataProvider, files, outFormat, outTemplate)
+	render.Init(dataProvider, files, outputParams.Format, outputParams.Template)
 	return render, nil
 }
