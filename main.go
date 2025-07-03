@@ -20,6 +20,7 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/projects/info"
 	listprojects "github.com/Smartling/smartling-cli/cmd/projects/list"
 	"github.com/Smartling/smartling-cli/cmd/projects/locales"
+	output "github.com/Smartling/smartling-cli/output/mt"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 )
 
@@ -60,6 +61,6 @@ func main() {
 	mtCmd.AddCommand(translate.NewTranslateCmd(mtInitializer))
 
 	if err := rootCmd.Execute(); err != nil {
-		rlog.Error("failed command execution", err)
+		output.RenderAndExitIfErr(err)
 	}
 }

@@ -3,7 +3,6 @@ package translate
 import (
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
@@ -16,6 +15,7 @@ import (
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -42,14 +42,13 @@ var (
 	outputTemplate   string
 )
 
-// NewTranslateCmd ...
+// NewTranslateCmd retutns new translate command
 func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 	translateCmd := &cobra.Command{
 		Use:   "translate <file|pattern>",
 		Short: "Translate files using Smartling's File Machine Translation API.",
 		Long:  `Translate files using Smartling's File Machine Translation API.`,
-
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			if len(args) != 1 {
 				output.RenderAndExitIfErr(clierror.UIError{
@@ -60,7 +59,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			}
 			fileOrPattern := args[0]
 
-			mtSrv, _, err := initializer.InitMTSrv()
+			mtSrv, err := initializer.InitMTSrv()
 			if err != nil {
 				output.RenderAndExitIfErr(clierror.UIError{
 					Operation:   "init",
@@ -155,29 +154,32 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			params.InputDirectory = inputDirectoryParam
 
 			updates := make(chan any)
-			var wg sync.WaitGroup
-			wg.Add(2)
-			go func() {
+			var errGroup errgroup.Group
+
+			errGroup.Go(func() error {
 				defer func() {
 					close(updates)
-					wg.Done()
 				}()
 				_, err := mtSrv.RunTranslate(ctx, params, files, updates)
 				if err != nil {
-					output.RenderAndExitIfErr(clierror.UIError{
+					return clierror.UIError{
 						Operation: "run translate",
 						Err:       err,
-					})
+					}
 				}
-			}()
+				return nil
+			})
 
-			go func() {
-				defer wg.Done()
+			errGroup.Go(func() error {
 				render.Update(updates)
-			}()
+				return nil
+			})
 
-			wg.Wait()
+			if err := errGroup.Wait(); err != nil {
+				return err
+			}
 			render.End()
+			return nil
 		},
 	}
 

@@ -3,7 +3,6 @@ package detect
 import (
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
@@ -15,6 +14,7 @@ import (
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -29,69 +29,69 @@ var (
 	inputDirectory string
 )
 
-// NewDetectCmd ...
+// NewDetectCmd returns new detect command
 func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 	detectCmd := &cobra.Command{
 		Use:   "detect <file|pattern>",
 		Short: "Detect the source language of files using Smartling's File MT API.",
 		Long:  `Detect the source language of files using Smartling's File MT API.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) > 1 {
-				output.RenderAndExitIfErr(clierror.UIError{
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return clierror.UIError{
 					Operation:   "check args",
 					Err:         errors.New("wrong argument quantity"),
 					Description: fmt.Sprintf("expected one argument, got: %d", len(args)),
-				})
+				}
 			}
 			var fileOrPattern string
 			if len(args) == 1 {
 				fileOrPattern = args[0]
 			}
 
-			mtSrv, _, err := initializer.InitMTSrv()
+			mtSrv, err := initializer.InitMTSrv()
 			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
+				return clierror.UIError{
 					Operation:   "init",
 					Err:         err,
 					Description: "unable to initialize MT service",
-				})
+				}
 			}
 
 			ctx := cmd.Context()
 
 			fileConfig, err := mtcmd.BindFileConfig(cmd)
 			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
+				return clierror.UIError{
 					Operation:   "bind",
 					Err:         err,
 					Description: "unable to bind config",
-				})
+				}
 			}
 
 			params, err := resolveParams(cmd, fileConfig, fileOrPattern)
 			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
+				return clierror.UIError{
 					Operation: "resolve params",
 					Err:       err,
-				})
+				}
 			}
 
 			files, err := mtSrv.GetFiles(params.InputDirectory, fileOrPattern)
 			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
+				return clierror.UIError{
 					Operation:   "get files",
 					Err:         err,
 					Description: "unable to get input files",
-				})
+				}
 			}
 
 			outFormat, err := cmd.Parent().PersistentFlags().GetString("output")
 			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
+				return clierror.UIError{
 					Operation:   "get output",
 					Err:         err,
 					Description: "unable to get output param",
-				})
+				}
 			}
 
 			outTemplate := resolve.FallbackString(cmd.Flags().Lookup(outputTemplateFlag), resolve.StringParam{
@@ -102,11 +102,11 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			var render output.Renderer = &output.Static{}
 			outMode, err := cmd.Parent().PersistentFlags().GetString("output-mode")
 			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
+				return clierror.UIError{
 					Operation:   "get output mode",
 					Err:         err,
 					Description: "unable to get output mode param",
-				})
+				}
 			}
 			if outMode == "dynamic" {
 				render = &output.Dynamic{}
@@ -132,30 +132,32 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			time.Sleep(time.Second)
 
 			updates := make(chan any)
-			var wg sync.WaitGroup
-			wg.Add(2)
-			go func() {
+			var errGroup errgroup.Group
+			errGroup.Go(func() error {
 				defer func() {
 					close(updates)
-					wg.Done()
 				}()
 
 				_, err := mtSrv.RunDetect(ctx, files, params, updates)
 				if err != nil {
-					output.RenderAndExitIfErr(clierror.UIError{
+					return clierror.UIError{
 						Operation: "run detect",
 						Err:       err,
-					})
+					}
 				}
-			}()
+				return nil
+			})
 
-			go func() {
-				defer wg.Done()
+			errGroup.Go(func() error {
 				render.Update(updates)
-			}()
+				return nil
+			})
 
-			wg.Wait()
+			if err := errGroup.Wait(); err != nil {
+				return err
+			}
 			render.End()
+			return nil
 		},
 	}
 

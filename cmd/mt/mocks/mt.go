@@ -5,7 +5,6 @@
 package mtmocks
 
 import (
-	"github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/mt"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -38,7 +37,7 @@ func (_m *MockSrvInitializer) EXPECT() *MockSrvInitializer_Expecter {
 }
 
 // InitMTSrv provides a mock function for the type MockSrvInitializer
-func (_mock *MockSrvInitializer) InitMTSrv() (mt.Service, globfiles.ListFilesFn, error) {
+func (_mock *MockSrvInitializer) InitMTSrv() (mt.Service, error) {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
@@ -46,9 +45,8 @@ func (_mock *MockSrvInitializer) InitMTSrv() (mt.Service, globfiles.ListFilesFn,
 	}
 
 	var r0 mt.Service
-	var r1 globfiles.ListFilesFn
-	var r2 error
-	if returnFunc, ok := ret.Get(0).(func() (mt.Service, globfiles.ListFilesFn, error)); ok {
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func() (mt.Service, error)); ok {
 		return returnFunc()
 	}
 	if returnFunc, ok := ret.Get(0).(func() mt.Service); ok {
@@ -58,19 +56,12 @@ func (_mock *MockSrvInitializer) InitMTSrv() (mt.Service, globfiles.ListFilesFn,
 			r0 = ret.Get(0).(mt.Service)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func() globfiles.ListFilesFn); ok {
+	if returnFunc, ok := ret.Get(1).(func() error); ok {
 		r1 = returnFunc()
 	} else {
-		if ret.Get(1) != nil {
-			r1 = ret.Get(1).(globfiles.ListFilesFn)
-		}
+		r1 = ret.Error(1)
 	}
-	if returnFunc, ok := ret.Get(2).(func() error); ok {
-		r2 = returnFunc()
-	} else {
-		r2 = ret.Error(2)
-	}
-	return r0, r1, r2
+	return r0, r1
 }
 
 // MockSrvInitializer_InitMTSrv_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'InitMTSrv'
@@ -90,12 +81,12 @@ func (_c *MockSrvInitializer_InitMTSrv_Call) Run(run func()) *MockSrvInitializer
 	return _c
 }
 
-func (_c *MockSrvInitializer_InitMTSrv_Call) Return(service mt.Service, listFilesFn globfiles.ListFilesFn, err error) *MockSrvInitializer_InitMTSrv_Call {
-	_c.Call.Return(service, listFilesFn, err)
+func (_c *MockSrvInitializer_InitMTSrv_Call) Return(service mt.Service, err error) *MockSrvInitializer_InitMTSrv_Call {
+	_c.Call.Return(service, err)
 	return _c
 }
 
-func (_c *MockSrvInitializer_InitMTSrv_Call) RunAndReturn(run func() (mt.Service, globfiles.ListFilesFn, error)) *MockSrvInitializer_InitMTSrv_Call {
+func (_c *MockSrvInitializer_InitMTSrv_Call) RunAndReturn(run func() (mt.Service, error)) *MockSrvInitializer_InitMTSrv_Call {
 	_c.Call.Return(run)
 	return _c
 }
