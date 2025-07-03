@@ -35,8 +35,8 @@ var (
 func NewMTCmd() *cobra.Command {
 	mtCmd := &cobra.Command{
 		Use:   "mt",
-		Short: "mt...",
-		Long:  `mt...`,
+		Short: "File Machine Translations",
+		Long:  `Machine Translations offers a simple way to upload files and execute actions on them without any complex setup required`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if !slices.Contains(allowedOutputs, output) {
 				return fmt.Errorf("invalid output: %s (allowed: %s)", output, joinedAllowedOutputs)
