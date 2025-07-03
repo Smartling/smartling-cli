@@ -1,19 +1,19 @@
 package detect
 
 import (
+	"errors"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
-	api "github.com/Smartling/api-sdk-go/api/mt"
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
-	"github.com/Smartling/smartling-cli/services/helpers/rlog"
+	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
+	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
 )
 
@@ -37,8 +37,11 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 		Long:  `Detect the source language of files using Smartling's File MT API.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) > 1 {
-				rlog.Errorf("expected one argument, got: %d", len(args))
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "check args",
+					Err:         errors.New("wrong argument quantity"),
+					Description: fmt.Sprintf("expected one argument, got: %d", len(args)),
+				})
 			}
 			var fileOrPattern string
 			if len(args) == 1 {
@@ -47,34 +50,48 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 			mtSrv, _, err := initializer.InitMTSrv()
 			if err != nil {
-				rlog.Errorf("unable to initialize MT service: %s", err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "init",
+					Err:         err,
+					Description: "unable to initialize MT service",
+				})
 			}
 
 			ctx := cmd.Context()
 
 			fileConfig, err := mtcmd.BindFileConfig(cmd)
 			if err != nil {
-				rlog.Errorf("unable to bind config: %s", err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "bind",
+					Err:         err,
+					Description: "unable to bind config",
+				})
 			}
 
 			params, err := resolveParams(cmd, fileConfig, fileOrPattern)
 			if err != nil {
-				rlog.Error(err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation: "resolve params",
+					Err:       err,
+				})
 			}
 
 			files, err := mtSrv.GetFiles(params.InputDirectory, fileOrPattern)
 			if err != nil {
-				rlog.Error(err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "get files",
+					Err:         err,
+					Description: "unable to get input files",
+				})
 			}
 
 			outFormat, err := cmd.Parent().PersistentFlags().GetString("output")
 			if err != nil {
-				rlog.Errorf("unable to get output: %s", err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "get output",
+					Err:         err,
+					Description: "unable to get output param",
+				})
 			}
 
 			outTemplate := resolve.FallbackString(cmd.Flags().Lookup(outputTemplateFlag), resolve.StringParam{
@@ -85,8 +102,11 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			var render output.Renderer = &output.Static{}
 			outMode, err := cmd.Parent().PersistentFlags().GetString("output-mode")
 			if err != nil {
-				rlog.Errorf("unable to get output mode: %s", err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "get output mode",
+					Err:         err,
+					Description: "unable to get output mode param",
+				})
 			}
 			if outMode == "dynamic" {
 				render = &output.Dynamic{}
@@ -98,8 +118,14 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			go func() {
 				close(renderRun)
 				if err = render.Run(); err != nil {
-					rlog.Error(err)
-					os.Exit(1)
+					output.RenderAndExitIfErr(clierror.UIError{
+						Operation: "render run",
+						Err:       err,
+						Fields: map[string]string{
+							"render": fmt.Sprintf("%T", render),
+						},
+						Description: "unable to run render",
+					})
 				}
 			}()
 			<-renderRun
@@ -116,8 +142,10 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 				_, err := mtSrv.RunDetect(ctx, files, params, updates)
 				if err != nil {
-					rlog.Errorf("unable to run detect: %s", err)
-					os.Exit(1)
+					output.RenderAndExitIfErr(clierror.UIError{
+						Operation: "run detect",
+						Err:       err,
+					})
 				}
 			}()
 

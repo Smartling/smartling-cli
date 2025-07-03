@@ -41,7 +41,10 @@ func RenderError(err error) string {
 		fields += fmt.Sprintf("  • %s: %s\n", k, v)
 	}
 
-	text := fmt.Sprintf("%s\n\n%s", header, fields)
+	text := header
+	if fields != "" {
+		text += "\n" + fields
+	}
 
 	if uiErr.Description != "" {
 		text += fmt.Sprintf("\nDescription:\n%s\n", uiErr.Description)

@@ -1,20 +1,20 @@
 package translate
 
 import (
+	"errors"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
-	api "github.com/Smartling/api-sdk-go/api/mt"
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
+	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
-	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
+	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
 )
 
@@ -52,27 +52,39 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := cmd.Context()
 			if len(args) != 1 {
-				rlog.Errorf("expected one argument, got: %d", len(args))
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "check args",
+					Err:         errors.New("wrong argument quantity"),
+					Description: fmt.Sprintf("expected one argument, got: %d", len(args)),
+				})
 			}
 			fileOrPattern := args[0]
 
 			mtSrv, _, err := initializer.InitMTSrv()
 			if err != nil {
-				rlog.Errorf("unable to initialize MT service: %w", err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "init",
+					Err:         err,
+					Description: "unable to initialize MT service",
+				})
 			}
 
 			cnf, err := rootcmd.Config()
 			if err != nil {
-				rlog.Errorf("unable to read config: %w", err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "config",
+					Err:         err,
+					Description: "failed to read config",
+				})
 			}
 
 			fileConfig, err := mtcmd.BindFileConfig(cmd)
 			if err != nil {
-				rlog.Errorf("unable to bind config: %w", err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "bind",
+					Err:         err,
+					Description: "unable to bind config",
+				})
 			}
 
 			inputDirectoryParam := resolve.FallbackString(cmd.Flags().Lookup(inputDirectoryFlag), resolve.StringParam{
@@ -81,14 +93,20 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			})
 			files, err := mtSrv.GetFiles(inputDirectoryParam, fileOrPattern)
 			if err != nil {
-				rlog.Error(err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "get files",
+					Err:         err,
+					Description: "unable to get input files",
+				})
 			}
 
 			outFormat, err := cmd.Parent().PersistentFlags().GetString("output")
 			if err != nil {
-				rlog.Errorf("unable to get output: %w", err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "get output",
+					Err:         err,
+					Description: "unable to get output param",
+				})
 			}
 			outTemplate := resolve.FallbackString(cmd.Flags().Lookup(outputTemplateFlag), resolve.StringParam{
 				FlagName: outputTemplateFlag,
@@ -98,8 +116,11 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			var render output.Renderer = &output.Static{}
 			outMode, err := cmd.Parent().PersistentFlags().GetString("output-mode")
 			if err != nil {
-				rlog.Errorf("unable to get output mode: %s", err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation:   "get output mode",
+					Err:         err,
+					Description: "unable to get output mode param",
+				})
 			}
 			if outMode == "dynamic" {
 				render = &output.Dynamic{}
@@ -111,8 +132,14 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			go func() {
 				close(renderRun)
 				if err = render.Run(); err != nil {
-					rlog.Error(err)
-					os.Exit(1)
+					output.RenderAndExitIfErr(clierror.UIError{
+						Operation: "render run",
+						Err:       err,
+						Fields: map[string]string{
+							"render": fmt.Sprintf("%T", render),
+						},
+						Description: "unable to run render",
+					})
 				}
 			}()
 			<-renderRun
@@ -120,8 +147,10 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 			params, err := resolveParams(cmd, fileConfig, cnf)
 			if err != nil {
-				rlog.Error(err)
-				os.Exit(1)
+				output.RenderAndExitIfErr(clierror.UIError{
+					Operation: "resolve params",
+					Err:       err,
+				})
 			}
 			params.InputDirectory = inputDirectoryParam
 
@@ -135,8 +164,10 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				}()
 				_, err := mtSrv.RunTranslate(ctx, params, files, updates)
 				if err != nil {
-					rlog.Errorf("unable to run translate: %w", err)
-					os.Exit(1)
+					output.RenderAndExitIfErr(clierror.UIError{
+						Operation: "run translate",
+						Err:       err,
+					})
 				}
 			}()
 
@@ -167,7 +198,11 @@ Default: `+output.DefaultTranslateTemplate+`
 	translateCmd.Flags().BoolVar(&progress, progressFlag, true, "Display progress")
 
 	if err := translateCmd.MarkFlagRequired(targetLocaleFlag); err != nil {
-		rlog.Errorf("failed to mark flag required: %v", err)
+		output.RenderAndExitIfErr(clierror.UIError{
+			Operation:   "MarkFlagRequired",
+			Err:         err,
+			Description: "failed to mark " + targetLocaleFlag + " flag required",
+		})
 	}
 
 	return translateCmd
