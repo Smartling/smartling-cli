@@ -99,7 +99,8 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				})
 			}
 
-			render, err := mtcmd.InitRender(cmd, fileConfig.MT.FileFormat, files)
+			var dataProvider output.TranslateDataProvider
+			render, err := mtcmd.InitRender(cmd, dataProvider, fileConfig.MT.FileFormat, files)
 			if err != nil {
 				return err
 			}

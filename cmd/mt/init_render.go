@@ -9,7 +9,7 @@ import (
 )
 
 // InitRender inits render for mt subcommands
-func InitRender(cmd *cobra.Command, fileConfigMTFileFormat *string, files []string) (output.Renderer, error) {
+func InitRender(cmd *cobra.Command, dataProvider output.TableDataProvider, fileConfigMTFileFormat *string, files []string) (output.Renderer, error) {
 	const outputTemplateFlag = "format"
 	outFormat, err := cmd.Parent().PersistentFlags().GetString("output")
 	if err != nil {
@@ -37,7 +37,6 @@ func InitRender(cmd *cobra.Command, fileConfigMTFileFormat *string, files []stri
 		render = &output.Dynamic{}
 	}
 
-	var dataProvider output.TranslateDataProvider
 	render.Init(dataProvider, files, outFormat, outTemplate)
 	return render, nil
 }
