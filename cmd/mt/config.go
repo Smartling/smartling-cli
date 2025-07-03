@@ -1,11 +1,9 @@
 package mt
 
 import (
-	"errors"
 	"os"
 
 	"github.com/Smartling/smartling-cli/services/helpers/config"
-	"github.com/Smartling/smartling-cli/services/helpers/env"
 
 	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
@@ -55,34 +53,4 @@ func BindFileConfig(cmd *cobra.Command) (FileConfig, error) {
 		return config, err
 	}
 	return config, nil
-}
-
-func resolveConfigDirectory(cmd *cobra.Command) (string, error) {
-	flag := cmd.Root().PersistentFlags().Lookup("operation-directory")
-	if flag == nil {
-		return "", errors.New("flag is not defined")
-	}
-	if flag.Changed {
-		return flag.Value.String(), nil
-	}
-	envVarName := env.VarNameFromCLIFlagName("operation-directory")
-	if val, isSet := os.LookupEnv(envVarName); isSet {
-		return val, nil
-	}
-	return flag.DefValue, nil
-}
-
-func resolveConfigFile(cmd *cobra.Command) (string, error) {
-	flag := cmd.Root().PersistentFlags().Lookup("config")
-	if flag == nil {
-		return "", errors.New("flag is not defined")
-	}
-	if flag.Changed {
-		return flag.Value.String(), nil
-	}
-	envVarName := env.VarNameFromCLIFlagName("config")
-	if val, isSet := os.LookupEnv(envVarName); isSet {
-		return val, nil
-	}
-	return flag.DefValue, nil
 }

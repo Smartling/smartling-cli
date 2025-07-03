@@ -20,19 +20,19 @@ func run(ctx context.Context,
 	outputParams output.OutputParams) error {
 	mtSrv, err := initializer.InitMTSrv()
 	if err != nil {
-		output.RenderAndExitIfErr(clierror.UIError{
+		return clierror.UIError{
 			Operation:   "init",
 			Err:         err,
 			Description: "unable to initialize MT service",
-		})
+		}
 	}
 	files, err := mtSrv.GetFiles(params.InputDirectory, fileOrPattern)
 	if err != nil {
-		output.RenderAndExitIfErr(clierror.UIError{
+		return clierror.UIError{
 			Operation:   "get files",
 			Err:         err,
 			Description: "unable to get input files",
-		})
+		}
 	}
 	var dataProvider output.TranslateDataProvider
 	render, err := mtcmd.InitRender(outputParams, dataProvider, files)

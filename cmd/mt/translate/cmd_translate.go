@@ -42,21 +42,21 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			if len(args) != 1 {
-				output.RenderAndExitIfErr(clierror.UIError{
+				return clierror.UIError{
 					Operation:   "check args",
 					Err:         errors.New("wrong argument quantity"),
 					Description: fmt.Sprintf("expected one argument, got: %d", len(args)),
-				})
+				}
 			}
 			fileOrPattern := args[0]
 
 			fileConfig, err := mtcmd.BindFileConfig(cmd)
 			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
+				return clierror.UIError{
 					Operation:   "bind",
 					Err:         err,
 					Description: "unable to bind config",
-				})
+				}
 			}
 
 			outputParams, err := mtcmd.ResolveOutputParams(cmd, fileConfig.MT.FileFormat)
@@ -66,10 +66,10 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 			params, err := resolveParams(cmd, fileConfig)
 			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
+				return clierror.UIError{
 					Operation: "resolve params",
 					Err:       err,
-				})
+				}
 			}
 
 			return run(ctx, initializer, params, fileOrPattern, outputParams)
