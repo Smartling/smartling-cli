@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	output         string
+	outputFormat   string
 	allowedOutputs = []string{
 		"table",
 		"json",
@@ -35,8 +35,8 @@ func NewMTCmd() *cobra.Command {
 		Short: "File Machine Translations",
 		Long:  `Machine Translations offers a simple way to upload files and execute actions on them without any complex setup required`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if !slices.Contains(allowedOutputs, output) {
-				return fmt.Errorf("invalid output: %s (allowed: %s)", output, joinedAllowedOutputs)
+			if !slices.Contains(allowedOutputs, outputFormat) {
+				return fmt.Errorf("invalid output: %s (allowed: %s)", outputFormat, joinedAllowedOutputs)
 			}
 			return nil
 		},
@@ -48,7 +48,7 @@ func NewMTCmd() *cobra.Command {
 		},
 	}
 
-	mtCmd.PersistentFlags().StringVar(&output, "output", "simple", "Output format: "+joinedAllowedOutputs)
+	mtCmd.PersistentFlags().StringVar(&outputFormat, "output", "simple", "Output format: "+joinedAllowedOutputs)
 	mtCmd.PersistentFlags().StringVar(&outputMode, "output-mode", "static", "Output mode: "+joinedAllowedOutputModes)
 
 	return mtCmd

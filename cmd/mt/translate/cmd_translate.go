@@ -99,34 +99,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				})
 			}
 
-			outFormat, err := cmd.Parent().PersistentFlags().GetString("output")
-			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
-					Operation:   "get output",
-					Err:         err,
-					Description: "unable to get output param",
-				})
-			}
-			outTemplate := resolve.FallbackString(cmd.Flags().Lookup(outputTemplateFlag), resolve.StringParam{
-				FlagName: outputTemplateFlag,
-				Config:   fileConfig.MT.FileFormat,
-			})
-
-			var render output.Renderer = &output.Static{}
-			outMode, err := cmd.Parent().PersistentFlags().GetString("output-mode")
-			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
-					Operation:   "get output mode",
-					Err:         err,
-					Description: "unable to get output mode param",
-				})
-			}
-			if outMode == "dynamic" {
-				render = &output.Dynamic{}
-			}
-
-			var dataProvider output.TranslateDataProvider
-			render.Init(dataProvider, files, outFormat, outTemplate)
+			render := mtcmd.InitRender(cmd, fileConfig.MT.FileFormat, files)
 			renderRun := make(chan struct{})
 			go func() {
 				close(renderRun)
