@@ -82,7 +82,15 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				Config:   fileConfig.MT.FileFormat,
 			})
 
-			var render output.Renderer = &output.Dynamic{}
+			var render output.Renderer = &output.Static{}
+			outMode, err := cmd.Parent().PersistentFlags().GetString("output-mode")
+			if err != nil {
+				rlog.Errorf("unable to get output mode: %s", err)
+				os.Exit(1)
+			}
+			if outMode == "dynamic" {
+				render = &output.Dynamic{}
+			}
 
 			var dataProvider output.DetectDataProvider
 			render.Init(dataProvider, files, outFormat, outTemplate)

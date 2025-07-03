@@ -95,7 +95,15 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				Config:   fileConfig.MT.FileFormat,
 			})
 
-			var render output.Renderer = &output.Dynamic{}
+			var render output.Renderer = &output.Static{}
+			outMode, err := cmd.Parent().PersistentFlags().GetString("output-mode")
+			if err != nil {
+				rlog.Errorf("unable to get output mode: %s", err)
+				os.Exit(1)
+			}
+			if outMode == "dynamic" {
+				render = &output.Dynamic{}
+			}
 
 			var dataProvider output.TranslateDataProvider
 			render.Init(dataProvider, files, outFormat, outTemplate)
@@ -148,13 +156,13 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 	translateCmd.Flags().StringVar(&overrideFileType, overrideFileTypeFlag, "", "Set file type to override automatically detected file type. More info: https://help.smartling.com/hc/en-us/articles/360007998893--Supported-File-Types")
 	translateCmd.Flags().StringVar(&inputDirectory, inputDirectoryFlag, ".", "Input directory with files")
 	translateCmd.Flags().StringVar(&outputDirectory, outputDirectoryFlag, ".", "Output directory for translated files")
-	translateCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, "", `Translated file naming template.
+	translateCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, output.DefaultTranslateTemplate, `Translated file naming template.
 Default: `+output.DefaultTranslateTemplate+`
 {{.File}} - Original file path
 {{.Locale}} - Target locale
 {{name .File}} - File name without extension
 {{ext .File}} - File extension
-{{dir .File}} - Directory path`)
+{{dir .Directory}} - Directory path`)
 	translateCmd.Flags().StringArrayVar(&directive, directiveFlag, nil, "Smartling directive. Can be specified multiple times")
 	translateCmd.Flags().BoolVar(&progress, progressFlag, true, "Display progress")
 

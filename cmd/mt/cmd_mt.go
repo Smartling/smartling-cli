@@ -23,6 +23,12 @@ var (
 		"simple",
 	}
 	joinedAllowedOutputs = strings.Join(allowedOutputs, ", ")
+	outputMode           string
+	allowedOutputModes   = []string{
+		"dynamic",
+		"static",
+	}
+	joinedAllowedOutputModes = strings.Join(allowedOutputModes, ", ")
 )
 
 // NewMTCmd ...
@@ -49,6 +55,7 @@ func NewMTCmd() *cobra.Command {
 	}
 
 	mtCmd.PersistentFlags().StringVar(&output, "output", "simple", "Output format: "+joinedAllowedOutputs)
+	mtCmd.PersistentFlags().StringVar(&outputMode, "output-mode", "static", "Output mode: "+joinedAllowedOutputModes)
 
 	return mtCmd
 }

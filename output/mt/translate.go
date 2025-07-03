@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DefaultTranslateTemplate = "{{name .File}}_{{.Locale}}{{ext .File}}"
+	DefaultTranslateTemplate = "{{name .File}} 11_{{.Locale}}{{ext .File}}" + "\n"
 )
 
 type TranslateCellCoords struct {
