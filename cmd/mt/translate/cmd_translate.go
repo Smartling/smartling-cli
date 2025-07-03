@@ -10,7 +10,6 @@ import (
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
@@ -68,15 +67,6 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				})
 			}
 
-			cnf, err := rootcmd.Config()
-			if err != nil {
-				output.RenderAndExitIfErr(clierror.UIError{
-					Operation:   "config",
-					Err:         err,
-					Description: "failed to read config",
-				})
-			}
-
 			fileConfig, err := mtcmd.BindFileConfig(cmd)
 			if err != nil {
 				output.RenderAndExitIfErr(clierror.UIError{
@@ -121,7 +111,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			<-renderRun
 			time.Sleep(time.Second)
 
-			params, err := resolveParams(cmd, fileConfig, cnf)
+			params, err := resolveParams(cmd, fileConfig)
 			if err != nil {
 				output.RenderAndExitIfErr(clierror.UIError{
 					Operation: "resolve params",
@@ -187,8 +177,15 @@ Default: `+output.DefaultTranslateTemplate+`
 	return translateCmd
 }
 
-func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, cnf config.Config) (srv.TranslateParams, error) {
-	var err error
+func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (srv.TranslateParams, error) {
+	cnf, err := rootcmd.Config()
+	if err != nil {
+		output.RenderAndExitIfErr(clierror.UIError{
+			Operation:   "config",
+			Err:         err,
+			Description: "failed to read config",
+		})
+	}
 
 	sourceLocaleParam := resolve.FallbackString(cmd.Flags().Lookup(sourceLocaleFlag), resolve.StringParam{
 		FlagName: sourceLocaleFlag,
