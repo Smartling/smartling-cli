@@ -8,8 +8,8 @@ import (
 
 // Service defines behavior for interacting with Smartling MT.
 type Service interface {
-	RunDetect(ctx context.Context, files []string, p DetectParams, updates chan DetectUpdates) ([]DetectOutput, error)
-	RunTranslate(ctx context.Context, p TranslateParams, files []string, updates chan TranslateUpdates) ([]TranslateOutput, error)
+	RunDetect(ctx context.Context, files []string, p DetectParams, updates chan any) ([]DetectOutput, error)
+	RunTranslate(ctx context.Context, p TranslateParams, files []string, updates chan any) ([]TranslateOutput, error)
 	GetFiles(inputDirectory, fileOrPattern string) ([]string, error)
 }
 

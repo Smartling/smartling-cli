@@ -31,8 +31,8 @@ type TranslateParams struct {
 	AccountUID       api.AccountUID
 }
 
-func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []string, updates chan TranslateUpdates) ([]TranslateOutput, error) {
-	defer close(updates)
+func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []string, updates chan any) ([]TranslateOutput, error) {
+	//defer close(updates)
 	var res []TranslateOutput
 
 	for fileID, file := range files {

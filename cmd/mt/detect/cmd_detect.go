@@ -3,6 +3,8 @@ package detect
 import (
 	"fmt"
 	"os"
+	"sync"
+	"time"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
@@ -69,7 +71,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				os.Exit(1)
 			}
 
-			outputFormat, err := cmd.Parent().PersistentFlags().GetString("output")
+			outFormat, err := cmd.Parent().PersistentFlags().GetString("output")
 			if err != nil {
 				rlog.Errorf("unable to get output: %s", err)
 				os.Exit(1)
@@ -79,15 +81,31 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				FlagName: outputTemplateFlag,
 				Config:   fileConfig.MT.FileFormat,
 			})
-			program, cellCoords, err := output.RenderDetectFiles(files, outputFormat, outTemplate)
-			if err != nil {
-				rlog.Errorf("unable to render detect: %s", err)
-				os.Exit(1)
-			}
 
-			updates := make(chan srv.DetectUpdates)
+			var render output.Renderer = &output.Dynamic{}
 
+			var dataProvider output.DetectDataProvider
+			render.Init(dataProvider, files, outFormat, outTemplate)
+			renderRun := make(chan struct{})
 			go func() {
+				close(renderRun)
+				if err = render.Run(); err != nil {
+					rlog.Error(err)
+					os.Exit(1)
+				}
+			}()
+			<-renderRun
+			time.Sleep(time.Second)
+
+			updates := make(chan any)
+			var wg sync.WaitGroup
+			wg.Add(2)
+			go func() {
+				defer func() {
+					close(updates)
+					wg.Done()
+				}()
+
 				_, err := mtSrv.RunDetect(ctx, files, params, updates)
 				if err != nil {
 					rlog.Errorf("unable to run detect: %s", err)
@@ -96,20 +114,12 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			}()
 
 			go func() {
-				for update := range updates {
-					updateRow := output.DetectUpdateRow{
-						Coords:  cellCoords,
-						Updates: update,
-					}
-					program.Send(updateRow)
-				}
-				program.Quit()
+				defer wg.Done()
+				render.Update(updates)
 			}()
 
-			if _, err := program.Run(); err != nil {
-				rlog.Errorf("unable to program run: %w", err)
-				os.Exit(1)
-			}
+			wg.Wait()
+			render.End()
 		},
 	}
 

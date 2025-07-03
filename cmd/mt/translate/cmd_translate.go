@@ -3,6 +3,8 @@ package translate
 import (
 	"fmt"
 	"os"
+	"sync"
+	"time"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
@@ -93,11 +95,20 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				Config:   fileConfig.MT.FileFormat,
 			})
 
-			program, cellCoords, err := output.RenderTranslateFiles(files, outFormat, outTemplate)
-			if err != nil {
-				rlog.Errorf("unable to render translate: %w", err)
-				os.Exit(1)
-			}
+			var render output.Renderer = &output.Dynamic{}
+
+			var dataProvider output.TranslateDataProvider
+			render.Init(dataProvider, files, outFormat, outTemplate)
+			renderRun := make(chan struct{})
+			go func() {
+				close(renderRun)
+				if err = render.Run(); err != nil {
+					rlog.Error(err)
+					os.Exit(1)
+				}
+			}()
+			<-renderRun
+			time.Sleep(time.Second)
 
 			params, err := resolveParams(cmd, fileConfig, cnf)
 			if err != nil {
@@ -105,9 +116,15 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				os.Exit(1)
 			}
 			params.InputDirectory = inputDirectoryParam
-			updates := make(chan srv.TranslateUpdates)
 
+			updates := make(chan any)
+			var wg sync.WaitGroup
+			wg.Add(2)
 			go func() {
+				defer func() {
+					close(updates)
+					wg.Done()
+				}()
 				_, err := mtSrv.RunTranslate(ctx, params, files, updates)
 				if err != nil {
 					rlog.Errorf("unable to run translate: %w", err)
@@ -116,21 +133,12 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			}()
 
 			go func() {
-				for update := range updates {
-					updateRow := output.TranslateUpdateRow{
-						Coords:  cellCoords,
-						Updates: update,
-					}
-					program.Send(updateRow)
-				}
-				program.Quit()
+				defer wg.Done()
+				render.Update(updates)
 			}()
 
-			if _, err := program.Run(); err != nil {
-				rlog.Errorf("unable to program run: %w", err)
-				os.Exit(1)
-			}
-
+			wg.Wait()
+			render.End()
 		},
 	}
 

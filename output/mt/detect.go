@@ -4,13 +4,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Smartling/smartling-cli/services/helpers/pointer"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/mt"
 
 	"github.com/charmbracelet/bubbles/table"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 const DefaultDetectTemplate = `{{.File}}\t{{.Language}}\n`
@@ -22,11 +19,11 @@ type DetectCellCoords struct {
 }
 
 type DetectUpdateRow struct {
-	Coords  DetectCellCoords
-	Updates mt.DetectUpdates
+	RowByHeader RowByHeaderName
+	Updates     mt.DetectUpdates
 }
 
-func RenderDetectUpdates(t *table.Model, cellCoords DetectCellCoords, val mt.DetectUpdates) {
+func RenderDetectUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.DetectUpdates) {
 	rows := t.Rows()
 	if val.ID < 0 || val.ID >= uint32(len(rows)) {
 		rlog.Debugf("row out of range: %d > %d", val.ID, len(rows))
@@ -38,14 +35,14 @@ func RenderDetectUpdates(t *table.Model, cellCoords DetectCellCoords, val mt.Det
 	updatedRow := make([]string, len(rows[val.ID]))
 	copy(updatedRow, rows[val.ID])
 
-	if cellCoords.LanguageCol != nil && val.Language != nil {
-		updatedRow[*cellCoords.LanguageCol] = *val.Language
+	if row, found := rowByHeader["language"]; found && val.Language != nil {
+		updatedRow[row] = *val.Language
 	}
-	if cellCoords.UploadCol != nil && val.Upload != nil && *val.Upload {
-		updatedRow[*cellCoords.UploadCol] = done
+	if row, found := rowByHeader["upload"]; found {
+		updatedRow[row] = done
 	}
-	if cellCoords.DetectCol != nil && val.Detect != nil {
-		updatedRow[*cellCoords.DetectCol] = *val.Detect
+	if row, found := rowByHeader["detect"]; found && val.Detect != nil {
+		updatedRow[row] = *val.Detect
 	}
 
 	updatedRows := make([]table.Row, len(rows))
@@ -53,49 +50,6 @@ func RenderDetectUpdates(t *table.Model, cellCoords DetectCellCoords, val mt.Det
 	updatedRows[val.ID] = updatedRow
 
 	t.SetRows(updatedRows)
-}
-
-// RenderDetectFiles renders files
-func RenderDetectFiles(files []string, outputFormat, outputTemplate string) (*tea.Program, DetectCellCoords, error) {
-	columns := []table.Column{
-		{Title: "File", Width: 10},
-		{Title: "Name", Width: 10},
-		{Title: "Ext", Width: 10},
-		{Title: "Directory", Width: 10},
-		{Title: "Upload", Width: 10},
-		{Title: "Detect", Width: 10},
-		{Title: "Language", Width: 10},
-	}
-	cellCoords := DetectCellCoords{
-		UploadCol:   pointer.NewP(uint8(4)),
-		DetectCol:   pointer.NewP(uint8(5)),
-		LanguageCol: pointer.NewP(uint8(6)),
-	}
-	rows := toDetectTableRows(files)
-	t := table.New(
-		table.WithColumns(columns),
-		table.WithRows(rows),
-		table.WithFocused(true),
-		//table.WithHeight(7),
-	)
-
-	s := table.DefaultStyles()
-	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderTop(true).
-		BorderBottom(true).
-		Bold(true)
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("#000000")).
-		Background(lipgloss.Color("#c5c5c5")).
-		Bold(false)
-	t.SetStyles(s)
-
-	m := Model{table: t}
-	program := tea.NewProgram(m)
-
-	return program, cellCoords, nil
 }
 
 func toDetectTableRows(files []string) []table.Row {
@@ -120,4 +74,44 @@ func toDetectTableRow(file string) table.Row {
 		"",
 		"",
 	}
+}
+
+type DetectDataProvider struct {
+	data []table.Row
+}
+
+func (t DetectDataProvider) Headers() []table.Column {
+	return []table.Column{
+		{Title: "File", Width: 10},
+		{Title: "Name", Width: 10},
+		{Title: "Ext", Width: 10},
+		{Title: "Directory", Width: 10},
+		{Title: "Upload", Width: 10},
+		{Title: "Detect", Width: 10},
+		{Title: "Language", Width: 10},
+	}
+}
+
+func (t DetectDataProvider) RowByHeaderName() RowByHeaderName {
+	return RowByHeaderName{
+		"upload":   4,
+		"detect":   5,
+		"language": 6,
+	}
+}
+
+func (t DetectDataProvider) GetRows() []table.Row {
+	return t.data
+}
+
+func (t DetectDataProvider) SetRows(rows []table.Row) {
+	t.data = rows
+}
+
+func (t DetectDataProvider) UpdateCell(i, j uint, val string) {
+	t.data[i][j] = val
+}
+
+func (t DetectDataProvider) ToTableRows(files []string) []table.Row {
+	return toDetectTableRows(files)
 }

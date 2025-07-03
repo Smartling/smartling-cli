@@ -4,13 +4,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Smartling/smartling-cli/services/helpers/pointer"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/mt"
 
 	"github.com/charmbracelet/bubbles/table"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 const (
@@ -23,13 +20,14 @@ type TranslateCellCoords struct {
 	TranslateCol *uint8
 	DownloadCol  *uint8
 }
+type RowByHeaderName map[string]uint8
 
 type TranslateUpdateRow struct {
-	Coords  TranslateCellCoords
-	Updates mt.TranslateUpdates
+	RowByHeader RowByHeaderName
+	Updates     mt.TranslateUpdates
 }
 
-func RenderTranslateUpdates(t *table.Model, cellCoords TranslateCellCoords, val mt.TranslateUpdates) {
+func RenderTranslateUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.TranslateUpdates) {
 	rows := t.Rows()
 	if val.ID < 0 || val.ID >= uint32(len(rows)) {
 		rlog.Debugf("row out of range: %d > %d", val.ID, len(rows))
@@ -41,17 +39,17 @@ func RenderTranslateUpdates(t *table.Model, cellCoords TranslateCellCoords, val 
 	updatedRow := make([]string, len(rows[val.ID]))
 	copy(updatedRow, rows[val.ID])
 
-	if cellCoords.LocaleCol != nil && val.Locale != nil {
-		updatedRow[*cellCoords.LocaleCol] = *val.Locale
+	if row, found := rowByHeader["locale"]; found && val.Locale != nil {
+		updatedRow[row] = *val.Locale
 	}
-	if cellCoords.UploadCol != nil && val.Upload != nil && *val.Upload {
-		updatedRow[*cellCoords.UploadCol] = done
+	if row, found := rowByHeader["upload"]; found {
+		updatedRow[row] = done
 	}
-	if cellCoords.TranslateCol != nil && val.Translate != nil {
-		updatedRow[*cellCoords.TranslateCol] = *val.Translate
+	if row, found := rowByHeader["translate"]; found && val.Translate != nil {
+		updatedRow[row] = *val.Translate
 	}
-	if cellCoords.DownloadCol != nil && val.Download != nil && *val.Download {
-		updatedRow[*cellCoords.DownloadCol] = done
+	if row, found := rowByHeader["download"]; found && val.Download != nil {
+		updatedRow[row] = done
 	}
 
 	updatedRows := make([]table.Row, len(rows))
@@ -59,51 +57,6 @@ func RenderTranslateUpdates(t *table.Model, cellCoords TranslateCellCoords, val 
 	updatedRows[val.ID] = updatedRow
 
 	t.SetRows(updatedRows)
-}
-
-// RenderTranslateFiles renders files
-func RenderTranslateFiles(files []string, outputFormat, outputTemplate string) (*tea.Program, TranslateCellCoords, error) {
-	columns := []table.Column{
-		{Title: "File", Width: 10},
-		{Title: "Locale", Width: 10},
-		{Title: "Name", Width: 10},
-		{Title: "Ext", Width: 10},
-		{Title: "Directory", Width: 10},
-		{Title: "Upload", Width: 10},
-		{Title: "Translate", Width: 10},
-		{Title: "Download", Width: 10},
-	}
-	cellCoords := TranslateCellCoords{
-		LocaleCol:    pointer.NewP(uint8(1)),
-		UploadCol:    pointer.NewP(uint8(5)),
-		TranslateCol: pointer.NewP(uint8(6)),
-		DownloadCol:  pointer.NewP(uint8(7)),
-	}
-	rows := toTranslateTableRows(files)
-	t := table.New(
-		table.WithColumns(columns),
-		table.WithRows(rows),
-		table.WithFocused(true),
-		//table.WithHeight(7),
-	)
-
-	s := table.DefaultStyles()
-	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderForeground(lipgloss.Color("240")).
-		BorderTop(true).
-		BorderBottom(true).
-		Bold(true)
-	s.Selected = s.Selected.
-		Foreground(lipgloss.Color("#000000")).
-		Background(lipgloss.Color("#c5c5c5")).
-		Bold(false)
-	t.SetStyles(s)
-
-	m := Model{table: t}
-	program := tea.NewProgram(m)
-
-	return program, cellCoords, nil
 }
 
 func toTranslateTableRows(files []string) []table.Row {
@@ -129,4 +82,46 @@ func toTranslateTableRow(file string) table.Row {
 		"",
 		"",
 	}
+}
+
+type TranslateDataProvider struct {
+	data []table.Row
+}
+
+func (t TranslateDataProvider) Headers() []table.Column {
+	return []table.Column{
+		{Title: "File", Width: 10},
+		{Title: "Locale", Width: 10},
+		{Title: "Name", Width: 10},
+		{Title: "Ext", Width: 10},
+		{Title: "Directory", Width: 10},
+		{Title: "Upload", Width: 10},
+		{Title: "Translate", Width: 10},
+		{Title: "Download", Width: 10},
+	}
+}
+
+func (t TranslateDataProvider) RowByHeaderName() RowByHeaderName {
+	return RowByHeaderName{
+		"locale":    1,
+		"upload":    5,
+		"translate": 6,
+		"download":  7,
+	}
+}
+
+func (t TranslateDataProvider) GetRows() []table.Row {
+	return t.data
+}
+
+func (t TranslateDataProvider) SetRows(rows []table.Row) {
+	t.data = rows
+}
+
+func (t TranslateDataProvider) UpdateCell(i, j uint, val string) {
+	t.data[i][j] = val
+}
+
+func (t TranslateDataProvider) ToTableRows(files []string) []table.Row {
+	return toTranslateTableRows(files)
 }

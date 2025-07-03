@@ -23,8 +23,7 @@ type DetectParams struct {
 	AccountUID     api.AccountUID
 }
 
-func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, updates chan DetectUpdates) ([]DetectOutput, error) {
-	defer close(updates)
+func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, updates chan any) ([]DetectOutput, error) {
 	var res []DetectOutput
 	for fileID, file := range files {
 		name, err := filepath.Abs(file)
