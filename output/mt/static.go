@@ -1,6 +1,7 @@
 package mt
 
 import (
+	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/pointer"
 	"github.com/Smartling/smartling-cli/services/mt"
 )
@@ -58,6 +59,10 @@ func (s *Static) Update(updates chan any) {
 			if row, found := rowByHeader["detect"]; found {
 				s.model.Data[update.ID][row] = pointer.PNew(update.Detect)
 			}
+		case clierror.UIError:
+			RenderAndExitIfErr(update)
+		case error:
+			RenderAndExitIfErr(update)
 		}
 	}
 }
