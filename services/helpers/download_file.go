@@ -6,14 +6,15 @@ import (
 	"path/filepath"
 
 	sdk "github.com/Smartling/api-sdk-go"
+	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
 )
 
 // DownloadFile downloads a file.
 func DownloadFile(
-	client sdk.ClientInterface,
+	client sdk.APIClient,
 	project string,
-	file sdk.File,
+	file sdkfile.File,
 	locale string,
 	path string,
 	retrievalType sdk.RetrievalType,

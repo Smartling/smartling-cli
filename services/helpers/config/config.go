@@ -16,7 +16,6 @@ type FileConfig struct {
 	Pull struct {
 		Format string `yaml:"format,omitempty"`
 	} `yaml:"pull,omitempty"`
-
 	Push struct {
 		Type       string            `yaml:"type,omitempty"`
 		Directives map[string]string `yaml:"directives,omitempty,flow"`

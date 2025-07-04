@@ -6,7 +6,7 @@ import (
 
 // RunRename renames a file from oldURI to newURI.
 func (s service) RunRename(oldURI, newURI string) error {
-	err := s.Client.RenameFile(s.Config.ProjectID, oldURI, newURI)
+	err := s.APIClient.RenameFile(s.Config.ProjectID, oldURI, newURI)
 	if err != nil {
 		return hierr.Errorf(
 			err,

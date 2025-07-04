@@ -11,7 +11,8 @@ import (
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
-	sdk "github.com/Smartling/api-sdk-go"
+	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
+	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -192,7 +193,7 @@ func (s service) RunPush(params PushParams) error {
 			)
 		}
 
-		request := sdk.FileUploadRequest{
+		request := sdkfile.FileUploadRequest{
 			File:               contents,
 			Authorize:          params.Authorize,
 			LocalesToAuthorize: params.Locales,
@@ -202,11 +203,11 @@ func (s service) RunPush(params PushParams) error {
 
 		if fileConfig.Push.Type == "" {
 			if params.FileType == "" {
-				request.FileType = sdk.GetFileTypeByExtension(
+				request.FileType = sdkfile.GetFileTypeByExtension(
 					filepath.Ext(file),
 				)
 
-				if request.FileType == sdk.FileTypeUnknown {
+				if request.FileType == sdkfile.FileTypeUnknown {
 					return clierror.NewError(
 						fmt.Errorf(
 							"unable to deduce file type from extension: %q",
@@ -217,10 +218,10 @@ func (s service) RunPush(params PushParams) error {
 					)
 				}
 			} else {
-				request.FileType = sdk.FileType(params.FileType)
+				request.FileType = sdkfile.FileType(params.FileType)
 			}
 		} else {
-			request.FileType = sdk.FileType(fileConfig.Push.Type)
+			request.FileType = sdkfile.FileType(fileConfig.Push.Type)
 		}
 
 		request.Smartling.Directives = fileConfig.Push.Directives
@@ -245,7 +246,7 @@ func (s service) RunPush(params PushParams) error {
 			request.Smartling.Directives[spec[0]] = spec[1]
 		}
 
-		response, err := s.Client.UploadFile(project, request)
+		response, err := s.APIClient.UploadFile(project, request)
 
 		if err != nil {
 			if returnError(err) {
@@ -283,12 +284,12 @@ func (s service) RunPush(params PushParams) error {
 }
 
 func returnError(err error) bool {
-	if errors.Is(err, sdk.NotAuthorizedError{}) {
+	if errors.Is(err, sdkerror.NotAuthorizedError{}) {
 		return true
 	}
 
 	for {
-		smartlingAPIError, isSmartlingAPIError := err.(sdk.APIError)
+		smartlingAPIError, isSmartlingAPIError := err.(sdkerror.APIError)
 		if isSmartlingAPIError {
 			reasons := map[string]struct{}{
 				"AUTHENTICATION_ERROR":   {},

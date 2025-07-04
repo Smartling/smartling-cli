@@ -13,11 +13,11 @@ type Service interface {
 
 // service provides methods to init Smartling CLI.
 type service struct {
-	Client sdk.ClientInterface
+	Client sdk.APIClient
 	Config config.Config
 }
 
 // NewService creates a new instance of the Service with the provided client and configuration.
-func NewService(client sdk.ClientInterface, config config.Config) Service {
+func NewService(client sdk.APIClient, config config.Config) Service {
 	return &service{Client: client, Config: config}
 }

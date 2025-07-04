@@ -13,10 +13,14 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/files/rename"
 	"github.com/Smartling/smartling-cli/cmd/files/status"
 	initialize "github.com/Smartling/smartling-cli/cmd/init"
+	"github.com/Smartling/smartling-cli/cmd/mt"
+	"github.com/Smartling/smartling-cli/cmd/mt/detect"
+	"github.com/Smartling/smartling-cli/cmd/mt/translate"
 	"github.com/Smartling/smartling-cli/cmd/projects"
 	"github.com/Smartling/smartling-cli/cmd/projects/info"
 	listprojects "github.com/Smartling/smartling-cli/cmd/projects/list"
 	"github.com/Smartling/smartling-cli/cmd/projects/locales"
+	output "github.com/Smartling/smartling-cli/output/mt"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 )
 
@@ -24,7 +28,7 @@ func main() {
 	cmd.ConfigureLogger()
 	rootCmd, err := cmd.NewRootCmd()
 	if err != nil {
-		rlog.Errorf("failed new root command: %w", err)
+		rlog.Error("failed new command", err)
 		os.Exit(1)
 	}
 
@@ -50,7 +54,13 @@ func main() {
 	projectsCmd.AddCommand(info.NewInfoCmd(projectsSrvInitializer))
 	projectsCmd.AddCommand(locales.NewLocalesCmd(projectsSrvInitializer))
 
+	mtCmd := mt.NewMTCmd()
+	rootCmd.AddCommand(mtCmd)
+	mtInitializer := mt.NewSrvInitializer()
+	mtCmd.AddCommand(detect.NewDetectCmd(mtInitializer))
+	mtCmd.AddCommand(translate.NewTranslateCmd(mtInitializer))
+
 	if err := rootCmd.Execute(); err != nil {
-		rlog.Debugf("failed command execution ", err)
+		output.RenderAndExitIfErr(err)
 	}
 }

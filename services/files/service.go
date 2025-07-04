@@ -19,15 +19,15 @@ type Service interface {
 
 // service provides methods to interact with Smartling files.
 type service struct {
-	Client     sdk.ClientInterface
+	APIClient  sdk.APIClient
 	Config     config.Config
 	FileConfig config.FileConfig
 }
 
 // NewService creates a new instance of the Service with the provided client, and configurations.
-func NewService(client sdk.ClientInterface, config config.Config, fileConfig config.FileConfig) Service {
+func NewService(client sdk.APIClient, config config.Config, fileConfig config.FileConfig) Service {
 	return &service{
-		Client:     client,
+		APIClient:  client,
 		Config:     config,
 		FileConfig: fileConfig,
 	}
