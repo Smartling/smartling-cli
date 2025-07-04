@@ -12,7 +12,6 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
-	"github.com/reconquest/hierr-go"
 )
 
 // DetectParams is the parameters for the RunDetect method.
@@ -26,53 +25,11 @@ type DetectParams struct {
 func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, updates chan any) ([]DetectOutput, error) {
 	var res []DetectOutput
 	for fileID, file := range files {
-		name, err := filepath.Abs(file)
+		contents, err := getContent(p.InputDirectory, file)
 		if err != nil {
-			return nil, clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to resolve absolute path to file: %q`,
-					file,
-				),
-
-				`Check, that file exists and you have proper permissions to access it.`,
-			)
+			return nil, err
 		}
 
-		if relPath, err := filepath.Rel(p.InputDirectory, name); err != nil || strings.HasPrefix(relPath, "..") {
-			return nil, clierror.NewError(
-				errors.New(
-					`you are trying to push file outside project directory`,
-				),
-				`Check file path and path to configuration file and try again.`,
-			)
-		}
-
-		name, err = filepath.Rel(p.InputDirectory, name)
-		if err != nil {
-			return nil, clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to resolve relative path to file: %q`,
-					file,
-				),
-
-				`Check, that file exists and you have proper permissions to access it.`,
-			)
-		}
-
-		contents, err := os.ReadFile(file)
-		if err != nil {
-			return nil, clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to read file contents "%s"`,
-					file,
-				),
-
-				`Check that file exists and readable by current user.`,
-			)
-		}
 		fileType, found := api.FileTypeByExt[filepath.Ext(file)]
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
@@ -144,6 +101,50 @@ func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, 
 	}
 
 	return res, nil
+}
+
+func getContent(inputDirectory string, file string) ([]byte, error) {
+	name, err := filepath.Abs(file)
+	if err != nil {
+		return nil, clierror.UIError{
+			Err:         err,
+			Operation:   "filepath.Abs",
+			Description: "Check, that file exists and you have proper permissions to access it.",
+			Fields:      map[string]string{"file": file},
+		}
+	}
+
+	if relPath, err := filepath.Rel(inputDirectory, name); err != nil || strings.HasPrefix(relPath, "..") {
+		return nil, clierror.UIError{
+			Err:         errors.New(`you are trying to push file outside project directory`),
+			Operation:   "filepath.Rel",
+			Description: "Check file path and path to configuration file and try again.",
+			Fields:      map[string]string{"name": name},
+		}
+	}
+
+	name, err = filepath.Rel(inputDirectory, name)
+	if err != nil {
+		return nil, clierror.UIError{
+			Err:       err,
+			Operation: "filepath.Rel",
+			Description: `Unable to resolve relative path to file.
+Check, that file exists and you have proper permissions to access it.`,
+			Fields: map[string]string{"file": file},
+		}
+	}
+
+	contents, err := os.ReadFile(file)
+	if err != nil {
+		return nil, clierror.UIError{
+			Err:       err,
+			Operation: "os.ReadFile",
+			Description: `Unable to read file contents.
+Check that file exists and readable by current user.`,
+			Fields: map[string]string{"file": file},
+		}
+	}
+	return contents, nil
 }
 
 // DetectOutput represents the result of a language detection process for a file

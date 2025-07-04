@@ -22,7 +22,6 @@ func (d *Dynamic) Init(dataProvider TableDataProvider, files []string, outputFor
 	d.model.RowByHeader = dataProvider.RowByHeaderName()
 
 	rows := dataProvider.ToTableRows(files)
-	//dataProvider.SetRows(rows)
 
 	d.model.Data = rows
 
@@ -30,7 +29,6 @@ func (d *Dynamic) Init(dataProvider TableDataProvider, files []string, outputFor
 		table.WithColumns(d.model.Headers),
 		table.WithRows(rows),
 		table.WithFocused(true),
-		//table.WithHeight(7),
 	)
 
 	s := table.DefaultStyles()

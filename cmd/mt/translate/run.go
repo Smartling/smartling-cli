@@ -70,8 +70,7 @@ func run(ctx context.Context,
 	})
 
 	errGroup.Go(func() error {
-		render.Update(updates)
-		return nil
+		return render.Update(updates)
 	})
 
 	if err := errGroup.Wait(); err != nil {

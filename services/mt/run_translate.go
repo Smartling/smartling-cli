@@ -15,7 +15,6 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
-	"github.com/reconquest/hierr-go"
 )
 
 // TranslateParams is the parameters for the RunTranslate method.
@@ -35,51 +34,9 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 	var res []TranslateOutput
 
 	for fileID, file := range files {
-		name, err := filepath.Abs(file)
+		contents, err := getContent(p.InputDirectory, file)
 		if err != nil {
-			return nil, clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to resolve absolute path to file: %q`,
-					file,
-				),
-				`Check, that file exists and you have proper permissions to access it.`,
-			)
-		}
-
-		if relPath, err := filepath.Rel(p.InputDirectory, name); err != nil || strings.HasPrefix(relPath, "..") {
-			return nil, clierror.NewError(
-				errors.New(
-					`you are trying to push file outside project directory`,
-				),
-				`Check file path and path to configuration file and try again.`,
-			)
-		}
-
-		name, err = filepath.Rel(p.InputDirectory, name)
-		if err != nil {
-			return nil, clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to resolve relative path to file: %q`,
-					file,
-				),
-
-				`Check, that file exists and you have proper permissions to access it.`,
-			)
-		}
-
-		contents, err := os.ReadFile(file)
-		if err != nil {
-			return nil, clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to read file contents "%s"`,
-					file,
-				),
-
-				`Check that file exists and readable by current user.`,
-			)
+			return nil, err
 		}
 		fileType, found := api.FileTypeByExt[filepath.Ext(file)]
 		if !found {
@@ -185,24 +142,29 @@ func (s service) GetFiles(inputDirectory, fileOrPattern string) ([]string, error
 	)
 
 	if err != nil {
-		return nil, clierror.NewError(
-			hierr.Errorf(
-				err,
-				`unable to find matching files to upload`,
-			),
-
-			`Check, that specified pattern is valid and refer to help for`+
-				` more information about glob patterns.`,
-		)
+		return nil, clierror.UIError{
+			Err:       err,
+			Operation: "globfiles.LocallyFunc",
+			Description: `Unable to find matching files to upload.
+Check, that specified pattern is valid and refer to help for more information about glob patterns.`,
+			Fields: map[string]string{
+				"base":    base,
+				"pattern": pattern,
+			},
+		}
 	}
 
 	if len(files) == 0 {
-		return nil, clierror.NewError(
-			fmt.Errorf(`no files found by specified patterns`),
-
-			`Check command line pattern if any and configuration file for`+
+		return nil, clierror.UIError{
+			Err:       errors.New(`no files found by specified patterns`),
+			Operation: "check files",
+			Description: `Check command line pattern if any and configuration file for` +
 				` more patterns to search for.`,
-		)
+			Fields: map[string]string{
+				"inputDirectory": inputDirectory,
+				"fileOrPattern":  fileOrPattern,
+			},
+		}
 	}
 	return files, nil
 }
@@ -230,7 +192,11 @@ func saveToFile(r io.Reader, filepath string) error {
 	if err != nil {
 		return err
 	}
-	defer outFile.Close()
+	defer func() {
+		if err := outFile.Close(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+	}()
 
 	_, err = io.Copy(outFile, r)
 	return err
