@@ -63,10 +63,7 @@ func run(ctx context.Context,
 		}()
 		_, err := mtSrv.RunTranslate(ctx, params, files, updates)
 		if err != nil {
-			return clierror.UIError{
-				Operation: "run translate",
-				Err:       err,
-			}
+			return err
 		}
 		return nil
 	})

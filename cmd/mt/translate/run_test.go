@@ -60,3 +60,40 @@ func TestRun(t *testing.T) {
 
 	assert.Nil(t, err)
 }
+
+func TestRunRunTranslateErr(t *testing.T) {
+	ctx := context.Background()
+	initializer := cmdmocks.NewMockSrvInitializer(t)
+	mtSrv := srvmocks.NewMockService(t)
+
+	params := srv.TranslateParams{
+		InputDirectory: "/input/",
+	}
+	fileOrPattern := "*.txt"
+	files := []string{"file1.txt", "file2.txt"}
+
+	initializer.On("InitMTSrv").Return(mtSrv, nil)
+	mtSrv.On("GetFiles", params.InputDirectory, fileOrPattern).
+		Return(files, nil)
+
+	err := clierror.UIError{
+		Err:       errors.New("empty mtUid on start translation"),
+		Operation: "Start translation",
+		Fields: map[string]string{
+			"file": "file1.txt",
+			"code": "en",
+		},
+	}
+	mtSrv.On("RunTranslate", mock.Anything, params, files, mock.Anything).
+		Return([]srv.TranslateOutput{}, err)
+
+	errRun := run(ctx, initializer, params, fileOrPattern, output.OutputParams{})
+
+	assert.NotNil(t, errRun)
+	uiErrRun, ok := errRun.(clierror.UIError)
+	assert.True(t, ok)
+
+	assert.Equal(t, err.Operation, uiErrRun.Operation)
+	assert.Equal(t, err.Description, uiErrRun.Description)
+	assert.Equal(t, err.Err.Error(), uiErrRun.Err.Error())
+}
