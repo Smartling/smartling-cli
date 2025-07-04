@@ -107,8 +107,8 @@ func (_c *MockService_GetFiles_Call) RunAndReturn(run func(inputDirectory string
 }
 
 // RunDetect provides a mock function for the type MockService
-func (_mock *MockService) RunDetect(ctx context.Context, files []string, p mt.DetectParams, updates chan any) ([]mt.DetectOutput, error) {
-	ret := _mock.Called(ctx, files, p, updates)
+func (_mock *MockService) RunDetect(ctx context.Context, p mt.DetectParams, files []string, updates chan any) ([]mt.DetectOutput, error) {
+	ret := _mock.Called(ctx, p, files, updates)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunDetect")
@@ -116,18 +116,18 @@ func (_mock *MockService) RunDetect(ctx context.Context, files []string, p mt.De
 
 	var r0 []mt.DetectOutput
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []string, mt.DetectParams, chan any) ([]mt.DetectOutput, error)); ok {
-		return returnFunc(ctx, files, p, updates)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, mt.DetectParams, []string, chan any) ([]mt.DetectOutput, error)); ok {
+		return returnFunc(ctx, p, files, updates)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []string, mt.DetectParams, chan any) []mt.DetectOutput); ok {
-		r0 = returnFunc(ctx, files, p, updates)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, mt.DetectParams, []string, chan any) []mt.DetectOutput); ok {
+		r0 = returnFunc(ctx, p, files, updates)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]mt.DetectOutput)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, []string, mt.DetectParams, chan any) error); ok {
-		r1 = returnFunc(ctx, files, p, updates)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, mt.DetectParams, []string, chan any) error); ok {
+		r1 = returnFunc(ctx, p, files, updates)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -141,26 +141,26 @@ type MockService_RunDetect_Call struct {
 
 // RunDetect is a helper method to define mock.On call
 //   - ctx context.Context
-//   - files []string
 //   - p mt.DetectParams
+//   - files []string
 //   - updates chan any
-func (_e *MockService_Expecter) RunDetect(ctx interface{}, files interface{}, p interface{}, updates interface{}) *MockService_RunDetect_Call {
-	return &MockService_RunDetect_Call{Call: _e.mock.On("RunDetect", ctx, files, p, updates)}
+func (_e *MockService_Expecter) RunDetect(ctx interface{}, p interface{}, files interface{}, updates interface{}) *MockService_RunDetect_Call {
+	return &MockService_RunDetect_Call{Call: _e.mock.On("RunDetect", ctx, p, files, updates)}
 }
 
-func (_c *MockService_RunDetect_Call) Run(run func(ctx context.Context, files []string, p mt.DetectParams, updates chan any)) *MockService_RunDetect_Call {
+func (_c *MockService_RunDetect_Call) Run(run func(ctx context.Context, p mt.DetectParams, files []string, updates chan any)) *MockService_RunDetect_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []string
+		var arg1 mt.DetectParams
 		if args[1] != nil {
-			arg1 = args[1].([]string)
+			arg1 = args[1].(mt.DetectParams)
 		}
-		var arg2 mt.DetectParams
+		var arg2 []string
 		if args[2] != nil {
-			arg2 = args[2].(mt.DetectParams)
+			arg2 = args[2].([]string)
 		}
 		var arg3 chan any
 		if args[3] != nil {
@@ -181,7 +181,7 @@ func (_c *MockService_RunDetect_Call) Return(detectOutputs []mt.DetectOutput, er
 	return _c
 }
 
-func (_c *MockService_RunDetect_Call) RunAndReturn(run func(ctx context.Context, files []string, p mt.DetectParams, updates chan any) ([]mt.DetectOutput, error)) *MockService_RunDetect_Call {
+func (_c *MockService_RunDetect_Call) RunAndReturn(run func(ctx context.Context, p mt.DetectParams, files []string, updates chan any) ([]mt.DetectOutput, error)) *MockService_RunDetect_Call {
 	_c.Call.Return(run)
 	return _c
 }

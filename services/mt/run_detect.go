@@ -22,7 +22,7 @@ type DetectParams struct {
 	AccountUID     api.AccountUID
 }
 
-func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, updates chan any) ([]DetectOutput, error) {
+func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, updates chan any) ([]DetectOutput, error) {
 	var res []DetectOutput
 	for fileID, file := range files {
 		contents, err := getContent(p.InputDirectory, file)

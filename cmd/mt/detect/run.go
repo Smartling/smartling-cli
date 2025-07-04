@@ -61,7 +61,7 @@ func run(ctx context.Context,
 			close(updates)
 		}()
 
-		_, err := mtSrv.RunDetect(ctx, files, params, updates)
+		_, err := mtSrv.RunDetect(ctx, params, files, updates)
 		if err != nil {
 			return clierror.UIError{
 				Operation: "run detect",
