@@ -5,7 +5,7 @@ import "github.com/charmbracelet/bubbles/table"
 type Renderer interface {
 	Init(dataProvider TableDataProvider, files []string, outputFormat, outputTemplate string)
 	Run() error
-	Update(updates chan any)
+	Update(updates chan any) error
 	End()
 }
 

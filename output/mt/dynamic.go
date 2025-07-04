@@ -56,7 +56,7 @@ func (d *Dynamic) Run() error {
 	return err
 }
 
-func (d *Dynamic) Update(updates chan any) {
+func (d *Dynamic) Update(updates chan any) error {
 	for update := range updates {
 		switch update := update.(type) {
 		case mt.TranslateUpdates:
@@ -77,6 +77,7 @@ func (d *Dynamic) Update(updates chan any) {
 			d.program.Send(update)
 		}
 	}
+	return nil
 }
 
 func (d *Dynamic) End() {

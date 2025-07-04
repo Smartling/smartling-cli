@@ -32,14 +32,8 @@ type MTFileConfig struct {
 }
 
 func BindFileConfig(cmd *cobra.Command) (FileConfig, error) {
-	dir, err := resolveConfigDirectory(cmd)
-	if err != nil {
-		return FileConfig{}, err
-	}
-	filename, err := resolveConfigFile(cmd)
-	if err != nil {
-		return FileConfig{}, err
-	}
+	dir := resolveConfigDirectory(cmd)
+	filename := resolveConfigFile(cmd)
 	path, err := config.GetPath(dir, filename, false)
 	var config FileConfig
 	data, err := os.ReadFile(path)

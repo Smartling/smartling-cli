@@ -31,7 +31,7 @@ func (s *Static) Run() error {
 	return nil
 }
 
-func (s *Static) Update(updates chan any) {
+func (s *Static) Update(updates chan any) error {
 	for update := range updates {
 		switch update := update.(type) {
 		case mt.TranslateUpdates:
@@ -60,11 +60,12 @@ func (s *Static) Update(updates chan any) {
 				s.model.Data[update.ID][row] = pointer.PNew(update.Detect)
 			}
 		case clierror.UIError:
-			RenderAndExitIfErr(update)
+			return update
 		case error:
-			RenderAndExitIfErr(update)
+			return update
 		}
 	}
+	return nil
 }
 
 func (s *Static) End() {

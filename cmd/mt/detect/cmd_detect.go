@@ -3,9 +3,11 @@ package detect
 import (
 	"errors"
 	"fmt"
+
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
+
 	"github.com/spf13/cobra"
 )
 
