@@ -13,10 +13,12 @@ import (
 	outtable "github.com/charmbracelet/lipgloss/table"
 )
 
+// OutputFormat defines behaviour to format and render data
 type OutputFormat interface {
 	FormatAndRender(headers []table.Column, data []table.Row)
 }
 
+// GetOutputFormat returns OutputFormat for given string
 func GetOutputFormat(outputFormat, outputTemplate string) OutputFormat {
 	switch outputFormat {
 	case "table":
@@ -29,8 +31,10 @@ func GetOutputFormat(outputFormat, outputTemplate string) OutputFormat {
 	return SimpleOutputFormat{template: outputTemplate}
 }
 
+// TableOutputFormat is table output format for rendering data as a formatted table
 type TableOutputFormat struct{}
 
+// FormatAndRender renders the data as a table
 func (t TableOutputFormat) FormatAndRender(headers []table.Column, data []table.Row) {
 	hh := make([]string, len(headers))
 	for i, h := range headers {
@@ -45,8 +49,10 @@ func (t TableOutputFormat) FormatAndRender(headers []table.Column, data []table.
 	fmt.Println(tbl)
 }
 
+// JsonOutputFormat is json output format for rendering data as json
 type JsonOutputFormat struct{}
 
+// FormatAndRender marshals table data into JSON and prints it.
 func (j JsonOutputFormat) FormatAndRender(headers []table.Column, data []table.Row) {
 	hh := make([]string, len(headers))
 	for i, h := range headers {
@@ -71,10 +77,13 @@ func (j JsonOutputFormat) FormatAndRender(headers []table.Column, data []table.R
 	fmt.Println(string(jsonBytes))
 }
 
+// SimpleOutputFormat is simple output format for rendering data using a text template
 type SimpleOutputFormat struct {
 	template string
 }
 
+// FormatAndRender formats the data rows using the stored template string
+// and outputs the rendered result
 func (s SimpleOutputFormat) FormatAndRender(headers []table.Column, data []table.Row) {
 	funcMap := template.FuncMap{
 		"name": func(f string) string {

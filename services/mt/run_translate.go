@@ -216,6 +216,7 @@ type TranslateOutput struct {
 	Directory string
 }
 
+// TranslateUpdates defines updates
 type TranslateUpdates struct {
 	ID        uint32
 	Locale    *string

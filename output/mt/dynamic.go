@@ -9,15 +9,15 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Dynamic defines dynamic output mode
 type Dynamic struct {
 	model        Model
 	program      *tea.Program
 	dataProvider TableDataProvider
 }
 
+// Init inits Dynamic
 func (d *Dynamic) Init(dataProvider TableDataProvider, files []string, outputFormat, outputTemplate string) {
-	d.model.OutputFormat = outputFormat
-	d.model.OutputTemplate = outputTemplate
 	d.model.Headers = dataProvider.Headers()
 	d.model.RowByHeader = dataProvider.RowByHeaderName()
 
@@ -51,11 +51,13 @@ func (d *Dynamic) Init(dataProvider TableDataProvider, files []string, outputFor
 
 }
 
+// Run runs Static
 func (d *Dynamic) Run() error {
 	_, err := d.program.Run()
 	return err
 }
 
+// Update handle updates
 func (d *Dynamic) Update(updates chan any) error {
 	for update := range updates {
 		switch update := update.(type) {
@@ -80,6 +82,7 @@ func (d *Dynamic) Update(updates chan any) error {
 	return nil
 }
 
+// End ends static output
 func (d *Dynamic) End() {
 	d.program.Quit()
 }

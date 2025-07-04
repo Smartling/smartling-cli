@@ -120,6 +120,7 @@ func BuildConfigFromFlags(params Params) (Config, error) {
 	return config, nil
 }
 
+// GetPath returns resolved path
 func GetPath(dir, file string, isInit bool) (string, error) {
 	path := file
 	if path == "" {

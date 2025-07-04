@@ -5,22 +5,20 @@ import (
 
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 const done = "✓"
 
-var baseStyle = lipgloss.NewStyle().
-	BorderStyle(lipgloss.NormalBorder()).
-	BorderForeground(lipgloss.Color("240"))
-
+// DynamicTableModel represents a dynamic table model.
 type DynamicTableModel struct {
 	table table.Model
 	err   error
 }
 
+// Init is the first function that will be called
 func (m DynamicTableModel) Init() tea.Cmd { return nil }
 
+// Update is called when a message is received
 func (m DynamicTableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
@@ -50,6 +48,7 @@ func (m DynamicTableModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// View renders the program's UI, which is just a string
 func (m DynamicTableModel) View() string {
 	s := m.table.View()
 

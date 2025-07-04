@@ -10,19 +10,23 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 )
 
+// DefaultDetectTemplate is the default template used for rendering detected files.
 const DefaultDetectTemplate = `{{.File}}\t{{.Language}}\n`
 
+// DetectCellCoords represents the column positions (if present) for each detect-related action.
 type DetectCellCoords struct {
 	LanguageCol *uint8
 	UploadCol   *uint8
 	DetectCol   *uint8
 }
 
+// DetectUpdateRow defines a row update operation
 type DetectUpdateRow struct {
 	RowByHeader RowByHeaderName
 	Updates     mt.DetectUpdates
 }
 
+// RenderDetectUpdates applies detect updates to the given table model row
 func RenderDetectUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.DetectUpdates) {
 	rows := t.Rows()
 	if val.ID < 0 || val.ID >= uint32(len(rows)) {
@@ -76,10 +80,12 @@ func toDetectTableRow(file string) table.Row {
 	}
 }
 
+// DetectDataProvider defines data provider for detect flow
 type DetectDataProvider struct {
 	data []table.Row
 }
 
+// Headers returns headers
 func (t DetectDataProvider) Headers() []table.Column {
 	return []table.Column{
 		{Title: "File", Width: 10},
@@ -92,6 +98,7 @@ func (t DetectDataProvider) Headers() []table.Column {
 	}
 }
 
+// RowByHeaderName returns a mapping from header names by their column indices
 func (t DetectDataProvider) RowByHeaderName() RowByHeaderName {
 	return RowByHeaderName{
 		"upload":   4,
@@ -100,18 +107,7 @@ func (t DetectDataProvider) RowByHeaderName() RowByHeaderName {
 	}
 }
 
-func (t DetectDataProvider) GetRows() []table.Row {
-	return t.data
-}
-
-func (t DetectDataProvider) SetRows(rows []table.Row) {
-	t.data = rows
-}
-
-func (t DetectDataProvider) UpdateCell(i, j uint, val string) {
-	t.data[i][j] = val
-}
-
+// ToTableRows converts slice with files to slice with table rows
 func (t DetectDataProvider) ToTableRows(files []string) []table.Row {
 	return toDetectTableRows(files)
 }

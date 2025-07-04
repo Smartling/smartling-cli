@@ -1,5 +1,6 @@
 package clierror
 
+// UIError defines error
 type UIError struct {
 	Err         error
 	Operation   string

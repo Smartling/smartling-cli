@@ -6,16 +6,16 @@ import (
 	"github.com/Smartling/smartling-cli/services/mt"
 )
 
+// Static defines static output mode
 type Static struct {
 	model        Model
 	OutputFormat OutputFormat
 	dataProvider TableDataProvider
 }
 
+// Init inits Static
 func (s *Static) Init(dataProvider TableDataProvider, files []string, outputFormat, outputTemplate string) {
-	s.model.OutputFormat = outputFormat
-	s.model.OutputTemplate = outputTemplate
-	s.OutputFormat = GetOutputFormat(s.model.OutputFormat, s.model.OutputTemplate)
+	s.OutputFormat = GetOutputFormat(outputFormat, outputTemplate)
 	s.dataProvider = dataProvider
 
 	s.model.Headers = dataProvider.Headers()
@@ -27,10 +27,12 @@ func (s *Static) Init(dataProvider TableDataProvider, files []string, outputForm
 	s.model.Data = rows
 }
 
+// Run runs Static
 func (s *Static) Run() error {
 	return nil
 }
 
+// Update handle updates
 func (s *Static) Update(updates chan any) error {
 	for update := range updates {
 		switch update := update.(type) {
@@ -68,6 +70,7 @@ func (s *Static) Update(updates chan any) error {
 	return nil
 }
 
+// End ends static output
 func (s *Static) End() {
 	s.OutputFormat.FormatAndRender(s.model.Headers, s.model.Data)
 }

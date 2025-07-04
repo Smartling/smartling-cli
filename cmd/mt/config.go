@@ -21,16 +21,18 @@ type FileConfig struct {
 		PollInterval         *int              `yaml:"poll_interval,omitempty"`
 		Timeout              *int              `yaml:"timeout,omitempty"`
 	} `yaml:"mt,omitempty"`
-	Files map[string]MTFileConfig `yaml:"files"`
+	Files map[string]FileConfigMT `yaml:"files"`
 }
 
-type MTFileConfig struct {
+// FileConfigMT defines file config
+type FileConfigMT struct {
 	MT struct {
 		Type       string            `yaml:"type,omitempty"`
 		Directives map[string]string `yaml:"directives,omitempty,flow"`
 	} `yaml:"mt,omitempty"`
 }
 
+// BindFileConfig binds file config
 func BindFileConfig(cmd *cobra.Command) (FileConfig, error) {
 	dir := resolveConfigDirectory(cmd)
 	filename := resolveConfigFile(cmd)

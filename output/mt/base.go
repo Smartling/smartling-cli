@@ -10,20 +10,21 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Model defines data for output rendering.
 type Model struct {
-	Headers        []table.Column
-	Data           []table.Row
-	RowByHeader    RowByHeaderName
-	OutputFormat   string
-	OutputTemplate string
+	Headers     []table.Column
+	Data        []table.Row
+	RowByHeader RowByHeaderName
 }
 
+// OutputParams defines the output configuration options for rendering data
 type OutputParams struct {
 	Mode     string
 	Format   string
 	Template string
 }
 
+// RenderAndExitIfErr renders error and exit iff err
 func RenderAndExitIfErr(err error) {
 	if err == nil {
 		return
@@ -32,7 +33,11 @@ func RenderAndExitIfErr(err error) {
 	os.Exit(1)
 }
 
+// RenderError renders error
 func RenderError(err error) string {
+	if err == nil {
+		return ""
+	}
 	uiErr, isUIError := err.(clierror.UIError)
 	if !isUIError {
 		errorStyle := lipgloss.NewStyle().

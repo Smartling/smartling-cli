@@ -11,22 +11,28 @@ import (
 )
 
 const (
+	// DefaultTranslateTemplate is the default template used for rendering translated files.
 	DefaultTranslateTemplate = "{{name .File}} 11_{{.Locale}}{{ext .File}}" + "\n"
 )
 
+// TranslateCellCoords represents the column positions (if present) for each translation-related action.
 type TranslateCellCoords struct {
 	LocaleCol    *uint8
 	UploadCol    *uint8
 	TranslateCol *uint8
 	DownloadCol  *uint8
 }
-type RowByHeaderName map[string]uint8
 
+// TranslateUpdateRow defines a row update operation
 type TranslateUpdateRow struct {
 	RowByHeader RowByHeaderName
 	Updates     mt.TranslateUpdates
 }
 
+// RowByHeaderName defines row position by name
+type RowByHeaderName map[string]uint8
+
+// RenderTranslateUpdates applies translation updates to the given table model row
 func RenderTranslateUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.TranslateUpdates) {
 	rows := t.Rows()
 	if val.ID < 0 || val.ID >= uint32(len(rows)) {
@@ -84,10 +90,12 @@ func toTranslateTableRow(file string) table.Row {
 	}
 }
 
+// TranslateDataProvider defines data provider for translate flow
 type TranslateDataProvider struct {
 	data []table.Row
 }
 
+// Headers returns headers
 func (t TranslateDataProvider) Headers() []table.Column {
 	return []table.Column{
 		{Title: "File", Width: 10},
@@ -101,6 +109,7 @@ func (t TranslateDataProvider) Headers() []table.Column {
 	}
 }
 
+// RowByHeaderName returns a mapping from header names by their column indices
 func (t TranslateDataProvider) RowByHeaderName() RowByHeaderName {
 	return RowByHeaderName{
 		"locale":    1,
@@ -110,18 +119,7 @@ func (t TranslateDataProvider) RowByHeaderName() RowByHeaderName {
 	}
 }
 
-func (t TranslateDataProvider) GetRows() []table.Row {
-	return t.data
-}
-
-func (t TranslateDataProvider) SetRows(rows []table.Row) {
-	t.data = rows
-}
-
-func (t TranslateDataProvider) UpdateCell(i, j uint, val string) {
-	t.data[i][j] = val
-}
-
+// ToTableRows converts slice with files to slice with table rows
 func (t TranslateDataProvider) ToTableRows(files []string) []table.Row {
 	return toTranslateTableRows(files)
 }

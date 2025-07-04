@@ -146,12 +146,14 @@ func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, 
 	return res, nil
 }
 
+// DetectOutput represents the result of a language detection process for a file
 type DetectOutput struct {
 	File       string
 	Language   string
 	Confidence string
 }
 
+// DetectUpdates defines updates
 type DetectUpdates struct {
 	ID       uint32
 	Language *string
