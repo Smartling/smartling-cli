@@ -35,10 +35,7 @@ func run(ctx context.Context,
 		}
 	}
 	var dataProvider output.TranslateDataProvider
-	render, err := mtcmd.InitRender(outputParams, dataProvider, files)
-	if err != nil {
-		return err
-	}
+	render := output.InitRender(outputParams, dataProvider, files)
 	renderRun := make(chan struct{})
 	go func() {
 		close(renderRun)

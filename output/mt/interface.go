@@ -12,8 +12,5 @@ type Renderer interface {
 type TableDataProvider interface {
 	Headers() []table.Column
 	RowByHeaderName() RowByHeaderName
-	//GetRows() []table.Row
-	//SetRows(rows []table.Row)
-	//UpdateCell(i, j uint, val string)
 	ToTableRows(files []string) []table.Row
 }
