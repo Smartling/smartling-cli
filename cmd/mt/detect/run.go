@@ -36,25 +36,27 @@ func run(ctx context.Context,
 	var dataProvider output.DetectDataProvider
 	render := output.InitRender(outputParams, dataProvider, files)
 	renderRun := make(chan struct{})
-	go func() {
+	var runGroup errgroup.Group
+	runGroup.Go(func() error {
 		close(renderRun)
 		if err = render.Run(); err != nil {
-			output.RenderAndExitIfErr(clierror.UIError{
+			return clierror.UIError{
 				Operation: "render run",
 				Err:       err,
 				Fields: map[string]string{
 					"render": fmt.Sprintf("%T", render),
 				},
 				Description: "unable to run render",
-			})
+			}
 		}
-	}()
+		return nil
+	})
 	<-renderRun
 	time.Sleep(time.Second)
 
 	updates := make(chan any)
-	var errGroup errgroup.Group
-	errGroup.Go(func() error {
+	var updateGroup errgroup.Group
+	updateGroup.Go(func() error {
 		defer func() {
 			close(updates)
 		}()
@@ -69,11 +71,14 @@ func run(ctx context.Context,
 		return nil
 	})
 
-	errGroup.Go(func() error {
+	updateGroup.Go(func() error {
 		return render.Update(updates)
 	})
 
-	if err := errGroup.Wait(); err != nil {
+	if err := updateGroup.Wait(); err != nil {
+		return err
+	}
+	if err := runGroup.Wait(); err != nil {
 		return err
 	}
 	render.End()

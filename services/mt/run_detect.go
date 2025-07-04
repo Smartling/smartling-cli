@@ -89,9 +89,7 @@ func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, 
 
 			update.Language = pointer.NewP(strings.Join(languageIDs, ","))
 			updates <- update
-
 		}
-		//
 
 		res = append(res, DetectOutput{
 			File:       string(uploadFileResponse.FileUID),
@@ -101,6 +99,21 @@ func (s service) RunDetect(ctx context.Context, files []string, p DetectParams, 
 	}
 
 	return res, nil
+}
+
+// DetectOutput represents the result of a language detection process for a file
+type DetectOutput struct {
+	File       string
+	Language   string
+	Confidence string
+}
+
+// DetectUpdates defines updates
+type DetectUpdates struct {
+	ID       uint32
+	Language *string
+	Upload   *bool
+	Detect   *string
 }
 
 func getContent(inputDirectory string, file string) ([]byte, error) {
@@ -145,19 +158,4 @@ Check that file exists and readable by current user.`,
 		}
 	}
 	return contents, nil
-}
-
-// DetectOutput represents the result of a language detection process for a file
-type DetectOutput struct {
-	File       string
-	Language   string
-	Confidence string
-}
-
-// DetectUpdates defines updates
-type DetectUpdates struct {
-	ID       uint32
-	Language *string
-	Upload   *bool
-	Detect   *string
 }
