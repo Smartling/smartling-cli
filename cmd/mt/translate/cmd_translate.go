@@ -80,7 +80,9 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 	translateCmd.Flags().StringVar(&sourceLocale, sourceLocaleFlag, "", "Explicitly specify source language")
 	translateCmd.Flags().BoolVar(&detectLanguage, detectLanguageFlag, false, "Auto-detect source language")
-	translateCmd.Flags().StringArrayVar(&targetLocales, targetLocaleFlag, nil, "Target language(s). Can be specified multiple times")
+	translateCmd.Flags().StringArrayVarP(&targetLocales, targetLocaleFlag, "l", nil, `Target language(s). Can be specified multiple times.
+Example: Specifying two target locales
+smartling-cli mt translate --target-locale fr --target-locale es-ES`)
 	translateCmd.Flags().StringVar(&overrideFileType, overrideFileTypeFlag, "", "Set file type to override automatically detected file type. More info: https://help.smartling.com/hc/en-us/articles/360007998893--Supported-File-Types")
 	translateCmd.Flags().StringVar(&inputDirectory, inputDirectoryFlag, ".", "Input directory with files")
 	translateCmd.Flags().StringVar(&outputDirectory, outputDirectoryFlag, ".", "Output directory for translated files")
