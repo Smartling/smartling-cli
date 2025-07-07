@@ -26,7 +26,7 @@ var (
 )
 
 // NewRootCmd creates a new root command.
-func NewRootCmd() (*cobra.Command, error) {
+func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "smartling-cli",
 		Short:   "Manage translation files using Smartling CLI.",
@@ -75,5 +75,5 @@ executed for at most <number> of threads.`)
 purposes.`)
 	rootCmd.PersistentFlags().CountVarP(&verbose, "verbose", "v", "Verbose logging")
 
-	return rootCmd, nil
+	return rootCmd
 }

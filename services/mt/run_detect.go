@@ -127,23 +127,15 @@ func getContent(inputDirectory string, file string) ([]byte, error) {
 		}
 	}
 
-	if relPath, err := filepath.Rel(inputDirectory, name); err != nil || strings.HasPrefix(relPath, "..") {
+	if strings.HasPrefix(name, "..") {
 		return nil, clierror.UIError{
-			Err:         errors.New(`you are trying to push file outside project directory`),
+			Err:         errors.New("file name should not start with '..'"),
 			Operation:   "filepath.Rel",
-			Description: "Check file path and path to configuration file and try again.",
-			Fields:      map[string]string{"name": name},
-		}
-	}
-
-	name, err = filepath.Rel(inputDirectory, name)
-	if err != nil {
-		return nil, clierror.UIError{
-			Err:       err,
-			Operation: "filepath.Rel",
-			Description: `Unable to resolve relative path to file.
-Check, that file exists and you have proper permissions to access it.`,
-			Fields: map[string]string{"file": file},
+			Description: "Check file and directory and try again.",
+			Fields: map[string]string{
+				"name":           name,
+				"inputDirectory": inputDirectory,
+			},
 		}
 	}
 

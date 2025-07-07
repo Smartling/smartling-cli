@@ -118,13 +118,37 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 			update.Locale = pointer.NewP(strings.Join(localeIDs, ","))
 			updates <- update
 
-			reader, err := s.downloader.Batch(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
-			if err != nil {
-				return nil, err
-			}
-
-			if err := saveToFile(reader, filepath.Join(p.OutputDirectory, filepath.Base(file)+".zip")); err != nil {
-				return nil, err
+			for _, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
+				reader, err := s.downloader.File(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID, localeProcessStatus.LocaleID)
+				if err != nil {
+					return nil, err
+				}
+				ext := filepath.Ext(file)
+				filenameLocale := strings.TrimSuffix(file, ext) + "_" + localeProcessStatus.LocaleID + ext
+				outputDirectory, err := filepath.Abs(p.OutputDirectory)
+				if err != nil {
+					return nil, clierror.UIError{
+						Err:         err,
+						Operation:   "get absolute output directory",
+						Description: "unable to get absolute path for output directory",
+						Fields: map[string]string{
+							"outputDirectory": p.OutputDirectory,
+						},
+					}
+				}
+				if err := os.MkdirAll(outputDirectory, 0755); err != nil {
+					return nil, clierror.UIError{
+						Err:         err,
+						Operation:   "create output directory",
+						Description: "unable to create output directory",
+						Fields: map[string]string{
+							"outputDirectory": outputDirectory,
+						},
+					}
+				}
+				if err := saveToFile(reader, filepath.Join(outputDirectory, filepath.Base(filenameLocale))); err != nil {
+					return nil, err
+				}
 			}
 			update.Download = pointer.NewP(true)
 			updates <- update
