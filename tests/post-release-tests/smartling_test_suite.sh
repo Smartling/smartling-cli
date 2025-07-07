@@ -8,9 +8,9 @@ set -euo pipefail
 # Configuration
 CLI_BINARY="${CLI_BINARY:-./smartling-cli}"
 CONFIG_FILE="${CONFIG_FILE:-smartling.yml}"
-TEST_FILES_DIR="./test_files"
 SNAPSHOT_DIR="./snapshots"
-TEST_DIR="$(mktemp -d)"
+TEST_DIR="$(mktemp -d -p `pwd`/)"
+TEST_FILES_DIR="${TEST_DIR}/test_files"
 LOG_FILE="${TEST_DIR}/test.log"
 RESULTS_FILE="${TEST_DIR}/results.json"
 
@@ -71,7 +71,8 @@ test_fail() {
 run_cli() {
     local cmd="$*"
     log "Executing: $CLI_BINARY $cmd"
-    if ! $CLI_BINARY $cmd 2>&1 | tee -a "$LOG_FILE"; then
+    # Use eval with proper quoting to prevent glob expansion
+    if ! eval "$CLI_BINARY $cmd" 2>&1 | tee -a "$LOG_FILE"; then
         return 1
     fi
     return 0
@@ -79,13 +80,23 @@ run_cli() {
 
 # CLI wrapper for expected failures
 run_cli_expect_fail() {
-    local cmd="$*"
     local expected_pattern="$1"
     shift
-    cmd="$*"
-    
+    local cmd="$*"
+
     log "Executing (expecting failure): $CLI_BINARY $cmd"
-    if $CLI_BINARY $cmd 2>&1 | tee -a "$LOG_FILE" | grep -q "$expected_pattern"; then
+    # Use eval with proper quoting to prevent glob expansion
+    local output
+    local exit_status=0
+
+    # Capture both output and exit status
+    output=$(eval "$CLI_BINARY $cmd" 2>&1) || exit_status=$?
+
+    # Log the output
+    echo "$output" >> "$LOG_FILE"
+
+    # Check if we got the expected error pattern and the command failed (non-zero exit status)
+    if [[ $exit_status -ne 0 ]] && echo "$output" | grep -q "$expected_pattern"; then
         return 0  # Expected failure occurred
     else
         return 1  # Unexpected success or wrong error
@@ -209,7 +220,10 @@ test_file_operations_workflow() {
     local test_prop_translation_file_fr="${TEST_FILES_DIR}/test_fr-FR.properties"
     local file_uri1="/test-workflow/test.txt"
     local file_uri2="/test-workflow/test-copy.txt"
-    local file_uri_renamed="/test-workflow/test-renamed.txt"
+    local salt=$(date +%s%N | sha256sum | head -c 8)
+    # The new name must be unique; otherwise, we will receive an error about
+    # the namespace that was left in the database from the previous test.
+    local file_uri_renamed="/test-workflow/test-renamed-${salt}.txt"
     local download_dir="${TEST_DIR}/test1"
     
     mkdir -p "$download_dir"
@@ -222,7 +236,7 @@ test_file_operations_workflow() {
         test_fail "File upload (original)" "Upload failed"
         return 1
     fi
-    
+
     # 2. Upload same file with different URI
     log_info "Step 2: Upload same file with different URI"
     # Directive is required to avoid issue with namespace when we Rename file (see test below)
@@ -231,11 +245,13 @@ test_file_operations_workflow() {
     else
         test_fail "File upload (copy)" "Upload failed"
     fi
-    
+
     # 3. Import translations
     log_info "Step 3: Import translations"
     if run_cli "files push $test_prop_file test.properties"; then
         test_pass "File upload (original)"
+        # Additional time to allow File API complete parsing and saving strings
+        sleep 3.0
     else
         test_fail "File upload (original)" "Upload failed"
         return 1
@@ -246,7 +262,7 @@ test_file_operations_workflow() {
     else
         test_fail "Import translations (de)" "Import failed"
     fi
-    
+
     if run_cli "files import test.properties $test_prop_translation_file_fr fr-FR --published"; then
         test_pass "Import translations (fr-FR)"
     else
@@ -255,8 +271,7 @@ test_file_operations_workflow() {
     
     # 4. List files
     log_info "Step 4: List files"
-    # todo : It doesn't work with '**/test*.txt'. Server return that no files in TMS
-    if run_cli "files list"; then
+    if run_cli "files list \"**/test*.txt\""; then
         test_pass "File listing"
     else
         test_fail "File listing" "List failed"
@@ -280,7 +295,7 @@ test_file_operations_workflow() {
     
     # 7. Download all files to subfolder
     log_info "Step 7: Download all files to subfolder"
-    if run_cli "files pull '**/test*.txt' --source -d $download_dir"; then
+    if run_cli "files pull \"**/test*.txt\" --source -d $download_dir"; then
         test_pass "File download (bulk)"
     else
         test_fail "File download (bulk)" "Bulk download failed"
@@ -292,6 +307,21 @@ test_file_operations_workflow() {
         test_pass "File deletion"
     else
         test_fail "File deletion" "Deletion failed"
+    fi
+}
+
+test_mt_operations_workflow() {
+    test_start "File MT Operations Workflow"
+
+    local test_file="${TEST_FILES_DIR}/test.txt"
+
+    # 1. Detect language
+    log_info "Step 1: Detect language"
+    if run_cli "mt detect $test_file"; then
+        test_pass "Detect language"
+    else
+        test_fail "Detect language" "Detect failed"
+        return 1
     fi
 }
 
@@ -336,6 +366,7 @@ test_edge_cases() {
     fi
 
     # Test file with special characters in name
+    # TODO : add special characters to this test
     local special_file="${TEST_FILES_DIR}/test file with spaces.txt"
     echo "test content" > "$special_file"
     
@@ -356,6 +387,8 @@ test_snapshots() {
     # Test help output
     snapshot_test "help_main" "--help"
     snapshot_test "help_files" "files --help"
+    snapshot_test "help_mt" "mt --help"
+    snapshot_test "help_mt_translate" "mt translate --help"
     snapshot_test "help_projects" "projects --help"
     
     # Test list formatting
@@ -369,13 +402,6 @@ cleanup() {
     
     # Clean up any remaining test files in Smartling
     log_info "Cleaning up remote test files"
-#    $CLI_BINARY files list '**/test-*' --short 2>/dev/null | while read -r file_uri; do
-#        if [[ -n "$file_uri" ]]; then
-#            log "Deleting: $file_uri"
-#            $CLI_BINARY files delete "$file_uri" 2>/dev/null || true
-#        fi
-#    done
-    $CLI_BINARY files list '**/test-*' --short | $CLI_BINARY files delete -
     $CLI_BINARY files delete "test.properties" 2>/dev/null || true
 
     # Clean up local test directory
@@ -405,7 +431,7 @@ EOF
     echo "Total Tests:    $TESTS_TOTAL"
     echo "Passed:         $TESTS_PASSED"
     echo "Failed:         $TESTS_FAILED"
-    echo "Success Rate:   $(( TESTS_PASSED * 100 / TESTS_TOTAL ))%"
+    echo "Success Rate:   $(( TESTS_PASSED * 100 / (TESTS_PASSED + $TESTS_FAILED) ))%"
     echo ""
     echo "Log file:       $LOG_FILE"
     echo "Results file:   $RESULTS_FILE"
@@ -434,6 +460,7 @@ main() {
     test_authentication
     test_project_operations
     test_file_operations_workflow
+    test_mt_operations_workflow
     test_error_handling
     test_edge_cases
     test_snapshots
