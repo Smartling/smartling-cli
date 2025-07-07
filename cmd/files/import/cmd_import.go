@@ -23,7 +23,7 @@ func NewImportCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	importCmd := &cobra.Command{
 		Use:   "import <uri> <file> <locale>",
 		Short: "Imports translations for given original file URI with.",
-		Long: `smartling-cli import — import file translations.
+		Long: `smartling-cli files import — import file translations.
 
 Import pre-existent file translations into Smartling. Note, that
 original file should be pushed prior file translations are imported.
