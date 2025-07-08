@@ -4,6 +4,8 @@ github.com/BurntSushi/toml v1.4.0 h1:kuoIxZQy2WRRk1pttg9asf+WVv6tWQuBNVmK8+nqPr0
 github.com/BurntSushi/toml v1.4.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/Smartling/api-sdk-go v0.0.0-20250702120647-8359d5af0081 h1:8XoLOd/yhDFb+gODFEQpx7YLkV1COF1/qFDUX1nvoNI=
 github.com/Smartling/api-sdk-go v0.0.0-20250702120647-8359d5af0081/go.mod h1:Uu7XGCVLASRHzJN8crKL+fe0W9Moeu0vyZycfFkQbDc=
+github.com/Smartling/api-sdk-go v0.0.0-20250708205120-92822cec9347 h1:bw4oMcYuXDqNAPdAsmwhYVrapI4O3p3W5uVwt0S8eCw=
+github.com/Smartling/api-sdk-go v0.0.0-20250708205120-92822cec9347/go.mod h1:Uu7XGCVLASRHzJN8crKL+fe0W9Moeu0vyZycfFkQbDc=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/aymanbagabas/go-udiff v0.2.0 h1:TK0fH4MteXUDspT88n8CKzvK0X9O2xu9yQjWpi6yML8=
