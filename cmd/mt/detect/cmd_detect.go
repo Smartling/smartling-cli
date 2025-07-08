@@ -72,7 +72,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 	detectCmd.Flags().StringVar(&fileType, fileTypeFlag, "", "Override automatically detected file type.")
 	detectCmd.Flags().StringVar(&inputDirectory, inputDirectoryFlag, ".", "Input directory with files")
-	detectCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, "", `Output format template.
+	detectCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, output.DefaultDetectTemplate, `Output format template.
 Default: `+output.DefaultDetectTemplate+`
 {{.File}} - Original file path
 {{.Language}} - Detected language code

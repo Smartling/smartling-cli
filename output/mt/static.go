@@ -22,7 +22,6 @@ func (s *Static) Init(dataProvider TableDataProvider, files []string, outputForm
 	s.model.RowByHeader = dataProvider.RowByHeaderName()
 
 	rows := dataProvider.ToTableRows(files)
-	//dataProvider.SetRows(rows)
 
 	s.model.Data = rows
 }

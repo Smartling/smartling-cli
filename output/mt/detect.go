@@ -11,7 +11,7 @@ import (
 )
 
 // DefaultDetectTemplate is the default template used for rendering detected files.
-const DefaultDetectTemplate = `{{.File}}\t{{.Language}}\n`
+const DefaultDetectTemplate = "{{.File}}\t{{.Language}}" + "\n"
 
 // DetectCellCoords represents the column positions (if present) for each detect-related action.
 type DetectCellCoords struct {

@@ -51,7 +51,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		update.Upload = pointer.NewP(true)
 		updates <- update
 
-		rlog.Debugf("start detect language")
+		rlog.Debugf("detect language")
 		detectFileLanguageResponse, err := s.translationControl.DetectFileLanguage(p.AccountUID, uploadFileResponse.FileUID)
 		if err != nil {
 			return nil, err
