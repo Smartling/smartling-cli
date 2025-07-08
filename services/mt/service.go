@@ -2,9 +2,12 @@ package mt
 
 import (
 	"context"
+	"time"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
 )
+
+var pollingIntervalSeconds = time.Second
 
 // Service defines behavior for interacting with Smartling MT.
 type Service interface {

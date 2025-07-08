@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
@@ -93,6 +94,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 
 			switch strings.ToUpper(progressResponse.State) {
 			case api.QueuedTranslatedState, api.ProcessingTranslatedState:
+				time.Sleep(pollingIntervalSeconds)
 				continue
 			case api.FailedTranslatedState, api.CanceledTranslatedState, api.CompletedTranslatedState:
 				processed = true
