@@ -28,6 +28,7 @@ func CLIClientConfig() client.Config {
 
 // Config returns a config.Config based on the CLI flags.
 func Config() (config.Config, error) {
+	rlog.Debugf("resolving configs")
 	params := config.Params{
 		Directory:  operationDirectory,
 		File:       configFile,

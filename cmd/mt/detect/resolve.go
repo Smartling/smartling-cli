@@ -6,6 +6,7 @@ import (
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
@@ -13,6 +14,7 @@ import (
 )
 
 func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, fileOrPattern string) (srv.DetectParams, error) {
+	rlog.Debugf("resolving params")
 	fileTypeParam := resolve.FallbackString(cmd.Flags().Lookup(fileTypeFlag), resolve.StringParam{
 		FlagName: fileTypeFlag,
 	})

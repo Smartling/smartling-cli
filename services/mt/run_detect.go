@@ -26,7 +26,7 @@ type DetectParams struct {
 func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, updates chan any) ([]DetectOutput, error) {
 	var res []DetectOutput
 	for fileID, file := range files {
-		rlog.Debugf("Running translate for file %s", file)
+		rlog.Debugf("Running detect for file %s", file)
 		contents, err := getContent(p.InputDirectory, file)
 		if err != nil {
 			return nil, err

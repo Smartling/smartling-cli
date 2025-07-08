@@ -11,6 +11,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/env"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
@@ -18,6 +19,7 @@ import (
 )
 
 func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (srv.TranslateParams, error) {
+	rlog.Debugf("resolving params")
 	cnf, err := rootcmd.Config()
 	if err != nil {
 		return srv.TranslateParams{}, clierror.UIError{
