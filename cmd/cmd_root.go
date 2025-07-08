@@ -37,10 +37,10 @@ func NewRootCmd() *cobra.Command {
 			configureLoggerVerbose()
 
 			path := cmd.CommandPath()
-			isInit = strings.HasPrefix(path, "my-cli init")
-			isFiles = strings.HasPrefix(path, "my-cli files")
-			isProjects = strings.HasPrefix(path, "my-cli projects")
-			isList = strings.HasPrefix(path, "my-cli list")
+			isInit = strings.HasPrefix(path, "smartling-cli init")
+			isFiles = strings.HasPrefix(path, "smartling-cli files")
+			isProjects = strings.HasPrefix(path, "smartling-cli projects")
+			isList = strings.HasPrefix(path, "smartling-cli list")
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
