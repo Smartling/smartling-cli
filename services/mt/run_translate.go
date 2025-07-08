@@ -76,6 +76,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 					"file": file,
 					"code": translatorStartResponse.Code,
 				},
+				Description: "Translation cannot start. Check if the file is supported and if the source/target locale is valid.",
 			}
 		}
 
