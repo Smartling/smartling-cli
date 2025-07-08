@@ -26,6 +26,7 @@ type DetectParams struct {
 func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, updates chan any) ([]DetectOutput, error) {
 	var res []DetectOutput
 	for fileID, file := range files {
+		rlog.Debugf("Running translate for file %s", file)
 		contents, err := getContent(p.InputDirectory, file)
 		if err != nil {
 			return nil, err
@@ -40,14 +41,17 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			FileType: fileType,
 		}
 		update := DetectUpdates{ID: uint32(fileID)}
+		rlog.Debugf("start upload")
 		uploadFileResponse, err := s.uploader.UploadFile(p.AccountUID, filepath.Base(file), request)
 		if err != nil {
 			return nil, err
 		}
+		rlog.Debugf("finish upload")
 
 		update.Upload = pointer.NewP(true)
 		updates <- update
 
+		rlog.Debugf("start detect language")
 		detectFileLanguageResponse, err := s.translationControl.DetectFileLanguage(p.AccountUID, uploadFileResponse.FileUID)
 		if err != nil {
 			return nil, err
@@ -59,6 +63,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		//
 		var processed bool
 		for !processed {
+			rlog.Debugf("check detection progress")
 			detectionProgressResponse, err := s.translationControl.DetectionProgress(p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
 			if err != nil {
 				return nil, err
@@ -67,6 +72,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			update.Detect = pointer.NewP(detectionProgressResponse.State)
 			updates <- update
 
+			rlog.Debugf("progress state: %s", detectionProgressResponse.State)
 			switch strings.ToUpper(detectionProgressResponse.State) {
 			case api.QueuedTranslatedState, api.ProcessingTranslatedState:
 				time.Sleep(pollingIntervalSeconds)

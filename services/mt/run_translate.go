@@ -34,6 +34,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 	var res []TranslateOutput
 
 	for fileID, file := range files {
+		rlog.Debugf("Running translate for file %s", file)
 		contents, err := getContent(p.InputDirectory, file)
 		if err != nil {
 			return nil, err
@@ -48,10 +49,12 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 			FileType:           fileType,
 			Directives:         p.Directives,
 		}
+		rlog.Debugf("start upload")
 		uploadFileResponse, err := s.uploader.UploadFile(p.AccountUID, filepath.Base(file), request)
 		if err != nil {
 			return nil, err
 		}
+		rlog.Debugf("finish upload")
 
 		update := TranslateUpdates{ID: uint32(fileID), Upload: pointer.NewP(true)}
 		updates <- update
@@ -60,6 +63,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 			SourceLocaleIO:  p.SourceLocale,
 			TargetLocaleIDs: p.TargetLocales,
 		}
+		rlog.Debugf("start translation")
 		translatorStartResponse, err := s.fileTranslator.Start(p.AccountUID, uploadFileResponse.FileUID, params)
 		if err != nil {
 			return nil, err
@@ -84,6 +88,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 
 		var processed bool
 		for !processed {
+			rlog.Debugf("check translation progress")
 			progressResponse, err := s.fileTranslator.Progress(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
 			if err != nil {
 				return nil, err
@@ -92,6 +97,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 			update.Translate = pointer.NewP(progressResponse.State)
 			updates <- update
 
+			rlog.Debugf("progress state: %s", progressResponse.State)
 			switch strings.ToUpper(progressResponse.State) {
 			case api.QueuedTranslatedState, api.ProcessingTranslatedState:
 				time.Sleep(pollingIntervalSeconds)
@@ -123,10 +129,12 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 			updates <- update
 
 			for _, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
+				rlog.Debugf("download start")
 				reader, err := s.downloader.File(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID, localeProcessStatus.LocaleID)
 				if err != nil {
 					return nil, err
 				}
+				rlog.Debugf("download finished")
 				ext := filepath.Ext(file)
 				filenameLocale := strings.TrimSuffix(file, ext) + "_" + localeProcessStatus.LocaleID + ext
 				outputDirectory, err := filepath.Abs(p.OutputDirectory)
