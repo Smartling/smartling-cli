@@ -73,8 +73,10 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 				Err:       errors.New("empty mtUid on start translation"),
 				Operation: "Start translation",
 				Fields: map[string]string{
-					"file": file,
-					"code": translatorStartResponse.Code,
+					"startTranslationCode": translatorStartResponse.Code,
+					"file":                 file,
+					"uploadCode":           uploadFileResponse.Code,
+					"FileUID":              string(uploadFileResponse.FileUID),
 				},
 				Description: "Translation cannot start. Check if the file is supported and if the source/target locale is valid.",
 			}
