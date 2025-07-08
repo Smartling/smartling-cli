@@ -13,7 +13,6 @@ import (
 
 const (
 	sourceLocaleFlag     = "source-locale"
-	detectLanguageFlag   = "detect-language"
 	targetLocaleFlag     = "target-locale"
 	inputDirectoryFlag   = "input-directory"
 	outputDirectoryFlag  = "output-directory"
@@ -25,7 +24,6 @@ const (
 
 var (
 	sourceLocale     string
-	detectLanguage   bool
 	targetLocales    []string
 	inputDirectory   string
 	outputDirectory  string
@@ -79,7 +77,6 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 	}
 
 	translateCmd.Flags().StringVar(&sourceLocale, sourceLocaleFlag, "", "Explicitly specify source language")
-	translateCmd.Flags().BoolVar(&detectLanguage, detectLanguageFlag, false, "Auto-detect source language")
 	translateCmd.Flags().StringArrayVarP(&targetLocales, targetLocaleFlag, "l", nil, `Target language(s). Can be specified multiple times.
 Example: Specifying two target locales
 smartling-cli mt translate --target-locale fr --target-locale es-ES`)

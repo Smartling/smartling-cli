@@ -20,7 +20,6 @@ import (
 // TranslateParams is the parameters for the RunTranslate method.
 type TranslateParams struct {
 	SourceLocale     string
-	DetectLanguage   bool
 	TargetLocales    []string
 	InputDirectory   string
 	OutputDirectory  string

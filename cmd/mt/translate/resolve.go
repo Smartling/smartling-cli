@@ -31,9 +31,6 @@ func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (srv.Transla
 		FlagName: sourceLocaleFlag,
 		Config:   fileConfig.MT.DefaultSourceLocale,
 	})
-	detectLanguageParam := resolve.FallbackBool(cmd.Flags().Lookup(detectLanguageFlag), resolve.BoolParam{
-		FlagName: detectLanguageFlag,
-	})
 	inputDirectoryParam := resolve.FallbackString(cmd.Flags().Lookup(inputDirectoryFlag), resolve.StringParam{
 		FlagName: inputDirectoryFlag,
 		Config:   fileConfig.MT.InputDirectory,
@@ -59,7 +56,6 @@ func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (srv.Transla
 	})
 	params := srv.TranslateParams{
 		SourceLocale:     sourceLocaleParam,
-		DetectLanguage:   detectLanguageParam,
 		TargetLocales:    resolveTargetLocale(cmd, fileConfig),
 		InputDirectory:   inputDirectoryParam,
 		OutputDirectory:  outputDirectoryParam,
