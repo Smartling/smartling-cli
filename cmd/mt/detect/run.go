@@ -8,6 +8,7 @@ import (
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
 	"golang.org/x/sync/errgroup"
@@ -17,6 +18,7 @@ func run(ctx context.Context,
 	initializer mtcmd.SrvInitializer,
 	params srv.DetectParams,
 	outputParams output.OutputParams) error {
+	rlog.Debugf("running detect with params: %v", params)
 	mtSrv, err := initializer.InitMTSrv()
 	if err != nil {
 		return clierror.UIError{

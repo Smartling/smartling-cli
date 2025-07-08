@@ -170,6 +170,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 }
 
 func (s service) GetFiles(inputDirectory, fileOrPattern string) ([]string, error) {
+	rlog.Debugf("get files")
 	base, pattern := globfiles.GetDirectoryFromPattern(fileOrPattern)
 	files, err := globfiles.LocallyFunc(
 		inputDirectory,
