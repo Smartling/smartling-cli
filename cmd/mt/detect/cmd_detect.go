@@ -15,12 +15,14 @@ const (
 	fileTypeFlag       = "type"
 	outputTemplateFlag = "format"
 	inputDirectoryFlag = "input-directory"
+	shortFlag          = "short"
 )
 
 var (
 	fileType       string
 	outputTemplate string
 	inputDirectory string
+	short          bool
 )
 
 // NewDetectCmd returns new detect command
@@ -65,6 +67,9 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if short {
+				outputParams.Template = output.DefaultShortDetectTemplate
+			}
 
 			return run(ctx, initializer, params, outputParams)
 		},
@@ -72,6 +77,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 
 	detectCmd.Flags().StringVar(&fileType, fileTypeFlag, "", "Override automatically detected file type.")
 	detectCmd.Flags().StringVar(&inputDirectory, inputDirectoryFlag, ".", "Input directory with files")
+	detectCmd.Flags().BoolVar(&short, shortFlag, false, "Output only detected languages.")
 	detectCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, output.DefaultDetectTemplate, `Output format template.
 Default: `+output.DefaultDetectTemplate+`
 {{.File}} - Original file path

@@ -10,8 +10,12 @@ import (
 	"github.com/charmbracelet/bubbles/table"
 )
 
-// DefaultDetectTemplate is the default template used for rendering detected files.
-const DefaultDetectTemplate = "{{.File}}\t{{.Language}}" + "\n"
+const (
+	// DefaultDetectTemplate is the default template used for rendering detected files.
+	DefaultDetectTemplate = "{{.File}}\t{{.Language}}" + "\n"
+	// DefaultShortDetectTemplate is the default template used for rendering detected files in short format.
+	DefaultShortDetectTemplate = "{{.Language}}" + "\n"
+)
 
 // DetectCellCoords represents the column positions (if present) for each detect-related action.
 type DetectCellCoords struct {
