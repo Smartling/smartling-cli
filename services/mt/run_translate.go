@@ -87,9 +87,8 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 					rlog.Debugf("detection progress break on incomplete state: %s", detectionProgressResponse.State)
 					break
 				}
-				for _, detectedSourceLanguages := range detectionProgressResponse.DetectedSourceLanguages {
-					p.SourceLocale = detectedSourceLanguages.LanguageID
-					break
+				if len(detectionProgressResponse.DetectedSourceLanguages) > 0 {
+					p.SourceLocale = detectionProgressResponse.DetectedSourceLanguages[0].LanguageID
 				}
 			}
 		}

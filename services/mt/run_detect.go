@@ -84,17 +84,11 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			if detectionProgressResponse.State != api.CompletedTranslatedState {
 				break
 			}
-			var languageIDs []string
-			for _, detectedSourceLanguages := range detectionProgressResponse.DetectedSourceLanguages {
-				filename := filepath.Base(file)
-				res = append(res, DetectOutput{
-					File:     filename,
-					Language: detectedSourceLanguages.LanguageID,
-				})
-				languageIDs = append(languageIDs, detectedSourceLanguages.LanguageID)
+
+			if len(detectionProgressResponse.DetectedSourceLanguages) > 0 {
+				update.Language = pointer.NewP(detectionProgressResponse.DetectedSourceLanguages[0].LanguageID)
 			}
 
-			update.Language = pointer.NewP(strings.Join(languageIDs, ","))
 			updates <- update
 		}
 
