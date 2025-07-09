@@ -59,6 +59,41 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 		update := TranslateUpdates{ID: uint32(fileID), Upload: pointer.NewP(true)}
 		updates <- update
 
+		if p.SourceLocale == "" {
+			rlog.Debugf("detect language")
+			detectFileLanguageResponse, err := s.translationControl.DetectFileLanguage(p.AccountUID, uploadFileResponse.FileUID)
+			if err != nil {
+				return nil, err
+			}
+			var processed bool
+			for !processed {
+				rlog.Debugf("check detection progress")
+				detectionProgressResponse, err := s.translationControl.DetectionProgress(p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
+				if err != nil {
+					return nil, err
+				}
+
+				rlog.Debugf("detection progress state: %s", detectionProgressResponse.State)
+				switch strings.ToUpper(detectionProgressResponse.State) {
+				case api.QueuedTranslatedState, api.ProcessingTranslatedState:
+					time.Sleep(pollingIntervalSeconds)
+					continue
+				case api.FailedTranslatedState, api.CanceledTranslatedState, api.CompletedTranslatedState:
+					processed = true
+				default:
+					processed = true
+				}
+				if detectionProgressResponse.State != api.CompletedTranslatedState {
+					rlog.Debugf("detection progress break on incomplete state: %s", detectionProgressResponse.State)
+					break
+				}
+				for _, detectedSourceLanguages := range detectionProgressResponse.DetectedSourceLanguages {
+					p.SourceLocale = detectedSourceLanguages.LanguageID
+					break
+				}
+			}
+		}
+
 		params := api.StartParams{
 			SourceLocaleIO:  p.SourceLocale,
 			TargetLocaleIDs: p.TargetLocales,

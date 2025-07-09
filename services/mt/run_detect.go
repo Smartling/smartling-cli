@@ -60,7 +60,6 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		update.Detect = pointer.NewP("start")
 		updates <- update
 
-		//
 		var processed bool
 		for !processed {
 			rlog.Debugf("check detection progress")
