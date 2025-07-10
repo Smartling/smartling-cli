@@ -2,7 +2,9 @@ package docs
 
 import (
 	"fmt"
+
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 )
