@@ -15,7 +15,19 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Release?') {
+            agent none
+            when {
+                branch env.TARGET_BRANCH
+            }
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    input 'Release to PROD?'
+                }
+            }
+        }
+
+        stage('Upload to public S3') {
             when {
                 branch env.TARGET_BRANCH
             }
@@ -25,6 +37,9 @@ pipeline {
         }
 
         stage('Generate Packages') {
+            when {
+                branch env.TARGET_BRANCH
+            }
             steps {
                 sh "docker run -t --rm -v ${WORKSPACE}:/go/src/cli -w /go/src/cli gvangool/rpmbuilder:centos7 bash -c 'make rpm'"
                 // TODO : Replace with special docker image

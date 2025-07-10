@@ -1,30 +1,23 @@
 package cmd
 
 import (
-	"os"
 	"strings"
 
-	"github.com/Smartling/smartling-cli/services/helpers/client"
-	"github.com/Smartling/smartling-cli/services/helpers/config"
-	"github.com/Smartling/smartling-cli/services/helpers/rlog"
-
-	sdk "github.com/Smartling/api-sdk-go"
-	"github.com/kovetskiy/lorg"
 	"github.com/spf13/cobra"
 )
 
 var (
-	smartlingURL string
-	configFile   string
-	project      string
-	account      string
-	user         string
-	secret       string
-	directory    string
-	threads      uint32
-	insecure     bool
-	proxy        string
-	verbose      int
+	smartlingURL       string
+	configFile         string
+	project            string
+	account            string
+	user               string
+	secret             string
+	operationDirectory string
+	threads            uint32
+	insecure           bool
+	proxy              string
+	verbose            int
 
 	isInit     bool
 	isFiles    bool
@@ -33,30 +26,30 @@ var (
 )
 
 // NewRootCmd creates a new root command.
-func NewRootCmd() (*cobra.Command, error) {
+func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "smartling-cli",
 		Short:   "Manage translation files using Smartling CLI.",
-		Version: "2.0",
+		Version: "2.1",
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
 		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
 			configureLoggerVerbose()
 
 			path := cmd.CommandPath()
-			isInit = strings.HasPrefix(path, "my-cli init")
-			isFiles = strings.HasPrefix(path, "my-cli files")
-			isProjects = strings.HasPrefix(path, "my-cli projects")
-			isList = strings.HasPrefix(path, "my-cli list")
+			isInit = strings.HasPrefix(path, "smartling-cli init")
+			isFiles = strings.HasPrefix(path, "smartling-cli files")
+			isProjects = strings.HasPrefix(path, "smartling-cli projects")
+			isList = strings.HasPrefix(path, "smartling-cli list")
 		},
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
 				if err := cmd.Help(); err != nil {
-					rlog.Error(err.Error())
-					os.Exit(1)
+					return err
 				}
-				return
+				return nil
 			}
+			return nil
 		},
 	}
 
@@ -72,7 +65,7 @@ This option overrides config value "account_id".`)
 This option overrides config value "user_id".`)
 	rootCmd.PersistentFlags().StringVar(&secret, "secret", "", `Token Secret which will be used for authentication.
 This option overrides config value "secret".`)
-	rootCmd.PersistentFlags().StringVarP(&directory, "directory", "d", ".", `Sets directory to operate on, usually, to store or to
+	rootCmd.PersistentFlags().StringVar(&operationDirectory, "operation-directory", ".", `Sets directory to operate on, usually, to store or to
 read files.  Depends on command.`)
 	rootCmd.PersistentFlags().Uint32Var(&threads, "threads", 4, `If command can be executed concurrently, it will be
 executed for at most <number> of threads.`)
@@ -82,79 +75,5 @@ executed for at most <number> of threads.`)
 purposes.`)
 	rootCmd.PersistentFlags().CountVarP(&verbose, "verbose", "v", "Verbose logging")
 
-	return rootCmd, nil
-}
-
-// ConfigureLogger initializes the logger with default settings.
-func ConfigureLogger() {
-	rlog.Init()
-	rlog.ToggleRedact(true)
-	rlog.SetFormat(lorg.NewFormat("* ${time} ${level:[%s]:right} %s"))
-	rlog.SetIndentLines(true)
-}
-
-// CLIClientConfig returns a client.Config based on the CLI flags.
-func CLIClientConfig() client.Config {
-	return client.Config{
-		Insecure:     insecure,
-		Proxy:        proxy,
-		SmartlingURL: smartlingURL,
-	}
-}
-
-// Config returns a config.Config based on the CLI flags.
-func Config() (config.Config, error) {
-	params := config.Params{
-		Directory:  directory,
-		File:       configFile,
-		User:       user,
-		Secret:     secret,
-		Account:    account,
-		Project:    project,
-		Threads:    threads,
-		IsInit:     isInit,
-		IsFiles:    isFiles,
-		IsProjects: isProjects,
-		IsList:     isList,
-	}
-	cnf, err := config.BuildConfigFromFlags(params)
-	if err != nil {
-		return config.Config{}, err
-	}
-	return cnf, nil
-}
-
-// Client creates a new Smartling API client based on the configuration and CLI params.
-func Client() (sdk.Client, error) {
-	cnf, err := Config()
-	if err != nil {
-		return sdk.Client{}, err
-	}
-	client, err := client.CreateClient(CLIClientConfig(), cnf, uint8(verbose))
-	if err != nil {
-		return sdk.Client{}, err
-	}
-	return *client, nil
-}
-
-// ConfigFile returns the path to the configuration file.
-func ConfigFile() string {
-	return configFile
-}
-
-func configureLoggerVerbose() {
-	switch verbose {
-	case 0:
-		// nothing do to
-
-	case 1:
-		rlog.SetLevel(lorg.LevelInfo)
-
-	case 2:
-		rlog.SetLevel(lorg.LevelDebug)
-
-	default:
-		rlog.ToggleRedact(false)
-		rlog.SetLevel(lorg.LevelDebug)
-	}
+	return rootCmd
 }

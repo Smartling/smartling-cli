@@ -19,8 +19,8 @@ var version = "2.0"
 
 // CreateClient initializes a new Smartling API client with the provided configurations.
 // Returns the client, and an error if any.
-func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sdk.Client, error) {
-	client := sdk.NewClient(config.UserID, config.Secret)
+func CreateClient(clientConfig Config, config config.Config, verbose uint8) (sdk.HttpAPIClient, error) {
+	client := sdk.NewHttpAPIClient(config.UserID, config.Secret)
 
 	var transport http.Transport
 
@@ -37,7 +37,7 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sd
 	if clientConfig.Proxy != "" {
 		proxy, err := url.Parse(clientConfig.Proxy)
 		if err != nil {
-			return nil, clierror.NewError(
+			return sdk.HttpAPIClient{}, clierror.NewError(
 				hierr.Errorf(
 					err,
 					"unable to parse specified proxy URL",
@@ -52,11 +52,11 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sd
 	}
 
 	if clientConfig.SmartlingURL != "" {
-		client.BaseURL = clientConfig.SmartlingURL
+		client.Client.BaseURL = clientConfig.SmartlingURL
 	}
 
-	client.HTTP.Transport = &transport
-	client.UserAgent = "smartling-cli/" + version
+	client.Client.HTTP.Transport = &transport
+	client.Client.UserAgent = "smartling-cli/" + version
 
 	setLogger(client, rlog.Logger(), verbose)
 
@@ -66,24 +66,24 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (*sd
 
 	err := client.Authenticate()
 	if err != nil {
-		return nil, clierror.NewError(
+		return sdk.HttpAPIClient{}, clierror.NewError(
 			err,
 			`Your credentials are invalid. Double check it and try to run init.\n`,
 		)
 	}
 
-	return client, nil
+	return *client, nil
 }
 
-func setLogger(client *sdk.Client, logger lorg.Logger, verbosity uint8) {
+func setLogger(client *sdk.HttpAPIClient, logger lorg.Logger, verbosity uint8) {
 	switch verbosity {
 	case 0:
 		return
 
 	case 1:
-		client.SetInfoLogger(logger.Infof)
+		client.Client.SetInfoLogger(logger.Infof)
 
 	default:
-		client.SetDebugLogger(logger.Debugf)
+		client.Client.SetDebugLogger(logger.Debugf)
 	}
 }
