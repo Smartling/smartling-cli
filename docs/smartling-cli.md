@@ -41,7 +41,6 @@ smartling-cli [flags]
 ### SEE ALSO
 
 * [smartling-cli completion](smartling-cli_completion.md)	 - Generate the autocompletion script for the specified shell
-* [smartling-cli docs](smartling-cli_docs.md)	 - Generate markdown docs for CLI commands
 * [smartling-cli files](smartling-cli_files.md)	 - Used to access various files sub-commands.
 * [smartling-cli init](smartling-cli_init.md)	 - Prepares project to work with Smartling
 * [smartling-cli mt](smartling-cli_mt.md)	 - File Machine Translations

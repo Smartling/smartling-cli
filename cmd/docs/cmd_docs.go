@@ -12,8 +12,9 @@ import (
 // NewDocsCmd creates a new command to generate docs.
 func NewDocsCmd() *cobra.Command {
 	docsCmd := &cobra.Command{
-		Use:   "docs",
-		Short: "Generate markdown docs for CLI commands",
+		Use:    "docs",
+		Short:  "Generate markdown docs for CLI commands",
+		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := doc.GenMarkdownTree(cmd.Root(), "./docs")
 			if err != nil {
