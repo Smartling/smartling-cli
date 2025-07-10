@@ -12,7 +12,7 @@ import (
 
 const (
 	// DefaultTranslateTemplate is the default template used for rendering translated files.
-	DefaultTranslateTemplate = "{{name .File}}_{{.Locale}}{{ext .File}}" + "\n"
+	DefaultTranslateTemplate = "{{.File}}\t{{.Locale}}" + "\n"
 )
 
 // TranslateCellCoords represents the column positions (if present) for each translation-related action.

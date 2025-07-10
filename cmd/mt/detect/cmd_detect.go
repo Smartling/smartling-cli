@@ -75,14 +75,15 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 		},
 	}
 
-	detectCmd.Flags().StringVar(&fileType, fileTypeFlag, "", "Override automatically detected file type.")
+	detectCmd.Flags().StringVar(&fileType, fileTypeFlag, "", `Override the automatically detected file type. 
+A complete list of supported types can be found in the API documentation:
+https://api-reference.smartling.com/#tag/File-Machine-Translations-(MT)/operation/fileUpload`)
 	detectCmd.Flags().StringVar(&inputDirectory, inputDirectoryFlag, ".", "Input directory with files")
-	detectCmd.Flags().BoolVar(&short, shortFlag, false, "Output only detected languages.")
+	detectCmd.Flags().BoolVarP(&short, shortFlag, "s", false, "Output only detected languages.")
 	detectCmd.Flags().StringVar(&outputTemplate, outputTemplateFlag, output.DefaultDetectTemplate, `Output format template.
 Default: `+output.DefaultDetectTemplate+`
 {{.File}} - Original file path
-{{.Language}} - Detected language code
-{{.Confidence}} - Detection confidence (if available)`)
+{{.Language}} - Detected language code`)
 
 	return detectCmd
 }
