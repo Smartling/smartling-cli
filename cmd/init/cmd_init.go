@@ -8,6 +8,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/init"
 
+	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/spf13/cobra"
 )
 
@@ -86,16 +87,13 @@ func NewSrvInitializer() SrvInitializer {
 
 type srvInitializer struct{}
 
-// Init initializes and returns a new instance of the init service.
+// InitSrv initializes and returns a new instance of the init service.
 func (s srvInitializer) InitSrv() (initialize.Service, error) {
-	client, err := rootcmd.Client()
-	if err != nil {
-		return nil, err
-	}
 	cnf, err := rootcmd.Config()
 	if err != nil {
 		return nil, err
 	}
-	srv := initialize.NewService(&client, cnf)
+	smClient := sdk.NewHttpAPIClient(cnf.UserID, cnf.Secret)
+	srv := initialize.NewService(smClient, cnf)
 	return srv, nil
 }

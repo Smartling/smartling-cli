@@ -35,23 +35,7 @@ type Params struct {
 func BuildConfigFromFlags(params Params) (Config, error) {
 	var err error
 
-	path := params.File
-	if path == "" {
-		path, err = findConfig(
-			filepath.Join(params.Directory, defaultConfigName),
-		)
-		if err != nil {
-			if !params.IsInit {
-				return Config{}, clierror.NewError(
-					err,
-
-					`Ensure, that config file exists either in the current `+
-						`directory or in any parent directory.`,
-				)
-			}
-			path = "smartling.yml"
-		}
-	}
+	path, err := GetPath(params.Directory, params.File, params.IsInit)
 
 	config, err := LoadConfigFromFile(path)
 	if err != nil {
@@ -134,6 +118,28 @@ func BuildConfigFromFlags(params Params) (Config, error) {
 	}
 
 	return config, nil
+}
+
+// GetPath returns resolved path
+func GetPath(dir, file string, isInit bool) (string, error) {
+	path := file
+	if path == "" {
+		var err error
+		path, err = findConfig(
+			filepath.Join(dir, defaultConfigName),
+		)
+		if err != nil {
+			if !isInit {
+				return "", clierror.NewError(
+					err,
+					`Ensure, that config file exists either in the current `+
+						`directory or in any parent directory.`,
+				)
+			}
+			path = defaultConfigName
+		}
+	}
+	return path, nil
 }
 
 func findConfig(name string) (string, error) {
