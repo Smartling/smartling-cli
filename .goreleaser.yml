@@ -1,0 +1,45 @@
+version: 2
+
+project_name: smartling-cli
+dist: bin
+
+release:
+  name_template: "Version {{.Version}}"
+  disable: true
+  github:
+    owner: Smartling
+    name: smartling-cli
+
+builds:
+  -
+    goos:
+      - linux
+      - darwin
+      - windows
+
+    goarch:
+      - amd64
+      - arm64
+      - arm
+
+    ignore:
+      - goos: darwin
+        goarch: arm
+      - goos: windows
+        goarch: arm
+
+    ldflags:
+      - -s -w
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.Version={{ .Version }}
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.ReleaseTag={{ .Tag }}
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.CommitID={{ .FullCommit }}
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.Date={{ .Date }}
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.GoVersion={{ .Env.SMARTLING_CLI_GOVERSION }}
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.Platform={{ .Env.SMARTLING_CLI_PLATFORM }}
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  disable: true

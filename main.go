@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/cmd/build"
 	"github.com/Smartling/smartling-cli/cmd/files"
 	deletecmd "github.com/Smartling/smartling-cli/cmd/files/delete"
 	importcmd "github.com/Smartling/smartling-cli/cmd/files/import"
@@ -25,6 +26,9 @@ func main() {
 	cmd.ConfigureLogger()
 
 	rootCmd := cmd.NewRootCmd()
+
+	buildCmd := build.NewBuildCmd()
+	rootCmd.AddCommand(buildCmd)
 
 	initSrvInitializer := initialize.NewSrvInitializer()
 	initCmd := initialize.NewInitCmd(initSrvInitializer)

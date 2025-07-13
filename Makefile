@@ -1,6 +1,11 @@
 MAINTAINER = Alex Koval <akoval@smartling.com>
 DESCRIPTION = CLI for Smartling Platform
 
+build_releaser:
+	export SMARTLING_CLI_PLATFORM=$$(go env GOOS)/$$(go env GOARCH); \
+	export SMARTLING_CLI_GOVERSION=$$(go version | awk '{print $$3}'); \
+	goreleaser release --clean --skip=publish --snapshot
+
 all: clean get build
 	@
 

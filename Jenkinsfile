@@ -32,7 +32,9 @@ pipeline {
                 branch env.TARGET_BRANCH
             }
             steps {
-                sh "aws-profile connectors-staging aws s3 cp ${WORKSPACE}/bin s3://smartling-connectors-releases/cli/ --recursive --acl public-read"
+                sh '''
+                  aws-profile connectors-staging aws s3 cp ${WORKSPACE}/bin s3://smartling-connectors-releases/cli/ --acl public-read --exclude "*" --include "*"
+                '''
             }
         }
 
