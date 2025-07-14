@@ -475,7 +475,7 @@ func getFileUris(configPath string, params PushParams, files []string) ([]string
 		if uri == "" {
 			uri = file
 		}
-		res[i] = branch + file
+		res[i] = branch + uri
 	}
 	return res, nil
 }

@@ -1,13 +1,13 @@
 package files
 
 import (
-	sdkjobs "github.com/Smartling/api-sdk-go/api/jobs"
 	"os"
 
 	"github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
+	sdkjobs "github.com/Smartling/api-sdk-go/api/jobs"
 	"github.com/spf13/cobra"
 )
 
