@@ -318,10 +318,12 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 	var createJobResponse sdkjobs.CreateJobResponse
 	if jobID == "" {
 		payload := sdkjobs.CreateJobPayload{
-			NameTemplate:    jobID,
+			NameTemplate:    params.JobIDOrName,
+			Description:     params.JobIDOrName,
 			TargetLocaleIds: params.Locales,
 			Mode:            sdkjobs.ReuseExistingMode,
 			Salt:            sdkjobs.OrdinalSalt,
+			TimeZoneName:    "America/Los_Angeles",
 		}
 		createJobResponse, err = s.Batch.CreateJob(ctx, project, payload)
 		if err != nil {
