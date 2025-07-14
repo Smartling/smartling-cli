@@ -13,6 +13,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
+	sdktype "github.com/Smartling/api-sdk-go/helpers/file"
 )
 
 // DetectParams is the parameters for the RunDetect method.
@@ -32,7 +33,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			return nil, err
 		}
 
-		fileType, found := api.FileTypeByExt[filepath.Ext(file)]
+		fileType, found := sdktype.TypeByExt[filepath.Ext(file)]
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
 		}
@@ -74,7 +75,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			rlog.Debugf("progress state: %s", detectionProgressResponse.State)
 			switch strings.ToUpper(detectionProgressResponse.State) {
 			case api.QueuedTranslatedState, api.ProcessingTranslatedState:
-				time.Sleep(pollingIntervalSeconds)
+				time.Sleep(pollingInterval)
 				continue
 			case api.FailedTranslatedState, api.CanceledTranslatedState, api.CompletedTranslatedState:
 				processed = true

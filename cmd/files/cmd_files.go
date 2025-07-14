@@ -1,6 +1,7 @@
 package files
 
 import (
+	sdkjobs "github.com/Smartling/api-sdk-go/api/jobs"
 	"os"
 
 	"github.com/Smartling/smartling-cli/cmd"
@@ -57,7 +58,7 @@ func (i srvInitializer) InitFilesSrv() (files.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	srv := files.NewService(&client, cnf, fileConfig)
-
+	batch := sdkjobs.NewBatch(client.Client)
+	srv := files.NewService(&client, batch, cnf, fileConfig)
 	return srv, nil
 }

@@ -1,18 +1,23 @@
 package files
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
+	sdkjobs "github.com/Smartling/api-sdk-go/api/jobs"
+	sdktype "github.com/Smartling/api-sdk-go/helpers/file"
 	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
+	"github.com/google/uuid"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -26,10 +31,11 @@ type PushParams struct {
 	Directory  string
 	FileType   string
 	Directives []string
+	JobUID     string
 }
 
 // RunPush uploads files to the Smartling project based on the provided parameters.
-func (s service) RunPush(params PushParams) error {
+func (s service) RunPush(ctx context.Context, params PushParams) error {
 	var (
 		failedFiles []string
 		project     = s.Config.ProjectID
@@ -47,11 +53,6 @@ func (s service) RunPush(params PushParams) error {
 		}
 
 		rlog.Infof("autodetected branch name: %s", params.Branch)
-	}
-
-	branch := params.Branch
-	if branch != "" {
-		branch = strings.TrimSuffix(params.Branch, "/") + "/"
 	}
 
 	var patterns []string
@@ -111,63 +112,16 @@ func (s service) RunPush(params PushParams) error {
 		)
 	}
 
-	base, err := filepath.Abs(s.Config.Path)
-	if err != nil {
-		return clierror.NewError(
-			hierr.Errorf(
-				err,
-				`unable to resolve absolute path to config`,
-			),
-
-			`It's internal error, please, contact developer for more info`,
-		)
+	if params.JobUID != "" {
+		return s.runJob(ctx, params, files, project)
 	}
 
-	base = filepath.Dir(base)
+	fileUris, err := getFileUris(s.Config.Path, params, files)
+	if err != nil {
+		return err
+	}
 
-	for _, file := range files {
-		name, err := filepath.Abs(file)
-		if err != nil {
-			return clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to resolve absolute path to file: %q`,
-					file,
-				),
-
-				`Check, that file exists and you have proper permissions `+
-					`to access it.`,
-			)
-		}
-
-		if relPath, err := filepath.Rel(base, name); err != nil || strings.HasPrefix(relPath, "..") {
-			return clierror.NewError(
-				errors.New(
-					`you are trying to push file outside project directory`,
-				),
-				`Check file path and path to configuration file and try again.`,
-			)
-		}
-
-		name, err = filepath.Rel(base, name)
-		if err != nil {
-			return clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to resolve relative path to file: %q`,
-					file,
-				),
-
-				`Check, that file exists and you have proper permissions `+
-					`to access it.`,
-			)
-		}
-
-		uri := params.URI
-		if uri == "" {
-			uri = name
-		}
-
+	for fileID, file := range files {
 		fileConfig, err := s.Config.GetFileConfig(file)
 		if err != nil {
 			return clierror.NewError(
@@ -199,7 +153,7 @@ func (s service) RunPush(params PushParams) error {
 			LocalesToAuthorize: params.Locales,
 		}
 
-		request.FileURI = branch + uri
+		request.FileURI = fileUris[fileID]
 
 		if fileConfig.Push.Type == "" {
 			if params.FileType == "" {
@@ -267,7 +221,7 @@ func (s service) RunPush(params PushParams) error {
 
 			fmt.Printf(
 				"%s (%s) %s [%d strings %d words]\n",
-				uri,
+				fileUris[fileID],
 				request.FileType,
 				status,
 				response.StringCount,
@@ -349,4 +303,179 @@ func getGitBranch() (string, error) {
 	}
 
 	return filepath.Base(strings.TrimSpace(string(head))), nil
+}
+
+func (s service) runJob(ctx context.Context, params PushParams, files []string, project string) error {
+	fileUris, err := getFileUris(s.Config.Path, params, files)
+	if err != nil {
+		return err
+	}
+	var jobName string
+	if params.JobUID != "" {
+		if err := uuid.Validate(params.JobUID); err != nil {
+			jobName = params.JobUID
+		}
+	}
+	var createJobResponse sdkjobs.CreateJobResponse
+	if jobName != "" {
+		payload := sdkjobs.CreateJobPayload{
+			NameTemplate:    jobName,
+			TargetLocaleIds: params.Locales,
+			Mode:            sdkjobs.ReuseExistingMode,
+			Salt:            sdkjobs.OrdinalSalt,
+		}
+		createJobResponse, err = s.Batch.CreateJob(ctx, project, payload)
+		if err != nil {
+			return err
+		}
+		params.JobUID = createJobResponse.TranslationJobUID
+	}
+
+	createBatchResponse, err := s.Batch.Create(ctx, project, sdkjobs.CreateBatchPayload{
+		Authorize:         true,
+		TranslationJobUID: params.JobUID,
+		FileUris:          fileUris,
+	})
+
+	for fileID, file := range files {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			return clierror.NewError(
+				hierr.Errorf(
+					err,
+					`unable to read file contents "%s"`,
+					file,
+				),
+				`Check that file exists and readable by current user.`,
+			)
+		}
+		fileType, found := sdktype.TypeByExt[filepath.Ext(file)]
+		if !found {
+			rlog.Debugf("unknown file type: %s", file)
+		}
+		payload := sdkjobs.UploadFilePayload{
+			Filename:           fileUris[fileID],
+			File:               content,
+			FileType:           fileType,
+			LocalesToAuthorize: params.Locales,
+		}
+		uploadFileResponse, err := s.Batch.UploadFile(ctx, project, createBatchResponse.BatchUID, payload)
+		if err != nil {
+			return clierror.UIError{
+				Err:         err,
+				Operation:   "UploadFile",
+				Description: fmt.Sprintf(`unable to upload file "%s"`, file),
+				Fields: map[string]string{
+					"Filename": fileUris[fileID],
+					"FileType": fileType.String(),
+				},
+			}
+		}
+		var processed bool
+		for !processed {
+			time.Sleep(pollingInterval)
+			getStatusResponse, err := s.Batch.GetStatus(ctx, project, uploadFileResponse.Code)
+			if err != nil {
+				return clierror.UIError{
+					Err:         err,
+					Operation:   "GetStatus",
+					Description: `unable to get status for file`,
+					Fields: map[string]string{
+						"code": uploadFileResponse.Code,
+					},
+				}
+			}
+			switch strings.ToLower(getStatusResponse.Status) {
+			case "complete", "success":
+				processed = true
+				// TODO add failed statuses
+			}
+			errorsInFiles := make(map[string]string)
+			for _, file := range getStatusResponse.Files {
+				if file.Errors != "" {
+					errorsInFiles[file.FileUri] = file.Errors
+				}
+			}
+			if getStatusResponse.GeneralErrors != "" || len(errorsInFiles) > 0 {
+				return clierror.UIError{
+					Err:         errors.New(getStatusResponse.GeneralErrors),
+					Operation:   "GetStatus",
+					Description: `upload file status is not successful`,
+					Fields:      errorsInFiles,
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func getFileUris(configPath string, params PushParams, files []string) ([]string, error) {
+	base, err := filepath.Abs(configPath)
+	if err != nil {
+		return nil, clierror.NewError(
+			hierr.Errorf(
+				err,
+				`unable to resolve absolute path to config`,
+			),
+
+			`It's internal error, please, contact developer for more info`,
+		)
+	}
+	base = filepath.Dir(base)
+
+	branch := params.Branch
+	if branch != "" {
+		branch = strings.TrimSuffix(params.Branch, "/") + "/"
+	}
+
+	res := make([]string, len(files))
+	for i, file := range files {
+
+		name, err := filepath.Abs(file)
+		if err != nil {
+			return nil, clierror.NewError(
+				hierr.Errorf(
+					err,
+					`unable to resolve absolute path to file: %q`,
+					file,
+				),
+				`Check, that file exists and you have proper permissions `+
+					`to access it.`,
+			)
+		}
+
+		if relPath, err := filepath.Rel(base, name); err != nil || strings.HasPrefix(relPath, "..") {
+			return nil, clierror.NewError(
+				errors.New(
+					`you are trying to push file outside project directory`,
+				),
+				`Check file path and path to configuration file and try again.`,
+			)
+		}
+
+		name, err = filepath.Rel(base, name)
+		if err != nil {
+			return nil, clierror.NewError(
+				hierr.Errorf(
+					err,
+					`unable to resolve relative path to file: %q`,
+					file,
+				),
+
+				`Check, that file exists and you have proper permissions `+
+					`to access it.`,
+			)
+		}
+
+		uri := params.URI
+		if uri == "" {
+			uri = name
+		}
+
+		if uri == "" {
+			uri = file
+		}
+		res[i] = branch + file
+	}
+	return res, nil
 }

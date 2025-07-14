@@ -4,12 +4,13 @@ go 1.24.3
 
 require (
 	dario.cat/mergo v1.0.2
-	github.com/Smartling/api-sdk-go v0.0.0-20250710055855-1a14ef42c0b4
+	github.com/Smartling/api-sdk-go v0.0.0-20250714092751-5f7ba5b81b70
 	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.4
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/gobwas/glob v0.2.3
 	github.com/goccy/go-yaml v1.18.0
+	github.com/google/uuid v1.6.0
 	github.com/kovetskiy/lorg v1.2.0
 	github.com/reconquest/hierr-go v0.0.0-20170824213838-7d09c0176fd2
 	github.com/spf13/cobra v1.9.1

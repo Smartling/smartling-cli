@@ -1,12 +1,9 @@
 package push
 
 import (
-	"os"
-
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
-	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
@@ -20,6 +17,7 @@ func NewPushCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 		fileType   string
 		directory  string
 		directives []string
+		jobUID     string
 	)
 
 	pushCmd := &cobra.Command{
@@ -68,7 +66,8 @@ Available options:
   --type <type>
     Override automatically detected file type.
 ` + help.AuthenticationOptions,
-		Run: func(_ *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
 			var (
 				file string
 				uri  string
@@ -82,8 +81,7 @@ Available options:
 
 			s, err := initializer.InitFilesSrv()
 			if err != nil {
-				rlog.Errorf("failed to get files service: %s", err)
-				os.Exit(1)
+				return err
 			}
 
 			p := files.PushParams{
@@ -95,12 +93,10 @@ Available options:
 				Directory:  directory,
 				FileType:   fileType,
 				Directives: directives,
+				JobUID:     jobUID,
 			}
 
-			if err := s.RunPush(p); err != nil {
-				rlog.Errorf("failed to run push: %s", err)
-				os.Exit(1)
-			}
+			return s.RunPush(ctx, p)
 		},
 	}
 
@@ -110,6 +106,7 @@ Available options:
 	pushCmd.Flags().StringVarP(&fileType, "type", "t", "", `Specifies file type which will be used instead of automatically deduced from extension.`)
 	pushCmd.Flags().StringArrayVarP(&directives, "directive", "r", []string{}, `Specifies one or more directives to use in push request.`)
 	pushCmd.Flags().StringVarP(&directory, "directory", "d", ".", `Specified directory.`)
+	pushCmd.Flags().StringVarP(&jobUID, "job", "j", "", `Enter a name for the Smartling translation job or job UID. All files will be uploaded into this job.`)
 
 	return pushCmd
 }

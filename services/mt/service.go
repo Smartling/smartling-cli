@@ -7,7 +7,7 @@ import (
 	api "github.com/Smartling/api-sdk-go/api/mt"
 )
 
-var pollingIntervalSeconds = time.Second
+var pollingInterval = time.Second
 
 // Service defines behavior for interacting with Smartling MT.
 type Service interface {
