@@ -381,7 +381,8 @@ Check that file exists and readable by current user.`,
 					Operation:   "GetStatus",
 					Description: `unable to get status for file`,
 					Fields: map[string]string{
-						"code": uploadFileResponse.Code,
+						"upload file code": uploadFileResponse.Code,
+						"code":             getStatusResponse.Code,
 					},
 				}
 			}
