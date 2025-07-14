@@ -17,7 +17,7 @@ func NewPushCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 		fileType   string
 		directory  string
 		directives []string
-		jobUID     string
+		job        string
 	)
 
 	pushCmd := &cobra.Command{
@@ -85,15 +85,15 @@ Available options:
 			}
 
 			p := files.PushParams{
-				URI:        uri,
-				File:       file,
-				Branch:     branch,
-				Locales:    locales,
-				Authorize:  authorize,
-				Directory:  directory,
-				FileType:   fileType,
-				Directives: directives,
-				JobUID:     jobUID,
+				URI:         uri,
+				File:        file,
+				Branch:      branch,
+				Locales:     locales,
+				Authorize:   authorize,
+				Directory:   directory,
+				FileType:    fileType,
+				Directives:  directives,
+				JobIDOrName: job,
 			}
 
 			return s.RunPush(ctx, p)
@@ -106,7 +106,7 @@ Available options:
 	pushCmd.Flags().StringVarP(&fileType, "type", "t", "", `Specifies file type which will be used instead of automatically deduced from extension.`)
 	pushCmd.Flags().StringArrayVarP(&directives, "directive", "r", []string{}, `Specifies one or more directives to use in push request.`)
 	pushCmd.Flags().StringVarP(&directory, "directory", "d", ".", `Specified directory.`)
-	pushCmd.Flags().StringVarP(&jobUID, "job", "j", "", `Enter a name for the Smartling translation job or job UID. All files will be uploaded into this job.`)
+	pushCmd.Flags().StringVarP(&job, "job", "j", "", `Enter a name for the Smartling translation job or job UID. All files will be uploaded into this job.`)
 
 	return pushCmd
 }

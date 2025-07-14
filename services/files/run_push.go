@@ -23,15 +23,15 @@ import (
 
 // PushParams holds the parameters for the RunPush method.
 type PushParams struct {
-	URI        string
-	File       string
-	Branch     string
-	Locales    []string
-	Authorize  bool
-	Directory  string
-	FileType   string
-	Directives []string
-	JobUID     string
+	URI         string
+	File        string
+	Branch      string
+	Locales     []string
+	Authorize   bool
+	Directory   string
+	FileType    string
+	Directives  []string
+	JobIDOrName string
 }
 
 // RunPush uploads files to the Smartling project based on the provided parameters.
@@ -112,8 +112,8 @@ func (s service) RunPush(ctx context.Context, params PushParams) error {
 		)
 	}
 
-	if params.JobUID != "" {
-		return s.runJob(ctx, params, files, project)
+	if params.JobIDOrName != "" {
+		return s.runPushWithJob(ctx, params, files, project)
 	}
 
 	fileUris, err := getFileUris(s.Config.Path, params, files)
@@ -305,21 +305,20 @@ func getGitBranch() (string, error) {
 	return filepath.Base(strings.TrimSpace(string(head))), nil
 }
 
-func (s service) runJob(ctx context.Context, params PushParams, files []string, project string) error {
+func (s service) runPushWithJob(ctx context.Context, params PushParams, files []string, project string) error {
 	fileUris, err := getFileUris(s.Config.Path, params, files)
 	if err != nil {
 		return err
 	}
-	var jobName string
-	if params.JobUID != "" {
-		if err := uuid.Validate(params.JobUID); err != nil {
-			jobName = params.JobUID
-		}
+	// create new job if params.JobIDOrName is not a valid UUID
+	var jobID string
+	if err := uuid.Validate(params.JobIDOrName); err == nil {
+		jobID = params.JobIDOrName
 	}
 	var createJobResponse sdkjobs.CreateJobResponse
-	if jobName != "" {
+	if jobID == "" {
 		payload := sdkjobs.CreateJobPayload{
-			NameTemplate:    jobName,
+			NameTemplate:    jobID,
 			TargetLocaleIds: params.Locales,
 			Mode:            sdkjobs.ReuseExistingMode,
 			Salt:            sdkjobs.OrdinalSalt,
@@ -328,26 +327,27 @@ func (s service) runJob(ctx context.Context, params PushParams, files []string, 
 		if err != nil {
 			return err
 		}
-		params.JobUID = createJobResponse.TranslationJobUID
+		jobID = createJobResponse.TranslationJobUID
 	}
 
 	createBatchResponse, err := s.Batch.Create(ctx, project, sdkjobs.CreateBatchPayload{
 		Authorize:         true,
-		TranslationJobUID: params.JobUID,
+		TranslationJobUID: jobID,
 		FileUris:          fileUris,
 	})
 
 	for fileID, file := range files {
 		content, err := os.ReadFile(file)
 		if err != nil {
-			return clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to read file contents "%s"`,
-					file,
-				),
-				`Check that file exists and readable by current user.`,
-			)
+			return clierror.UIError{
+				Err:       err,
+				Operation: "ReadFile",
+				Description: `Unable to read file contents.
+Check that file exists and readable by current user.`,
+				Fields: map[string]string{
+					"file": file,
+				},
+			}
 		}
 		fileType, found := sdktype.TypeByExt[filepath.Ext(file)]
 		if !found {
@@ -430,7 +430,6 @@ func getFileUris(configPath string, params PushParams, files []string) ([]string
 
 	res := make([]string, len(files))
 	for i, file := range files {
-
 		name, err := filepath.Abs(file)
 		if err != nil {
 			return nil, clierror.NewError(
