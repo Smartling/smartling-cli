@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -17,7 +18,6 @@ import (
 	sdktype "github.com/Smartling/api-sdk-go/helpers/file"
 	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
-	"github.com/google/uuid"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -311,8 +311,9 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 		return err
 	}
 	// create new job if params.JobIDOrName is not a valid UUID
+	pattern := `^[a-z0-9]{12}$`
 	var jobID string
-	if err := uuid.Validate(params.JobIDOrName); err == nil {
+	if re := regexp.MustCompile(pattern); re.MatchString(params.JobIDOrName) {
 		jobID = params.JobIDOrName
 	}
 	var createJobResponse sdkjobs.CreateJobResponse
