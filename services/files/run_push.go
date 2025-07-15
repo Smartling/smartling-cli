@@ -344,6 +344,9 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 		TranslationJobUID: jobUID,
 		FileUris:          fileUris,
 	})
+	if err != nil {
+		return err
+	}
 
 	for fileID, file := range files {
 		content, err := os.ReadFile(file)
