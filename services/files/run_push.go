@@ -2,8 +2,10 @@ package files
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -14,7 +16,7 @@ import (
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
-	sdkjobs "github.com/Smartling/api-sdk-go/api/jobs"
+	batchapi "github.com/Smartling/api-sdk-go/api/batches"
 	sdktype "github.com/Smartling/api-sdk-go/helpers/file"
 	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
@@ -312,30 +314,34 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 	}
 	// create new job if params.JobIDOrName is not a valid UUID
 	pattern := `^[a-z0-9]{12}$`
-	var jobID string
+	var jobUID string
 	if re := regexp.MustCompile(pattern); re.MatchString(params.JobIDOrName) {
-		jobID = params.JobIDOrName
+		jobUID = params.JobIDOrName
 	}
-	var createJobResponse sdkjobs.CreateJobResponse
-	if jobID == "" {
-		payload := sdkjobs.CreateJobPayload{
-			NameTemplate:    params.JobIDOrName,
-			Description:     params.JobIDOrName,
-			TargetLocaleIds: params.Locales,
-			Mode:            sdkjobs.ReuseExistingMode,
-			Salt:            sdkjobs.OrdinalSalt,
-			TimeZoneName:    "America/Los_Angeles",
-		}
-		createJobResponse, err = s.Batch.CreateJob(ctx, project, payload)
+	var createJobResponse batchapi.CreateJobResponse
+	if jobUID == "" {
+		timeZoneName, err := timeZoneName()
 		if err != nil {
 			return err
 		}
-		jobID = createJobResponse.TranslationJobUID
+		payload := batchapi.CreateJobPayload{
+			NameTemplate: params.JobIDOrName,
+			Description:  params.JobIDOrName,
+			//TargetLocaleIds: params.Locales,
+			Mode:         batchapi.ReuseExistingMode,
+			Salt:         batchapi.RandomAlphanumericSalt,
+			TimeZoneName: timeZoneName,
+		}
+		createJobResponse, err = s.BatchApi.CreateJob(ctx, project, payload)
+		if err != nil {
+			return err
+		}
+		jobUID = createJobResponse.TranslationJobUID
 	}
 
-	createBatchResponse, err := s.Batch.Create(ctx, project, sdkjobs.CreateBatchPayload{
+	createBatchResponse, err := s.BatchApi.Create(ctx, project, batchapi.CreateBatchPayload{
 		Authorize:         true,
-		TranslationJobUID: jobID,
+		TranslationJobUID: jobUID,
 		FileUris:          fileUris,
 	})
 
@@ -356,13 +362,13 @@ Check that file exists and readable by current user.`,
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
 		}
-		payload := sdkjobs.UploadFilePayload{
+		payload := batchapi.UploadFilePayload{
 			Filename:           fileUris[fileID],
 			File:               content,
 			FileType:           fileType,
 			LocalesToAuthorize: params.Locales,
 		}
-		uploadFileResponse, err := s.Batch.UploadFile(ctx, project, createBatchResponse.BatchUID, payload)
+		uploadFileResponse, err := s.BatchApi.UploadFile(ctx, project, createBatchResponse.BatchUID, payload)
 		if err != nil {
 			return clierror.UIError{
 				Err:         err,
@@ -377,7 +383,7 @@ Check that file exists and readable by current user.`,
 		var processed bool
 		for !processed {
 			time.Sleep(pollingInterval)
-			getStatusResponse, err := s.Batch.GetStatus(ctx, project, uploadFileResponse.Code)
+			getStatusResponse, err := s.BatchApi.GetStatus(ctx, project, uploadFileResponse.Code)
 			if err != nil {
 				return clierror.UIError{
 					Err:         err,
@@ -481,4 +487,26 @@ func getFileUris(configPath string, params PushParams, files []string) ([]string
 		res[i] = branch + uri
 	}
 	return res, nil
+}
+
+func timeZoneName() (string, error) {
+	resp, err := http.Get("https://ipapi.co/json/")
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			rlog.Debugf("failed to close response body: %v", err)
+		}
+	}()
+
+	type IPInfo struct {
+		Timezone string `json:"timezone"`
+	}
+	var info IPInfo
+	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+		return "", err
+	}
+
+	return info.Timezone, nil
 }

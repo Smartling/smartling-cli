@@ -7,7 +7,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 
 	sdk "github.com/Smartling/api-sdk-go"
-	sdkjobs "github.com/Smartling/api-sdk-go/api/jobs"
+	batchapi "github.com/Smartling/api-sdk-go/api/batches"
 )
 
 var pollingInterval = time.Second
@@ -26,20 +26,20 @@ type Service interface {
 // service provides methods to interact with Smartling files.
 type service struct {
 	APIClient  sdk.APIClient
-	Batch      sdkjobs.Batch
+	BatchApi   batchapi.Batch
 	Config     config.Config
 	FileConfig config.FileConfig
 }
 
 // NewService creates a new instance of the Service with the provided client, and configurations.
 func NewService(client sdk.APIClient,
-	batch sdkjobs.Batch,
+	batchApi batchapi.Batch,
 	config config.Config,
 	fileConfig config.FileConfig,
 ) Service {
 	return &service{
 		APIClient:  client,
-		Batch:      batch,
+		BatchApi:   batchApi,
 		Config:     config,
 		FileConfig: fileConfig,
 	}

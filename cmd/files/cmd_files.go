@@ -7,7 +7,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
-	sdkjobs "github.com/Smartling/api-sdk-go/api/jobs"
+	batchapi "github.com/Smartling/api-sdk-go/api/batches"
 	"github.com/spf13/cobra"
 )
 
@@ -58,7 +58,7 @@ func (i srvInitializer) InitFilesSrv() (files.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	batch := sdkjobs.NewBatch(client.Client)
-	srv := files.NewService(&client, batch, cnf, fileConfig)
+	batchApi := batchapi.NewBatch(client.Client)
+	srv := files.NewService(&client, batchApi, cnf, fileConfig)
 	return srv, nil
 }
