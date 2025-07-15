@@ -10,7 +10,10 @@ import (
 	batchapi "github.com/Smartling/api-sdk-go/api/batches"
 )
 
-var pollingInterval = time.Second
+var (
+	pollingInterval = 5 * time.Second
+	pollingDuration = 5 * time.Minute
+)
 
 // Service defines behaviors to interact with Smartling files.
 type Service interface {

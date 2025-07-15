@@ -383,39 +383,42 @@ Check that file exists and readable by current user.`,
 				},
 			}
 		}
-		var processed bool
-		for !processed {
-			time.Sleep(pollingInterval)
-			getStatusResponse, err := s.BatchApi.GetStatus(ctx, project, uploadFileResponse.Code)
-			if err != nil {
-				return clierror.UIError{
-					Err:         err,
-					Operation:   "GetStatus",
-					Description: `unable to get status for file`,
-					Fields: map[string]string{
-						"upload file code": uploadFileResponse.Code,
-						"code":             getStatusResponse.Code,
-					},
-				}
+		rlog.Debugf("uploaded file %v", uploadFileResponse)
+	}
+	started := time.Now()
+	var processed bool
+	for !processed {
+		if time.Since(started) > pollingDuration {
+			return errors.New("timeout exceeded for polling batch status: " + createBatchResponse.BatchUID)
+		}
+		time.Sleep(pollingInterval)
+		getStatusResponse, err := s.BatchApi.GetStatus(ctx, project, createBatchResponse.BatchUID)
+		if err != nil {
+			return clierror.UIError{
+				Err:         err,
+				Operation:   "GetStatus",
+				Description: `unable to get status for batch`,
+				Fields: map[string]string{
+					"code": getStatusResponse.Code,
+				},
 			}
-			switch strings.ToLower(getStatusResponse.Status) {
-			case "complete", "success":
-				processed = true
-				// TODO add failed statuses
+		}
+		switch strings.ToLower(getStatusResponse.Status) {
+		case "completed":
+			processed = true
+		}
+		errorsInFiles := make(map[string]string)
+		for _, file := range getStatusResponse.Files {
+			if file.Errors != "" {
+				errorsInFiles[file.FileUri] = file.Errors
 			}
-			errorsInFiles := make(map[string]string)
-			for _, file := range getStatusResponse.Files {
-				if file.Errors != "" {
-					errorsInFiles[file.FileUri] = file.Errors
-				}
-			}
-			if getStatusResponse.GeneralErrors != "" || len(errorsInFiles) > 0 {
-				return clierror.UIError{
-					Err:         errors.New(getStatusResponse.GeneralErrors),
-					Operation:   "GetStatus",
-					Description: `upload file status is not successful`,
-					Fields:      errorsInFiles,
-				}
+		}
+		if getStatusResponse.GeneralErrors != "" || len(errorsInFiles) > 0 {
+			return clierror.UIError{
+				Err:         errors.New(getStatusResponse.GeneralErrors),
+				Operation:   "GetStatus",
+				Description: `upload file status is not successful`,
+				Fields:      errorsInFiles,
 			}
 		}
 	}

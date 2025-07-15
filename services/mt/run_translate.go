@@ -66,8 +66,12 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 			if err != nil {
 				return nil, err
 			}
+			started := time.Now()
 			var processed bool
 			for !processed {
+				if time.Since(started) > pollingDuration {
+					return nil, errors.New("timeout exceeded for polling detect file language progress: FileUID:" + string(uploadFileResponse.FileUID))
+				}
 				rlog.Debugf("check detection progress")
 				detectionProgressResponse, err := s.translationControl.DetectionProgress(p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
 				if err != nil {
@@ -121,8 +125,12 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 			}
 		}
 
+		started := time.Now()
 		var processed bool
 		for !processed {
+			if time.Since(started) > pollingDuration {
+				return nil, errors.New("timeout exceeded for polling file translation progress FileUID:" + string(uploadFileResponse.FileUID))
+			}
 			rlog.Debugf("check translation progress")
 			progressResponse, err := s.fileTranslator.Progress(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
 			if err != nil {
