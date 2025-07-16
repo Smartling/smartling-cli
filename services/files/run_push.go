@@ -369,6 +369,7 @@ Check that file exists and readable by current user.`,
 			Filename:           fileUris[fileID],
 			File:               content,
 			FileType:           fileType,
+			FileUri:            fileUris[fileID],
 			LocalesToAuthorize: params.Locales,
 		}
 		uploadFileResponse, err := s.BatchApi.UploadFile(ctx, project, createBatchResponse.BatchUID, payload)
