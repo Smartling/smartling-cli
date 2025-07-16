@@ -412,17 +412,19 @@ Check that file exists and readable by current user.`,
 				},
 			}
 		}
-		switch strings.ToLower(getStatusResponse.Status) {
-		case "completed":
+		if strings.ToLower(getStatusResponse.Status) == "completed" {
 			processed = true
 		}
 		errorsInFiles := make(map[string]string)
 		for _, file := range getStatusResponse.Files {
-			if file.Errors != "" {
+			if strings.ToLower(file.Status) == "completed" {
+				continue
+			}
+			if file.Errors != "" && file.Errors != "{}" {
 				errorsInFiles[file.FileUri] = file.Errors
 			}
 		}
-		if getStatusResponse.GeneralErrors != "" || len(errorsInFiles) > 0 {
+		if (getStatusResponse.GeneralErrors != "" && getStatusResponse.GeneralErrors != "{}") || len(errorsInFiles) > 0 {
 			return clierror.UIError{
 				Err:         errors.New(getStatusResponse.GeneralErrors),
 				Operation:   "GetStatus",
