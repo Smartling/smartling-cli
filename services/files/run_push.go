@@ -325,12 +325,12 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 			return err
 		}
 		payload := batchapi.CreateJobPayload{
-			NameTemplate: params.JobIDOrName,
-			Description:  params.JobIDOrName,
-			//TargetLocaleIds: params.Locales,
-			Mode:         batchapi.ReuseExistingMode,
-			Salt:         batchapi.RandomAlphanumericSalt,
-			TimeZoneName: timeZoneName,
+			NameTemplate:    params.JobIDOrName,
+			Description:     params.JobIDOrName,
+			TargetLocaleIds: params.Locales,
+			Mode:            batchapi.ReuseExistingMode,
+			Salt:            batchapi.RandomAlphanumericSalt,
+			TimeZoneName:    timeZoneName,
 		}
 		createJobResponse, err = s.BatchApi.CreateJob(ctx, project, payload)
 		if err != nil {
@@ -426,7 +426,7 @@ Check that file exists and readable by current user.`,
 			return clierror.UIError{
 				Err:         errors.New(getStatusResponse.GeneralErrors),
 				Operation:   "GetStatus",
-				Description: `upload file status is not successful`,
+				Description: `errors occurred during batch processing`,
 				Fields:      errorsInFiles,
 			}
 		}
