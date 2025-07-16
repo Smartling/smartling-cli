@@ -506,6 +506,10 @@ func getFileUris(configPath string, params PushParams, files []string) ([]string
 }
 
 func timeZoneName() (string, error) {
+	location := time.Now().Location().String()
+	if location != time.Local.String() && strings.ToLower(location) != "" {
+		return location, nil
+	}
 	resp, err := http.Get("https://ipapi.co/json/")
 	if err != nil {
 		return "", err
