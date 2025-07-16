@@ -385,7 +385,15 @@ Check that file exists and readable by current user.`,
 			}
 		}
 		rlog.Debugf("uploaded file %v", uploadFileResponse)
+		fmt.Printf(
+			"%s (%s) %s [code: %s]\n",
+			fileUris[fileID],
+			payload.FileType,
+			"uploaded",
+			uploadFileResponse.Code,
+		)
 	}
+	fmt.Println("batch processing is started")
 	started := time.Now()
 	var processed bool
 	for !processed {
@@ -423,6 +431,7 @@ Check that file exists and readable by current user.`,
 			}
 		}
 	}
+	fmt.Println("batch is processed successfully")
 	return nil
 }
 
