@@ -40,7 +40,7 @@ func TestFilesRename(t *testing.T) {
 			args:              append(subCommands, "|||.txt", "___.txt"),
 			expectedOutputs:   []string{"ERROR", "failed to rename file"},
 			unexpectedOutputs: []string{"DEBUG"},
-			wantErr:           false,
+			wantErr:           true,
 		},
 	}
 
@@ -49,8 +49,11 @@ func TestFilesRename(t *testing.T) {
 			testCmd := exec.Command("./smartling-cli", tt.args...)
 			testCmd.Dir = absDir
 			out, err := testCmd.CombinedOutput()
-			if err != nil {
+			if !tt.wantErr && err != nil {
 				t.Fatalf("error: %v, output: %s", err, string(out))
+			}
+			if tt.wantErr && err == nil {
+				t.Fatal("expected error")
 			}
 			if len(tt.expectedOutputs) > 0 {
 				for _, expectedOutput := range tt.expectedOutputs {
