@@ -107,7 +107,7 @@ func (s service) RunPush(ctx context.Context, params PushParams) error {
 		)
 	}
 
-	return s.runPushWithJob(ctx, params, files, s.Config.ProjectID)
+	return s.runPush(ctx, params, files, s.Config.ProjectID)
 }
 
 func returnError(err error) bool {
@@ -178,7 +178,7 @@ func getGitBranch() (string, error) {
 	return filepath.Base(strings.TrimSpace(string(head))), nil
 }
 
-func (s service) runPushWithJob(ctx context.Context, params PushParams, files []string, projectID string) error {
+func (s service) runPush(ctx context.Context, params PushParams, files []string, projectID string) error {
 	fileUris, err := getFileUris(s.Config.Path, params, files)
 	if err != nil {
 		return err
@@ -195,8 +195,12 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 		if err != nil {
 			return err
 		}
+		nameTemplate := params.JobIDOrName
+		if nameTemplate == "" {
+			nameTemplate = defaultJobNameTemplate
+		}
 		payload := batchapi.CreateJobPayload{
-			NameTemplate:    params.JobIDOrName,
+			NameTemplate:    nameTemplate,
 			Description:     params.JobIDOrName,
 			TargetLocaleIds: params.Locales,
 			Mode:            batchapi.ReuseExistingMode,

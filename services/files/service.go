@@ -10,6 +10,8 @@ import (
 	batchapi "github.com/Smartling/api-sdk-go/api/batches"
 )
 
+const defaultJobNameTemplate = "CLI uploads"
+
 var (
 	pollingInterval = 5 * time.Second
 	pollingDuration = 5 * time.Minute
