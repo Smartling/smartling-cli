@@ -56,30 +56,6 @@ can be used to override detected file type.
 
 <file> ` + help.GlobPattern + `
 
-
-Available options:
-  -j --job <job name>
-    Provide a name for the Smartling translation job or job UID.
-    All files will be uploaded into this job.
-    If the flag is not specified then the "CLI uploads" name will be used.
-
-  -z --authorize
-    Automatically authorize the job with file(s) and specified locales.
-	If the flag is not specified, the job remains unauthorized.
-
-  -l --locale <locale code>
-    Add file(s) to the job for the specified locale only.
-	If the flag is not specified, then all project locales will be added to the job.
-	Can be specified several times: --locale fr --locale de -l es
-
-  -b --branch <branch>
-    Prepend specified prefix to target file URI.
-
-  -t --type <type>
-    Override automatically detected file type.
-
-  -p --project <project>
-    Specify project to use.
 ` + help.AuthenticationOptions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
@@ -115,13 +91,22 @@ Available options:
 		},
 	}
 
-	pushCmd.Flags().BoolVarP(&authorize, "authorize", "z", false, `Automatically authorize the job with file(s) and specified locales. If the flag is not specified, the job remains unauthorized.`)
-	pushCmd.Flags().StringArrayVarP(&locales, "locale", "l", []string{}, `Add file(s) to the job for the specified locale only. If the flag is not specified, then all project locales will be added to the job.`)
-	pushCmd.Flags().StringVarP(&branch, "branch", "b", "", `Prepend specified text to the file URI.`)
-	pushCmd.Flags().StringVarP(&fileType, "type", "t", "", `Specify file type which will be used instead of automatically deduced from extension.`)
+	pushCmd.Flags().BoolVarP(&authorize, "authorize", "z", false, `Automatically authorize the job with file(s) and specified locales.
+If the flag is not specified, the job remains unauthorized.`)
+	pushCmd.Flags().StringArrayVarP(&locales, "locale", "l", []string{}, `<locale code>
+Add file(s) to the job for the specified locale only.
+If the flag is not specified, then all project locales will be added to the job.
+Can be specified several times: --locale fr --locale de -l es`)
+	pushCmd.Flags().StringVarP(&branch, "branch", "b", "", `<branch>
+Prepend specified prefix to target file URI.`)
+	pushCmd.Flags().StringVarP(&fileType, "type", "t", "", `<type>
+Override automatically detected file type.`)
 	pushCmd.Flags().StringArrayVarP(&directives, "directive", "r", []string{}, `Specify one or more directives to use in push request.`)
 	pushCmd.Flags().StringVarP(&directory, "directory", "d", ".", `Specified directory.`)
-	pushCmd.Flags().StringVarP(&job, "job", "j", "", `Provide a name for the Smartling translation job or job UID. All files will be uploaded into this job. If the flag is not specified then the "CLI uploads" will be used.`)
+	pushCmd.Flags().StringVarP(&job, "job", "j", "", `<job name>
+Provide a name for the Smartling translation job or job UID.
+All files will be uploaded into this job.
+If the flag is not specified then the "CLI uploads" name will be used.`)
 
 	return pushCmd
 }
