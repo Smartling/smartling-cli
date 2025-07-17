@@ -340,7 +340,7 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 	}
 
 	createBatchResponse, err := s.BatchApi.Create(ctx, project, batchapi.CreateBatchPayload{
-		Authorize:         true,
+		Authorize:         params.Authorize,
 		TranslationJobUID: jobUID,
 		FileUris:          fileUris,
 	})
