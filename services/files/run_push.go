@@ -19,7 +19,6 @@ import (
 	batchapi "github.com/Smartling/api-sdk-go/api/batches"
 	sdktype "github.com/Smartling/api-sdk-go/helpers/file"
 	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
-	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -38,12 +37,6 @@ type PushParams struct {
 
 // RunPush uploads files to the Smartling project based on the provided parameters.
 func (s service) RunPush(ctx context.Context, params PushParams) error {
-	var (
-		failedFiles []string
-		project     = s.Config.ProjectID
-		result      error
-	)
-
 	if params.Branch == "@auto" {
 		var err error
 		params.Branch, err = getGitBranch()
@@ -114,129 +107,7 @@ func (s service) RunPush(ctx context.Context, params PushParams) error {
 		)
 	}
 
-	if params.JobIDOrName != "" {
-		return s.runPushWithJob(ctx, params, files, project)
-	}
-
-	fileUris, err := getFileUris(s.Config.Path, params, files)
-	if err != nil {
-		return err
-	}
-
-	for fileID, file := range files {
-		fileConfig, err := s.Config.GetFileConfig(file)
-		if err != nil {
-			return clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to retrieve file specific configuration`,
-				),
-
-				``,
-			)
-		}
-
-		contents, err := os.ReadFile(file)
-		if err != nil {
-			return clierror.NewError(
-				hierr.Errorf(
-					err,
-					`unable to read file contents "%s"`,
-					file,
-				),
-
-				`Check that file exists and readable by current user.`,
-			)
-		}
-
-		request := sdkfile.FileUploadRequest{
-			File:               contents,
-			Authorize:          params.Authorize,
-			LocalesToAuthorize: params.Locales,
-		}
-
-		request.FileURI = fileUris[fileID]
-
-		if fileConfig.Push.Type == "" {
-			if params.FileType == "" {
-				request.FileType = sdkfile.GetFileTypeByExtension(
-					filepath.Ext(file),
-				)
-
-				if request.FileType == sdkfile.FileTypeUnknown {
-					return clierror.NewError(
-						fmt.Errorf(
-							"unable to deduce file type from extension: %q",
-							filepath.Ext(file),
-						),
-
-						`You need to specify file type via --type option.`,
-					)
-				}
-			} else {
-				request.FileType = sdkfile.FileType(params.FileType)
-			}
-		} else {
-			request.FileType = sdkfile.FileType(fileConfig.Push.Type)
-		}
-
-		request.Smartling.Directives = fileConfig.Push.Directives
-
-		for _, directive := range params.Directives {
-			spec := strings.SplitN(directive, "=", 2)
-			if len(spec) != 2 {
-				return clierror.NewError(
-					fmt.Errorf(
-						"invalid directive specification: %q",
-						directive,
-					),
-
-					`Should be in the form of <name>=<value>.`,
-				)
-			}
-
-			if request.Smartling.Directives == nil {
-				request.Smartling.Directives = map[string]string{}
-			}
-
-			request.Smartling.Directives[spec[0]] = spec[1]
-		}
-
-		response, err := s.APIClient.UploadFile(project, request)
-
-		if err != nil {
-			if returnError(err) {
-				return clierror.NewError(
-					err,
-					fmt.Sprintf(`unable to upload file "%s"`, file),
-					`Check, that you have enough permissions to upload file to`+
-						` the specified project`,
-				)
-			}
-			_, _ = fmt.Fprintln(os.Stderr, "Unable to upload file "+file)
-			failedFiles = append(failedFiles, file)
-		} else {
-			status := "new"
-			if response.Overwritten {
-				status = "overwritten"
-			}
-
-			fmt.Printf(
-				"%s (%s) %s [%d strings %d words]\n",
-				fileUris[fileID],
-				request.FileType,
-				status,
-				response.StringCount,
-				response.WordCount,
-			)
-		}
-	}
-
-	if len(failedFiles) != 0 {
-		result = clierror.NewError(fmt.Errorf("failed to upload %d files", len(failedFiles)), "failed to upload files "+strings.Join(failedFiles, ", "))
-	}
-
-	return result
+	return s.runPushWithJob(ctx, params, files, s.Config.ProjectID)
 }
 
 func returnError(err error) bool {
@@ -307,7 +178,7 @@ func getGitBranch() (string, error) {
 	return filepath.Base(strings.TrimSpace(string(head))), nil
 }
 
-func (s service) runPushWithJob(ctx context.Context, params PushParams, files []string, project string) error {
+func (s service) runPushWithJob(ctx context.Context, params PushParams, files []string, projectID string) error {
 	fileUris, err := getFileUris(s.Config.Path, params, files)
 	if err != nil {
 		return err
@@ -315,7 +186,7 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 	// create new job if params.JobIDOrName is not a valid UUID
 	pattern := `^[a-z0-9]{12}$`
 	var jobUID string
-	if re := regexp.MustCompile(pattern); re.MatchString(params.JobIDOrName) {
+	if re := regexp.MustCompile(pattern); params.JobIDOrName != "" && re.MatchString(params.JobIDOrName) {
 		jobUID = params.JobIDOrName
 	}
 	var createJobResponse batchapi.CreateJobResponse
@@ -332,14 +203,14 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 			Salt:            batchapi.RandomAlphanumericSalt,
 			TimeZoneName:    timeZoneName,
 		}
-		createJobResponse, err = s.BatchApi.CreateJob(ctx, project, payload)
+		createJobResponse, err = s.BatchApi.CreateJob(ctx, projectID, payload)
 		if err != nil {
 			return err
 		}
 		jobUID = createJobResponse.TranslationJobUID
 	}
 
-	createBatchResponse, err := s.BatchApi.Create(ctx, project, batchapi.CreateBatchPayload{
+	createBatchResponse, err := s.BatchApi.Create(ctx, projectID, batchapi.CreateBatchPayload{
 		Authorize:         params.Authorize,
 		TranslationJobUID: jobUID,
 		FileUris:          fileUris,
@@ -365,14 +236,21 @@ Check that file exists and readable by current user.`,
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
 		}
+		locales := params.Locales
+		if len(locales) == 0 {
+			locales, err = s.getLocales(projectID)
+			if err != nil {
+				return err
+			}
+		}
 		payload := batchapi.UploadFilePayload{
 			Filename:           fileUris[fileID],
 			File:               content,
 			FileType:           fileType,
 			FileUri:            fileUris[fileID],
-			LocalesToAuthorize: params.Locales,
+			LocalesToAuthorize: locales,
 		}
-		uploadFileResponse, err := s.BatchApi.UploadFile(ctx, project, createBatchResponse.BatchUID, payload)
+		uploadFileResponse, err := s.BatchApi.UploadFile(ctx, projectID, createBatchResponse.BatchUID, payload)
 		if err != nil {
 			return clierror.UIError{
 				Err:         err,
@@ -401,7 +279,7 @@ Check that file exists and readable by current user.`,
 			return errors.New("timeout exceeded for polling batch status: " + createBatchResponse.BatchUID)
 		}
 		time.Sleep(pollingInterval)
-		getStatusResponse, err := s.BatchApi.GetStatus(ctx, project, createBatchResponse.BatchUID)
+		getStatusResponse, err := s.BatchApi.GetStatus(ctx, projectID, createBatchResponse.BatchUID)
 		if err != nil {
 			return clierror.UIError{
 				Err:         err,
@@ -435,6 +313,21 @@ Check that file exists and readable by current user.`,
 	}
 	fmt.Println("batch is processed successfully")
 	return nil
+}
+
+func (s service) getLocales(project string) ([]string, error) {
+	var locales []string
+	projectDetails, err := s.APIClient.GetProjectDetails(project)
+	if err != nil {
+		return nil, err
+	}
+	if projectDetails == nil {
+		return nil, fmt.Errorf("no project details found for project: " + project)
+	}
+	for _, targetLocale := range projectDetails.TargetLocales {
+		locales = append(locales, targetLocale.LocaleID)
+	}
+	return locales, nil
 }
 
 func getFileUris(configPath string, params PushParams, files []string) ([]string, error) {
