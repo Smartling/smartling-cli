@@ -61,8 +61,12 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		update.Detect = pointer.NewP("start")
 		updates <- update
 
+		started := time.Now()
 		var processed bool
 		for !processed {
+			if time.Since(started) > pollingDuration {
+				return nil, errors.New("timeout exceeded for polling detection progress of LanguageDetectionUID: " + detectFileLanguageResponse.LanguageDetectionUID)
+			}
 			rlog.Debugf("check detection progress")
 			detectionProgressResponse, err := s.translationControl.DetectionProgress(p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
 			if err != nil {
