@@ -9,7 +9,7 @@ set -euo pipefail
 CLI_BINARY="${CLI_BINARY:-./smartling-cli}"
 CONFIG_FILE="${CONFIG_FILE:-smartling.yml}"
 SNAPSHOT_DIR="./snapshots"
-TEST_DIR="$(mktemp -d -p `pwd`/)"
+TEST_DIR="$(mktemp -d -p ./)"
 TEST_FILES_DIR="${TEST_DIR}/test_files"
 LOG_FILE="${TEST_DIR}/test.log"
 RESULTS_FILE="${TEST_DIR}/results.json"
@@ -220,6 +220,7 @@ test_file_operations_workflow() {
     local test_prop_translation_file_fr="${TEST_FILES_DIR}/test_fr-FR.properties"
     local file_uri1="/test-workflow/test.txt"
     local file_uri2="/test-workflow/test-copy.txt"
+    # shellcheck disable=SC2155
     local salt=$(date +%s%N | sha256sum | head -c 8)
     # The new name must be unique; otherwise, we will receive an error about
     # the namespace that was left in the database from the previous test.
@@ -363,12 +364,19 @@ test_error_handling() {
     test_start "Error Handling"
     
     # Test invalid project ID
-    if run_cli_expect_fail "project" "projects list -p invalid-project-id"; then
+    if run_cli_expect_fail "specified project is not found" "projects info -p invalid-project-id"; then
         test_pass "Invalid project ID error"
     else
         test_fail "Invalid project ID error" "Expected error not found"
     fi
-    
+
+    # Test invalid account UID
+    if run_cli_expect_fail "unable to list projects" "projects list --account invalid-account-uid"; then
+        test_pass "Invalid account UID error"
+    else
+        test_fail "Invalid account UID error" "Expected error not found"
+    fi
+
     # Test upload for missing file
     if run_cli_expect_fail "no files found by specified patterns" "files push non-existent-file.txt"; then
         test_pass "Upload missing file error"
@@ -392,20 +400,21 @@ test_edge_cases() {
     local empty_file="${TEST_FILES_DIR}/empty.txt"
     touch "$empty_file"
 
-    if run_cli_expect_fail "failed to upload 1 files" "files push $empty_file /test-edge/empty.txt"; then
+    if run_cli_expect_fail "File is required" "files push $empty_file /test-edge/empty.txt"; then
         test_pass "Empty file upload"
     else
         test_fail "Empty file upload" "Upload failed"
     fi
 
+    # FileUri includes: invisible space (U+200B), non-breaking space (U+00A0)
+    local special_file_uri="test​ file with spaces.txt"
     # Test file with special characters in name
-    # TODO : add special characters to this test
-    local special_file="${TEST_FILES_DIR}/test file with spaces.txt"
+    local special_file="${TEST_FILES_DIR}/$special_file_uri"
     echo "test content" > "$special_file"
-    
-    if run_cli "files push \"$special_file\" \"/test-edge/special file.txt\""; then
+
+    if run_cli "files push \"$special_file\" \"$special_file_uri\""; then
         test_pass "Special characters in filename"
-        run_cli "files delete '/test-edge/special file.txt'" || true
+        run_cli "files delete '$special_file_uri'" || true
     else
         test_fail "Special characters in filename" "Upload failed"
     fi
