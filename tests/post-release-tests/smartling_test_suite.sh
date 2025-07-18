@@ -316,11 +316,35 @@ test_mt_operations_workflow() {
     local test_file="${TEST_FILES_DIR}/test.txt"
 
     # 1. Detect language
-    log_info "Step 1: Detect language"
+    log_info "Step 1: Detect languages"
     if run_cli "mt detect $test_file"; then
-        test_pass "Detect language"
+        test_pass "Detect languages"
     else
-        test_fail "Detect language" "Detect failed"
+        test_fail "Detect languages" "Detect failed"
+        return 1
+    fi
+
+    log_info "Step 2: Detect first language"
+    if run_cli "mt detect $test_file --short"; then
+        test_pass "Detect first language"
+    else
+        test_fail "Detect first language" "Detect failed"
+        return 1
+    fi
+
+    log_info "Step 3: Translate file en->fr"
+    if run_cli "mt translate $test_file --source-locale en --target-locale fr"; then
+        test_pass "Translate file"
+    else
+        test_fail "Translate file" "Translation failed"
+        return 1
+    fi
+
+    log_info "Step 4: Translate file to two locales"
+    if run_cli "mt translate $test_file -l es --target-locale fr-FR"; then
+        test_pass "Translate file"
+    else
+        test_fail "Translate file" "Translation failed"
         return 1
     fi
 }
@@ -386,13 +410,18 @@ test_snapshots() {
     
     # Test help output
     snapshot_test "help_main" "--help"
-    snapshot_test "help_files" "files --help"
-    snapshot_test "help_mt" "mt --help"
-    snapshot_test "help_mt_translate" "mt translate --help"
     snapshot_test "help_projects" "projects --help"
-    
+
+    # Test files commnads
+    snapshot_test "help_files" "files --help"
+
+    # Test mt commands
+    snapshot_test "help_mt" "mt --help"
+    snapshot_test "help_mt_detect" "mt detect --help"
+    snapshot_test "help_mt_translate" "mt translate --help"
+
     # Test list formatting
-    snapshot_test "projects_list_short" "projects list --short"
+    snapshot_test "projects_info" "projects info"
     snapshot_test "locales_source" "projects locales --source"
 }
 
@@ -431,7 +460,7 @@ EOF
     echo "Total Tests:    $TESTS_TOTAL"
     echo "Passed:         $TESTS_PASSED"
     echo "Failed:         $TESTS_FAILED"
-    echo "Success Rate:   $(( TESTS_PASSED * 100 / (TESTS_PASSED + $TESTS_FAILED) ))%"
+    echo "Success Rate:   $(( TESTS_PASSED * 100 / (TESTS_PASSED + TESTS_FAILED) ))%"
     echo ""
     echo "Log file:       $LOG_FILE"
     echo "Results file:   $RESULTS_FILE"
