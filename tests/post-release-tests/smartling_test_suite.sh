@@ -228,7 +228,7 @@ test_file_operations_workflow() {
     
     mkdir -p "$download_dir"
     
-    # 1. Upload test file
+    # 1. Upload test file without job (backward compatibility)
     log_info "Step 1: Upload test file"
     if run_cli "files push $test_file $file_uri1"; then
         test_pass "File upload (original)"
@@ -237,17 +237,26 @@ test_file_operations_workflow() {
         return 1
     fi
 
-    # 2. Upload same file with different URI
-    log_info "Step 2: Upload same file with different URI"
+    # 2. Upload test file
+    log_info "Step 2: Upload test file"
+    if run_cli "files push $test_file $file_uri1 --job \"Post deploy tests\" --locale de"; then
+        test_pass "File upload (original)"
+    else
+        test_fail "File upload (original)" "Upload failed"
+        return 1
+    fi
+
+    # 3. Upload same file with different URI
+    log_info "Step 3: Upload same file with different URI"
     # Directive is required to avoid issue with namespace when we Rename file (see test below)
-    if run_cli "files push $test_file $file_uri2 --directive 'file_uri_as_namespace=false'"; then
+    if run_cli "files push $test_file $file_uri2 --job \"Post deploy tests\" --locale de --directive 'file_uri_as_namespace=false'"; then
         test_pass "File upload (copy)"
     else
         test_fail "File upload (copy)" "Upload failed"
     fi
 
-    # 3. Import translations
-    log_info "Step 3: Import translations"
+    # 4. Import translations
+    log_info "Step 4: Import translations"
     if run_cli "files push $test_prop_file test.properties"; then
         test_pass "File upload (original)"
         # Additional time to allow File API complete parsing and saving strings
@@ -269,40 +278,40 @@ test_file_operations_workflow() {
         test_fail "Import translations (fr-FR)" "Import failed"
     fi
     
-    # 4. List files
-    log_info "Step 4: List files"
+    # 5. List files
+    log_info "Step 5: List files"
     if run_cli "files list \"**/test*.txt\""; then
         test_pass "File listing"
     else
         test_fail "File listing" "List failed"
     fi
     
-    # 5. Download one file to current folder
-    log_info "Step 5: Download file to current folder"
+    # 6. Download one file to current folder
+    log_info "Step 6: Download file to current folder"
     if run_cli "files pull $file_uri1 --source"; then
         test_pass "File download (single)"
     else
         test_fail "File download (single)" "Download failed"
     fi
     
-    # 6. Rename file
-    log_info "Step 6: Rename file"
+    # 7. Rename file
+    log_info "Step 7: Rename file"
     if run_cli "files rename $file_uri2 $file_uri_renamed"; then
         test_pass "File rename"
     else
         test_fail "File rename" "Rename failed"
     fi
     
-    # 7. Download all files to subfolder
-    log_info "Step 7: Download all files to subfolder"
+    # 8. Download all files to subfolder
+    log_info "Step 8: Download all files to subfolder"
     if run_cli "files pull \"**/test*.txt\" --source -d $download_dir"; then
         test_pass "File download (bulk)"
     else
         test_fail "File download (bulk)" "Bulk download failed"
     fi
     
-    # 8. Delete uploaded files
-    log_info "Step 8: Delete uploaded files"
+    # 9. Delete uploaded files
+    log_info "Step 9: Delete uploaded files"
     if run_cli "files delete $file_uri1" && run_cli "files delete $file_uri_renamed"; then
         test_pass "File deletion"
     else
