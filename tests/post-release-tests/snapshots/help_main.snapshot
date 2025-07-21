@@ -1,0 +1,41 @@
+Manage translation files using Smartling CLI.
+                Complete documentation is available at https://www.smartling.com
+
+Usage:
+  smartling-cli [flags]
+  smartling-cli [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  files       Used to access various files sub-commands.
+  help        Help about any command
+  init        Prepares project to work with Smartling
+  mt          File Machine Translations
+  projects    Used to access various projects sub-commands.
+
+Flags:
+  -a, --account string               Account ID to operate on.
+                                     This option overrides config value "account_id".
+  -c, --config string                Config file in YAML format.
+                                     By default CLI will look for file named
+                                     "smartling.yml" in current directory and in all
+                                     intermediate parents, emulating git behavior.
+  -h, --help                         help for smartling-cli
+  -k, --insecure                     Skip HTTPS certificate validation.
+      --operation-directory string   Sets directory to operate on, usually, to store or to
+                                     read files.  Depends on command. (default ".")
+  -p, --project string               Project ID to operate on.
+                                     This option overrides config value "project_id".
+      --proxy string                 Use specified URL as proxy server.
+      --secret string                Token Secret which will be used for authentication.
+                                     This option overrides config value "secret".
+      --smartling-url string         Specify base Smartling URL, merely for testing
+                                     purposes.
+      --threads uint32               If command can be executed concurrently, it will be
+                                     executed for at most <number> of threads. (default 4)
+      --user string                  User ID which will be used for authentication.
+                                     This option overrides config value "user_id".
+  -v, --verbose count                Verbose logging
+      --version                      version for smartling-cli
+
+Use "smartling-cli [command] --help" for more information about a command.

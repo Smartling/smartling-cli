@@ -9,7 +9,7 @@ set -euo pipefail
 CLI_BINARY="${CLI_BINARY:-./smartling-cli}"
 CONFIG_FILE="${CONFIG_FILE:-smartling.yml}"
 SNAPSHOT_DIR="./snapshots"
-TEST_DIR="$(mktemp -d -p `pwd`/)"
+TEST_DIR="$(mktemp -d -p ./)"
 TEST_FILES_DIR="${TEST_DIR}/test_files"
 LOG_FILE="${TEST_DIR}/test.log"
 RESULTS_FILE="${TEST_DIR}/results.json"
@@ -220,6 +220,7 @@ test_file_operations_workflow() {
     local test_prop_translation_file_fr="${TEST_FILES_DIR}/test_fr-FR.properties"
     local file_uri1="/test-workflow/test.txt"
     local file_uri2="/test-workflow/test-copy.txt"
+    # shellcheck disable=SC2155
     local salt=$(date +%s%N | sha256sum | head -c 8)
     # The new name must be unique; otherwise, we will receive an error about
     # the namespace that was left in the database from the previous test.
@@ -228,7 +229,7 @@ test_file_operations_workflow() {
     
     mkdir -p "$download_dir"
     
-    # 1. Upload test file
+    # 1. Upload test file without job (backward compatibility)
     log_info "Step 1: Upload test file"
     if run_cli "files push $test_file $file_uri1"; then
         test_pass "File upload (original)"
@@ -237,17 +238,26 @@ test_file_operations_workflow() {
         return 1
     fi
 
-    # 2. Upload same file with different URI
-    log_info "Step 2: Upload same file with different URI"
+    # 2. Upload test file
+    log_info "Step 2: Upload test file"
+    if run_cli "files push $test_file $file_uri1 --job \"Post deploy tests\" --locale de"; then
+        test_pass "File upload (original)"
+    else
+        test_fail "File upload (original)" "Upload failed"
+        return 1
+    fi
+
+    # 3. Upload same file with different URI
+    log_info "Step 3: Upload same file with different URI"
     # Directive is required to avoid issue with namespace when we Rename file (see test below)
-    if run_cli "files push $test_file $file_uri2 --directive 'file_uri_as_namespace=false'"; then
+    if run_cli "files push $test_file $file_uri2 --job \"Post deploy tests\" --locale de --directive 'file_uri_as_namespace=false'"; then
         test_pass "File upload (copy)"
     else
         test_fail "File upload (copy)" "Upload failed"
     fi
 
-    # 3. Import translations
-    log_info "Step 3: Import translations"
+    # 4. Import translations
+    log_info "Step 4: Import translations"
     if run_cli "files push $test_prop_file test.properties"; then
         test_pass "File upload (original)"
         # Additional time to allow File API complete parsing and saving strings
@@ -269,40 +279,40 @@ test_file_operations_workflow() {
         test_fail "Import translations (fr-FR)" "Import failed"
     fi
     
-    # 4. List files
-    log_info "Step 4: List files"
+    # 5. List files
+    log_info "Step 5: List files"
     if run_cli "files list \"**/test*.txt\""; then
         test_pass "File listing"
     else
         test_fail "File listing" "List failed"
     fi
     
-    # 5. Download one file to current folder
-    log_info "Step 5: Download file to current folder"
+    # 6. Download one file to current folder
+    log_info "Step 6: Download file to current folder"
     if run_cli "files pull $file_uri1 --source"; then
         test_pass "File download (single)"
     else
         test_fail "File download (single)" "Download failed"
     fi
     
-    # 6. Rename file
-    log_info "Step 6: Rename file"
+    # 7. Rename file
+    log_info "Step 7: Rename file"
     if run_cli "files rename $file_uri2 $file_uri_renamed"; then
         test_pass "File rename"
     else
         test_fail "File rename" "Rename failed"
     fi
     
-    # 7. Download all files to subfolder
-    log_info "Step 7: Download all files to subfolder"
+    # 8. Download all files to subfolder
+    log_info "Step 8: Download all files to subfolder"
     if run_cli "files pull \"**/test*.txt\" --source -d $download_dir"; then
         test_pass "File download (bulk)"
     else
         test_fail "File download (bulk)" "Bulk download failed"
     fi
     
-    # 8. Delete uploaded files
-    log_info "Step 8: Delete uploaded files"
+    # 9. Delete uploaded files
+    log_info "Step 9: Delete uploaded files"
     if run_cli "files delete $file_uri1" && run_cli "files delete $file_uri_renamed"; then
         test_pass "File deletion"
     else
@@ -316,11 +326,35 @@ test_mt_operations_workflow() {
     local test_file="${TEST_FILES_DIR}/test.txt"
 
     # 1. Detect language
-    log_info "Step 1: Detect language"
+    log_info "Step 1: Detect languages"
     if run_cli "mt detect $test_file"; then
-        test_pass "Detect language"
+        test_pass "Detect languages"
     else
-        test_fail "Detect language" "Detect failed"
+        test_fail "Detect languages" "Detect failed"
+        return 1
+    fi
+
+    log_info "Step 2: Detect first language"
+    if run_cli "mt detect $test_file --short"; then
+        test_pass "Detect first language"
+    else
+        test_fail "Detect first language" "Detect failed"
+        return 1
+    fi
+
+    log_info "Step 3: Translate file en->fr"
+    if run_cli "mt translate $test_file --source-locale en --target-locale fr"; then
+        test_pass "Translate file"
+    else
+        test_fail "Translate file" "Translation failed"
+        return 1
+    fi
+
+    log_info "Step 4: Translate file to two locales"
+    if run_cli "mt translate $test_file -l es --target-locale fr-FR"; then
+        test_pass "Translate file"
+    else
+        test_fail "Translate file" "Translation failed"
         return 1
     fi
 }
@@ -330,12 +364,19 @@ test_error_handling() {
     test_start "Error Handling"
     
     # Test invalid project ID
-    if run_cli_expect_fail "project" "projects list -p invalid-project-id"; then
+    if run_cli_expect_fail "specified project is not found" "projects info -p invalid-project-id"; then
         test_pass "Invalid project ID error"
     else
         test_fail "Invalid project ID error" "Expected error not found"
     fi
-    
+
+    # Test invalid account UID
+    if run_cli_expect_fail "unable to list projects" "projects list --account invalid-account-uid"; then
+        test_pass "Invalid account UID error"
+    else
+        test_fail "Invalid account UID error" "Expected error not found"
+    fi
+
     # Test upload for missing file
     if run_cli_expect_fail "no files found by specified patterns" "files push non-existent-file.txt"; then
         test_pass "Upload missing file error"
@@ -359,20 +400,21 @@ test_edge_cases() {
     local empty_file="${TEST_FILES_DIR}/empty.txt"
     touch "$empty_file"
 
-    if run_cli_expect_fail "failed to upload 1 files" "files push $empty_file /test-edge/empty.txt"; then
+    if run_cli_expect_fail "File is required" "files push $empty_file /test-edge/empty.txt"; then
         test_pass "Empty file upload"
     else
         test_fail "Empty file upload" "Upload failed"
     fi
 
+    # FileUri includes: invisible space (U+200B), non-breaking space (U+00A0)
+    local special_file_uri="test​ file with spaces.txt"
     # Test file with special characters in name
-    # TODO : add special characters to this test
-    local special_file="${TEST_FILES_DIR}/test file with spaces.txt"
+    local special_file="${TEST_FILES_DIR}/$special_file_uri"
     echo "test content" > "$special_file"
-    
-    if run_cli "files push \"$special_file\" \"/test-edge/special file.txt\""; then
+
+    if run_cli "files push \"$special_file\" \"$special_file_uri\""; then
         test_pass "Special characters in filename"
-        run_cli "files delete '/test-edge/special file.txt'" || true
+        run_cli "files delete '$special_file_uri'" || true
     else
         test_fail "Special characters in filename" "Upload failed"
     fi
@@ -386,13 +428,18 @@ test_snapshots() {
     
     # Test help output
     snapshot_test "help_main" "--help"
-    snapshot_test "help_files" "files --help"
-    snapshot_test "help_mt" "mt --help"
-    snapshot_test "help_mt_translate" "mt translate --help"
     snapshot_test "help_projects" "projects --help"
-    
+
+    # Test files commnads
+    snapshot_test "help_files" "files --help"
+
+    # Test mt commands
+    snapshot_test "help_mt" "mt --help"
+    snapshot_test "help_mt_detect" "mt detect --help"
+    snapshot_test "help_mt_translate" "mt translate --help"
+
     # Test list formatting
-    snapshot_test "projects_list_short" "projects list --short"
+    snapshot_test "projects_info" "projects info"
     snapshot_test "locales_source" "projects locales --source"
 }
 
@@ -431,7 +478,7 @@ EOF
     echo "Total Tests:    $TESTS_TOTAL"
     echo "Passed:         $TESTS_PASSED"
     echo "Failed:         $TESTS_FAILED"
-    echo "Success Rate:   $(( TESTS_PASSED * 100 / (TESTS_PASSED + $TESTS_FAILED) ))%"
+    echo "Success Rate:   $(( TESTS_PASSED * 100 / (TESTS_PASSED + TESTS_FAILED) ))%"
     echo ""
     echo "Log file:       $LOG_FILE"
     echo "Results file:   $RESULTS_FILE"

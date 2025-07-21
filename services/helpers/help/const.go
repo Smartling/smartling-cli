@@ -26,7 +26,7 @@ Special formatting functions are available:
 `
 
 	// GlobPattern is glob pattern
-	GlobPattern = `argument support globbing with following patterns:
+	GlobPattern = `argument supports globbing with following patterns:
 
   > ** — matches any number of any chars;
   > *  — matches any number of chars except '/';

@@ -1,9 +1,20 @@
 package files
 
 import (
+	"context"
+	"time"
+
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 
 	sdk "github.com/Smartling/api-sdk-go"
+	batchapi "github.com/Smartling/api-sdk-go/api/batches"
+)
+
+const defaultJobNameTemplate = "CLI uploads"
+
+var (
+	pollingInterval = 5 * time.Second
+	pollingDuration = 5 * time.Minute
 )
 
 // Service defines behaviors to interact with Smartling files.
@@ -12,7 +23,7 @@ type Service interface {
 	RunImport(params ImportParams) error
 	RunList(formatType string, short bool, uri string) error
 	RunPull(params PullParams) error
-	RunPush(params PushParams) error
+	RunPush(ctx context.Context, params PushParams) error
 	RunRename(oldURI, newURI string) error
 	RunStatus(params StatusParams) error
 }
@@ -20,14 +31,20 @@ type Service interface {
 // service provides methods to interact with Smartling files.
 type service struct {
 	APIClient  sdk.APIClient
+	BatchApi   batchapi.Batch
 	Config     config.Config
 	FileConfig config.FileConfig
 }
 
 // NewService creates a new instance of the Service with the provided client, and configurations.
-func NewService(client sdk.APIClient, config config.Config, fileConfig config.FileConfig) Service {
+func NewService(client sdk.APIClient,
+	batchApi batchapi.Batch,
+	config config.Config,
+	fileConfig config.FileConfig,
+) Service {
 	return &service{
 		APIClient:  client,
+		BatchApi:   batchApi,
 		Config:     config,
 		FileConfig: fileConfig,
 	}

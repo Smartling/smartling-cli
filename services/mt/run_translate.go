@@ -16,6 +16,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
+	sdktype "github.com/Smartling/api-sdk-go/helpers/file"
 )
 
 // TranslateParams is the parameters for the RunTranslate method.
@@ -39,7 +40,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 		if err != nil {
 			return nil, err
 		}
-		fileType, found := api.FileTypeByExt[filepath.Ext(file)]
+		fileType, found := sdktype.TypeByExt[filepath.Ext(file)]
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
 		}
@@ -65,8 +66,12 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 			if err != nil {
 				return nil, err
 			}
+			started := time.Now()
 			var processed bool
 			for !processed {
+				if time.Since(started) > pollingDuration {
+					return nil, errors.New("timeout exceeded for polling detect file language progress: FileUID:" + string(uploadFileResponse.FileUID))
+				}
 				rlog.Debugf("check detection progress")
 				detectionProgressResponse, err := s.translationControl.DetectionProgress(p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
 				if err != nil {
@@ -76,7 +81,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 				rlog.Debugf("detection progress state: %s", detectionProgressResponse.State)
 				switch strings.ToUpper(detectionProgressResponse.State) {
 				case api.QueuedTranslatedState, api.ProcessingTranslatedState:
-					time.Sleep(pollingIntervalSeconds)
+					time.Sleep(pollingInterval)
 					continue
 				case api.FailedTranslatedState, api.CanceledTranslatedState, api.CompletedTranslatedState:
 					processed = true
@@ -120,8 +125,12 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 			}
 		}
 
+		started := time.Now()
 		var processed bool
 		for !processed {
+			if time.Since(started) > pollingDuration {
+				return nil, errors.New("timeout exceeded for polling file translation progress FileUID:" + string(uploadFileResponse.FileUID))
+			}
 			rlog.Debugf("check translation progress")
 			progressResponse, err := s.fileTranslator.Progress(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
 			if err != nil {
@@ -134,7 +143,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 			rlog.Debugf("progress state: %s", progressResponse.State)
 			switch strings.ToUpper(progressResponse.State) {
 			case api.QueuedTranslatedState, api.ProcessingTranslatedState:
-				time.Sleep(pollingIntervalSeconds)
+				time.Sleep(pollingInterval)
 				continue
 			case api.FailedTranslatedState, api.CanceledTranslatedState, api.CompletedTranslatedState:
 				processed = true
