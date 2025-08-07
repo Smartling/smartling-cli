@@ -3,6 +3,7 @@ package push
 import (
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
 	"github.com/Smartling/smartling-cli/services/files"
+	"github.com/Smartling/smartling-cli/services/helpers"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
 
 	"github.com/spf13/cobra"
@@ -75,6 +76,10 @@ can be used to override detected file type.
 				return err
 			}
 
+			mDirectives, err := helpers.MKeyValueToMap(directives)
+			if err != nil {
+				return err
+			}
 			p := files.PushParams{
 				URI:         uri,
 				File:        file,
@@ -83,7 +88,7 @@ can be used to override detected file type.
 				Authorize:   authorize,
 				Directory:   directory,
 				FileType:    fileType,
-				Directives:  directives,
+				Directives:  mDirectives,
 				JobIDOrName: job,
 			}
 

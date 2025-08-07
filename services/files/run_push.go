@@ -18,7 +18,6 @@ import (
 
 	batchapi "github.com/Smartling/api-sdk-go/api/batches"
 	sdktype "github.com/Smartling/api-sdk-go/helpers/file"
-	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -31,7 +30,7 @@ type PushParams struct {
 	Authorize   bool
 	Directory   string
 	FileType    string
-	Directives  []string
+	Directives  map[string]string
 	JobIDOrName string
 }
 
@@ -108,29 +107,6 @@ func (s service) RunPush(ctx context.Context, params PushParams) error {
 	}
 
 	return s.runPush(ctx, params, files, s.Config.ProjectID)
-}
-
-func returnError(err error) bool {
-	if errors.Is(err, sdkerror.NotAuthorizedError{}) {
-		return true
-	}
-
-	for {
-		smartlingAPIError, isSmartlingAPIError := err.(sdkerror.APIError)
-		if isSmartlingAPIError {
-			reasons := map[string]struct{}{
-				"AUTHENTICATION_ERROR":   {},
-				"AUTHORIZATION_ERROR":    {},
-				"MAINTENANCE_MODE_ERROR": {},
-			}
-
-			_, stopExecution := reasons[smartlingAPIError.Code]
-			return stopExecution
-		}
-		if err = errors.Unwrap(err); err == nil {
-			return false
-		}
-	}
 }
 
 func getGitBranch() (string, error) {
@@ -253,6 +229,7 @@ Check that file exists and readable by current user.`,
 			FileType:           fileType,
 			FileUri:            fileUris[fileID],
 			LocalesToAuthorize: locales,
+			Directives:         params.Directives,
 		}
 		uploadFileResponse, err := s.BatchApi.UploadFile(ctx, projectID, createBatchResponse.BatchUID, payload)
 		if err != nil {
