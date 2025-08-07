@@ -33,9 +33,10 @@ type Params struct {
 // BuildConfigFromFlags returns a Config object based on the provided parameters,
 // and an error if any.
 func BuildConfigFromFlags(params Params) (Config, error) {
-	var err error
-
 	path, err := GetPath(params.Directory, params.File, params.IsInit)
+	if err != nil {
+		return Config{}, err
+	}
 
 	config, err := LoadConfigFromFile(path)
 	if err != nil {

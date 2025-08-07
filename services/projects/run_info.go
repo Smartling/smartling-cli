@@ -47,7 +47,9 @@ func (s service) RunInfo() error {
 	}
 
 	for _, row := range info {
-		fmt.Fprintf(tableWriter, "%s\t%s\n", row...)
+		if _, err := fmt.Fprintf(tableWriter, "%s\t%s\n", row...); err != nil {
+			return err
+		}
 	}
 
 	err = table.Render(tableWriter)

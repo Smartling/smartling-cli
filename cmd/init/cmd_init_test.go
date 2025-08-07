@@ -3,6 +3,7 @@ package initialize
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"strings"
 	"testing"
 
@@ -16,7 +17,9 @@ func TestNewInitCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
 	initSrv := srvmocks.NewMockService(t)
 	initSrv.On("RunInit", false).Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunInit was called with: %v", args[0]))
+		if _, err := fmt.Fprintf(buf, "RunInit was called with: %v\n", args[0]); err != nil {
+			log.Panic(err)
+		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
@@ -45,7 +48,9 @@ func TestNewInitCmdDryRun(t *testing.T) {
 	buf := new(bytes.Buffer)
 	initSrv := srvmocks.NewMockService(t)
 	initSrv.On("RunInit", true).Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunInit was called with: %v", args[0]))
+		if _, err := fmt.Fprintf(buf, "RunInit was called with: %v\n", args[0]); err != nil {
+			log.Panic(err)
+		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)

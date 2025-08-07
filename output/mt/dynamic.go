@@ -11,9 +11,8 @@ import (
 
 // Dynamic defines dynamic output mode
 type Dynamic struct {
-	model        Model
-	program      *tea.Program
-	dataProvider TableDataProvider
+	model   Model
+	program *tea.Program
 }
 
 // Init inits Dynamic

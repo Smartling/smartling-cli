@@ -303,7 +303,7 @@ func (s service) getLocales(project string) ([]string, error) {
 		return nil, err
 	}
 	if projectDetails == nil {
-		return nil, fmt.Errorf("no project details found for project: " + project)
+		return nil, fmt.Errorf("no project details found for project: %s", project)
 	}
 	for _, targetLocale := range projectDetails.TargetLocales {
 		locales = append(locales, targetLocale.LocaleID)

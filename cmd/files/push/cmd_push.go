@@ -76,7 +76,7 @@ can be used to override detected file type.
 				return err
 			}
 
-			mDirectives, err := helpers.MKeyValueToMap(directives)
+			directives, err := helpers.MKeyValueToMap(directives)
 			if err != nil {
 				return err
 			}
@@ -88,7 +88,7 @@ can be used to override detected file type.
 				Authorize:   authorize,
 				Directory:   directory,
 				FileType:    fileType,
-				Directives:  mDirectives,
+				Directives:  directives,
 				JobIDOrName: job,
 			}
 
