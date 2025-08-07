@@ -24,11 +24,11 @@ func TestNewPushCmd(t *testing.T) {
 		Authorize:  true,
 		FileType:   "text",
 		Directory:  ".",
-		Directives: []string{"01", "05"},
+		Directives: map[string]string{"key1": "01", "key5": "05"},
 	}
-	filesSrv.On("RunPush", params).Run(func(args mock.Arguments) {
+	filesSrv.On("RunPush", mock.Anything, params).Run(func(args mock.Arguments) {
 		fmt.Fprintln(buf, fmt.Sprintf("RunPush was called with %d args", len(args)))
-		fmt.Fprintln(buf, fmt.Sprintf("params: %v", args[0]))
+		fmt.Fprintln(buf, fmt.Sprintf("params: %v", args[1]))
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
@@ -46,8 +46,8 @@ func TestNewPushCmd(t *testing.T) {
 		"--locale", params.Locales[1],
 		"--branch", params.Branch,
 		"--type", params.FileType,
-		"--directive", params.Directives[0],
-		"--directive", params.Directives[1],
+		"--directive", "key1=01",
+		"--directive", "key5=05",
 	})
 
 	err := cmd.Execute()
@@ -56,7 +56,7 @@ func TestNewPushCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := fmt.Sprintf(`RunPush was called with 1 args
+	expected := fmt.Sprintf(`RunPush was called with 2 args
 params: %v
 `, params)
 
