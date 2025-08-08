@@ -19,10 +19,18 @@ func TestNewListCmd(t *testing.T) {
 	shortArg := true
 	uriArg := "https://example.com:8080/path/to/resource?search=a"
 	filesSrv.On("RunList", formatTypeArg, shortArg, uriArg).Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunList was called with %d args", len(args)))
-		fmt.Fprintln(buf, fmt.Sprintf("format: %v", args[0]))
-		fmt.Fprintln(buf, fmt.Sprintf("short: %v", args[1]))
-		fmt.Fprintln(buf, fmt.Sprintf("uri: %v", args[2]))
+		if _, err := fmt.Fprintf(buf, "RunList was called with %d args\n", len(args)); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := fmt.Fprintf(buf, "format: %v\n", args[0]); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := fmt.Fprintf(buf, "short: %v\n", args[1]); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := fmt.Fprintf(buf, "uri: %v\n", args[2]); err != nil {
+			t.Fatal(err)
+		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)

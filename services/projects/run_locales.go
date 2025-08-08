@@ -49,19 +49,25 @@ func (s service) RunLocales(params LocalesParams) error {
 
 	if params.Source {
 		if params.Short {
-			fmt.Fprintf(tableWriter, "%s\n", details.SourceLocaleID)
+			if _, err := fmt.Fprintf(tableWriter, "%s\n", details.SourceLocaleID); err != nil {
+				return err
+			}
 		} else {
-			fmt.Fprintf(
+			if _, err := fmt.Fprintf(
 				tableWriter,
 				"%s\t%s\n",
 				details.SourceLocaleID,
 				details.SourceLocaleDescription,
-			)
+			); err != nil {
+				return err
+			}
 		}
 	} else {
 		for _, locale := range details.TargetLocales {
 			if params.Short {
-				fmt.Fprintf(tableWriter, "%s\n", locale.LocaleID)
+				if _, err := fmt.Fprintf(tableWriter, "%s\n", locale.LocaleID); err != nil {
+					return err
+				}
 			} else {
 				row, err := format.Execute(locale)
 				if err != nil {

@@ -32,7 +32,9 @@ func (s service) RunList(formatType string, short bool, uri string) error {
 
 	for _, file := range files {
 		if short {
-			fmt.Fprintf(tableWriter, "%s\n", file.FileURI)
+			if _, err := fmt.Fprintf(tableWriter, "%s\n", file.FileURI); err != nil {
+				return err
+			}
 		} else {
 			row, err := format.Execute(file)
 			if err != nil {

@@ -33,7 +33,7 @@ type DetectUpdateRow struct {
 // RenderDetectUpdates applies detect updates to the given table model row
 func RenderDetectUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.DetectUpdates) {
 	rows := t.Rows()
-	if val.ID < 0 || val.ID >= uint32(len(rows)) {
+	if val.ID >= uint32(len(rows)) {
 		rlog.Debugf("row out of range: %d > %d", val.ID, len(rows))
 		return
 	}
@@ -85,9 +85,7 @@ func toDetectTableRow(file string) table.Row {
 }
 
 // DetectDataProvider defines data provider for detect flow
-type DetectDataProvider struct {
-	data []table.Row
-}
+type DetectDataProvider struct{}
 
 // Headers returns headers
 func (t DetectDataProvider) Headers() []table.Column {

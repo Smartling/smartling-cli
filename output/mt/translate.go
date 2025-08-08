@@ -35,7 +35,7 @@ type RowByHeaderName map[string]uint8
 // RenderTranslateUpdates applies translation updates to the given table model row
 func RenderTranslateUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.TranslateUpdates) {
 	rows := t.Rows()
-	if val.ID < 0 || val.ID >= uint32(len(rows)) {
+	if val.ID >= uint32(len(rows)) {
 		rlog.Debugf("row out of range: %d > %d", val.ID, len(rows))
 		return
 	}
@@ -91,9 +91,7 @@ func toTranslateTableRow(file string) table.Row {
 }
 
 // TranslateDataProvider defines data provider for translate flow
-type TranslateDataProvider struct {
-	data []table.Row
-}
+type TranslateDataProvider struct{}
 
 // Headers returns headers
 func (t TranslateDataProvider) Headers() []table.Column {

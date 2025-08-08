@@ -25,15 +25,19 @@ func (s service) RunList(short bool) error {
 
 	for _, project := range projects.Items {
 		if short {
-			fmt.Fprintln(tableWriter, project.ProjectID)
+			if _, err := fmt.Fprint(tableWriter, project.ProjectID); err != nil {
+				return err
+			}
 		} else {
-			fmt.Fprintf(
+			if _, err := fmt.Fprintf(
 				tableWriter,
 				"%s\t%s\t%s\n",
 				project.ProjectID,
 				project.ProjectName,
 				project.SourceLocaleID,
-			)
+			); err != nil {
+				return err
+			}
 		}
 	}
 

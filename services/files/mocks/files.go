@@ -5,6 +5,8 @@
 package filesmocks
 
 import (
+	"context"
+
 	"github.com/Smartling/smartling-cli/services/files"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -253,16 +255,16 @@ func (_c *MockService_RunPull_Call) RunAndReturn(run func(params files.PullParam
 }
 
 // RunPush provides a mock function for the type MockService
-func (_mock *MockService) RunPush(params files.PushParams) error {
-	ret := _mock.Called(params)
+func (_mock *MockService) RunPush(ctx context.Context, params files.PushParams) error {
+	ret := _mock.Called(ctx, params)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunPush")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(files.PushParams) error); ok {
-		r0 = returnFunc(params)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, files.PushParams) error); ok {
+		r0 = returnFunc(ctx, params)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -275,19 +277,25 @@ type MockService_RunPush_Call struct {
 }
 
 // RunPush is a helper method to define mock.On call
+//   - ctx context.Context
 //   - params files.PushParams
-func (_e *MockService_Expecter) RunPush(params interface{}) *MockService_RunPush_Call {
-	return &MockService_RunPush_Call{Call: _e.mock.On("RunPush", params)}
+func (_e *MockService_Expecter) RunPush(ctx interface{}, params interface{}) *MockService_RunPush_Call {
+	return &MockService_RunPush_Call{Call: _e.mock.On("RunPush", ctx, params)}
 }
 
-func (_c *MockService_RunPush_Call) Run(run func(params files.PushParams)) *MockService_RunPush_Call {
+func (_c *MockService_RunPush_Call) Run(run func(ctx context.Context, params files.PushParams)) *MockService_RunPush_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 files.PushParams
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(files.PushParams)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 files.PushParams
+		if args[1] != nil {
+			arg1 = args[1].(files.PushParams)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -298,7 +306,7 @@ func (_c *MockService_RunPush_Call) Return(err error) *MockService_RunPush_Call 
 	return _c
 }
 
-func (_c *MockService_RunPush_Call) RunAndReturn(run func(params files.PushParams) error) *MockService_RunPush_Call {
+func (_c *MockService_RunPush_Call) RunAndReturn(run func(ctx context.Context, params files.PushParams) error) *MockService_RunPush_Call {
 	_c.Call.Return(run)
 	return _c
 }

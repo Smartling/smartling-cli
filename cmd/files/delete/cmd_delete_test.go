@@ -17,8 +17,8 @@ func TestNewDeleteCmd(t *testing.T) {
 	filesSrv := srvmocks.NewMockService(t)
 	uriArg := "https://example.com:8080/path/to/resource?search=a"
 	filesSrv.On("RunDelete", uriArg).Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunDelete was called with %d args", len(args)))
-		fmt.Fprintln(buf, fmt.Sprintf("uri: %v", args[0]))
+		fmt.Fprintf(buf, "RunDelete was called with %d args\n", len(args))
+		fmt.Fprintf(buf, "uri: %v\n", args[0])
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)

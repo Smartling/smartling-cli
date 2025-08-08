@@ -25,8 +25,8 @@ func TestNewImportCmd(t *testing.T) {
 		Overwrite:       true,
 	}
 	filesSrv.On("RunImport", params).Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunImport was called with %d args", len(args)))
-		fmt.Fprintln(buf, fmt.Sprintf("params: %v", args[0]))
+		fmt.Fprintf(buf, "RunImport was called with %d args\n", len(args))
+		fmt.Fprintf(buf, "params: %v\n", args[0])
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)

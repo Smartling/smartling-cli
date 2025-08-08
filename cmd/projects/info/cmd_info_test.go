@@ -16,7 +16,9 @@ func TestNewInfoCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
 	projectsSrv := srvmocks.NewMockService(t)
 	projectsSrv.On("RunInfo").Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunInfo was called with %d args", len(args)))
+		if _, err := fmt.Fprintf(buf, "RunInfo was called with %d args\n", len(args)); err != nil {
+			t.Fatal(err)
+		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)

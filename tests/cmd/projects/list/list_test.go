@@ -17,7 +17,7 @@ func TestProjectList(t *testing.T) {
 	}{
 		{
 			name:              "full list",
-			args:              append(subCommands),
+			args:              subCommands,
 			expectedOutputs:   []string{"en", "CLI", "en-US"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
