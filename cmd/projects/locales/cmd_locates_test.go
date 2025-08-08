@@ -3,7 +3,6 @@ package locales
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
@@ -24,10 +23,10 @@ func TestNewLocaLesCmd(t *testing.T) {
 	}
 	projectsSrv.On("RunLocales", params).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunLocales was called with %d args", len(args)); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 		if _, err := fmt.Fprintf(buf, "params: %v", args[0]); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 	}).Return(nil)
 

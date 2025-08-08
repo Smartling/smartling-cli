@@ -3,7 +3,6 @@ package status
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
@@ -24,10 +23,10 @@ func TestNewStatusCmd(t *testing.T) {
 	}
 	filesSrv.On("RunStatus", params).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunStatus was called with %d args\n", len(args)); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 		if _, err := fmt.Fprintf(buf, "params: %v\n", args[0]); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 	}).Return(nil)
 

@@ -3,7 +3,6 @@ package list
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
@@ -19,10 +18,10 @@ func TestNewListCmd(t *testing.T) {
 	shortArg := true
 	projectsSrv.On("RunList", shortArg).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunList was called with %d args\n", len(args)); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 		if _, err := fmt.Fprintf(buf, "short: %v\n", args[0]); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 	}).Return(nil)
 

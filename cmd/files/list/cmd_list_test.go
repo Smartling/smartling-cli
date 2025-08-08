@@ -3,7 +3,6 @@ package list
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
@@ -21,16 +20,16 @@ func TestNewListCmd(t *testing.T) {
 	uriArg := "https://example.com:8080/path/to/resource?search=a"
 	filesSrv.On("RunList", formatTypeArg, shortArg, uriArg).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunList was called with %d args\n", len(args)); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 		if _, err := fmt.Fprintf(buf, "format: %v\n", args[0]); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 		if _, err := fmt.Fprintf(buf, "short: %v\n", args[1]); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 		if _, err := fmt.Fprintf(buf, "uri: %v\n", args[2]); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 	}).Return(nil)
 

@@ -3,7 +3,6 @@ package rename_test
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
@@ -21,13 +20,13 @@ func TestNewRenameCmd(t *testing.T) {
 	newArg := "_new"
 	filesSrv.On("RunRename", oldArg, newArg).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunRename was called with %d args\n", len(args)); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 		if _, err := fmt.Fprintf(buf, "old: %v\n", args[0]); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 		if _, err := fmt.Fprintf(buf, "new: %v\n", args[1]); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 	}).Return(nil)
 

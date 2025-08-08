@@ -3,7 +3,6 @@ package pull
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
@@ -28,10 +27,10 @@ func TestNewPullCmd(t *testing.T) {
 	}
 	filesSrv.On("RunPull", params).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunPull was called with %d args\n", len(args)); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 		if _, err := fmt.Fprintf(buf, "params: %v\n", args[0]); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 	}).Return(nil)
 

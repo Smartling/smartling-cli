@@ -3,7 +3,6 @@ package info
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
@@ -18,7 +17,7 @@ func TestNewInfoCmd(t *testing.T) {
 	projectsSrv := srvmocks.NewMockService(t)
 	projectsSrv.On("RunInfo").Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunInfo was called with %d args\n", len(args)); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 	}).Return(nil)
 

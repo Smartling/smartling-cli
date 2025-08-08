@@ -229,7 +229,10 @@ Check that file exists and readable by current user.`,
 			FileType:           fileType,
 			FileUri:            fileUris[fileID],
 			LocalesToAuthorize: locales,
-			Directives:         params.Directives,
+		}
+		payload.Directives = make(map[string]string, len(params.Directives))
+		for key, val := range params.Directives {
+			payload.Directives["smartling."+key] = val
 		}
 		uploadFileResponse, err := s.BatchApi.UploadFile(ctx, projectID, createBatchResponse.BatchUID, payload)
 		if err != nil {

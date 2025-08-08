@@ -3,7 +3,6 @@ package push
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 
@@ -29,10 +28,10 @@ func TestNewPushCmd(t *testing.T) {
 	}
 	filesSrv.On("RunPush", mock.Anything, params).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunPush was called with %d args\n", len(args)); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 		if _, err := fmt.Fprintf(buf, "params: %v\n", args[1]); err != nil {
-			log.Panic(err)
+			t.Fatal(err)
 		}
 	}).Return(nil)
 
