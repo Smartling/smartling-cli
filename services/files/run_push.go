@@ -16,8 +16,7 @@ import (
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
-	batchapi "github.com/Smartling/api-sdk-go/api/batches"
-	sdktype "github.com/Smartling/api-sdk-go/helpers/file"
+	api "github.com/Smartling/api-sdk-go/api/batches"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -165,7 +164,7 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 	if re := regexp.MustCompile(pattern); params.JobIDOrName != "" && re.MatchString(params.JobIDOrName) {
 		jobUID = params.JobIDOrName
 	}
-	var createJobResponse batchapi.CreateJobResponse
+	var createJobResponse api.CreateJobResponse
 	if jobUID == "" {
 		timeZoneName, err := timeZoneName()
 		if err != nil {
@@ -175,12 +174,12 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 		if nameTemplate == "" {
 			nameTemplate = defaultJobNameTemplate
 		}
-		payload := batchapi.CreateJobPayload{
+		payload := api.CreateJobPayload{
 			NameTemplate:    nameTemplate,
 			Description:     params.JobIDOrName,
 			TargetLocaleIds: params.Locales,
-			Mode:            batchapi.ReuseExistingMode,
-			Salt:            batchapi.RandomAlphanumericSalt,
+			Mode:            api.ReuseExistingMode,
+			Salt:            api.RandomAlphanumericSalt,
 			TimeZoneName:    timeZoneName,
 		}
 		createJobResponse, err = s.BatchApi.CreateJob(ctx, projectID, payload)
@@ -190,7 +189,7 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 		jobUID = createJobResponse.TranslationJobUID
 	}
 
-	createBatchResponse, err := s.BatchApi.Create(ctx, projectID, batchapi.CreateBatchPayload{
+	createBatchResponse, err := s.BatchApi.Create(ctx, projectID, api.CreateBatchPayload{
 		Authorize:         params.Authorize,
 		TranslationJobUID: jobUID,
 		FileUris:          fileUris,
@@ -212,7 +211,7 @@ Check that file exists and readable by current user.`,
 				},
 			}
 		}
-		fileType, found := sdktype.TypeByExt[filepath.Ext(file)]
+		fileType, found := api.TypeByExt[filepath.Ext(file)]
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
 		}
@@ -223,7 +222,7 @@ Check that file exists and readable by current user.`,
 				return err
 			}
 		}
-		payload := batchapi.UploadFilePayload{
+		payload := api.UploadFilePayload{
 			Filename:           fileUris[fileID],
 			File:               content,
 			FileType:           fileType,
