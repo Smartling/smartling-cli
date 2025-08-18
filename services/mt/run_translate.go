@@ -16,7 +16,6 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
-	sdktype "github.com/Smartling/api-sdk-go/helpers/file"
 )
 
 // TranslateParams is the parameters for the RunTranslate method.
@@ -40,7 +39,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 		if err != nil {
 			return nil, err
 		}
-		fileType, found := sdktype.TypeByExt[filepath.Ext(file)]
+		fileType, found := api.TypeByExt[filepath.Ext(file)]
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
 		}
