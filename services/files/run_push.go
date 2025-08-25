@@ -213,18 +213,18 @@ Check that file exists and readable by current user.`,
 			}
 		}
 		var fileType api.Type
+		var found bool
 		if params.FileType != "" {
-			var found bool
 			fileType, found = smfile.ParseType(api.FirstType, api.LastType, params.FileType)
 			if !found {
-				rlog.Debugf("unknown override file type: %s", file)
+				rlog.Debugf("unknown override file type: %s", params.FileType)
 			}
 		}
-		if fileType == 0 {
+		if !found {
 			var found bool
 			fileType, found = api.TypeByExt[filepath.Ext(file)]
 			if !found {
-				rlog.Debugf("unknown file type: %s", file)
+				rlog.Debugf("unknown file type for file: %s", file)
 			}
 		}
 		locales := params.Locales

@@ -41,18 +41,18 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 			return nil, err
 		}
 		var fileType api.Type
+		var found bool
 		if params.OverrideFileType != "" {
-			var found bool
 			fileType, found = smfile.ParseType(api.FirstType, api.LastType, params.OverrideFileType)
 			if !found {
-				rlog.Debugf("unknown override file type: %s", file)
+				rlog.Debugf("unknown override file type: %s", params.OverrideFileType)
 			}
 		}
-		if fileType == 0 {
+		if !found {
 			var found bool
 			fileType, found = api.TypeByExt[filepath.Ext(file)]
 			if !found {
-				rlog.Debugf("unknown file type: %s", file)
+				rlog.Debugf("unknown file type for file: %s", file)
 			}
 		}
 		request := api.UploadFileRequest{
