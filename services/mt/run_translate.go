@@ -16,6 +16,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
+	smfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 )
 
 // TranslateParams is the parameters for the RunTranslate method.
@@ -30,27 +31,38 @@ type TranslateParams struct {
 	AccountUID       api.AccountUID
 }
 
-func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []string, updates chan any) ([]TranslateOutput, error) {
+func (s service) RunTranslate(ctx context.Context, params TranslateParams, files []string, updates chan any) ([]TranslateOutput, error) {
 	var res []TranslateOutput
 
 	for fileID, file := range files {
 		rlog.Debugf("Running translate for file %s", file)
-		contents, err := getContent(p.InputDirectory, file)
+		contents, err := getContent(params.InputDirectory, file)
 		if err != nil {
 			return nil, err
 		}
-		fileType, found := api.TypeByExt[filepath.Ext(file)]
-		if !found {
-			rlog.Debugf("unknown file type: %s", file)
+		var fileType api.Type
+		if params.OverrideFileType != "" {
+			var found bool
+			fileType, found = smfile.ParseType(api.FirstType, api.LastType, params.OverrideFileType)
+			if !found {
+				rlog.Debugf("unknown override file type: %s", file)
+			}
+		}
+		if fileType == 0 {
+			var found bool
+			fileType, found = api.TypeByExt[filepath.Ext(file)]
+			if !found {
+				rlog.Debugf("unknown file type: %s", file)
+			}
 		}
 		request := api.UploadFileRequest{
 			File:               contents,
-			LocalesToAuthorize: []string{p.SourceLocale},
+			LocalesToAuthorize: []string{params.SourceLocale},
 			FileType:           fileType,
-			Directives:         p.Directives,
+			Directives:         params.Directives,
 		}
 		rlog.Debugf("start upload")
-		uploadFileResponse, err := s.uploader.UploadFile(p.AccountUID, filepath.Base(file), request)
+		uploadFileResponse, err := s.uploader.UploadFile(params.AccountUID, filepath.Base(file), request)
 		if err != nil {
 			return nil, err
 		}
@@ -59,9 +71,9 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 		update := TranslateUpdates{ID: uint32(fileID), Upload: pointer.NewP(true)}
 		updates <- update
 
-		if p.SourceLocale == "" {
+		if params.SourceLocale == "" {
 			rlog.Debugf("detect language")
-			detectFileLanguageResponse, err := s.translationControl.DetectFileLanguage(p.AccountUID, uploadFileResponse.FileUID)
+			detectFileLanguageResponse, err := s.translationControl.DetectFileLanguage(params.AccountUID, uploadFileResponse.FileUID)
 			if err != nil {
 				return nil, err
 			}
@@ -72,7 +84,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 					return nil, errors.New("timeout exceeded for polling detect file language progress: FileUID:" + string(uploadFileResponse.FileUID))
 				}
 				rlog.Debugf("check detection progress")
-				detectionProgressResponse, err := s.translationControl.DetectionProgress(p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
+				detectionProgressResponse, err := s.translationControl.DetectionProgress(params.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
 				if err != nil {
 					return nil, err
 				}
@@ -92,17 +104,17 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 					break
 				}
 				if len(detectionProgressResponse.DetectedSourceLanguages) > 0 {
-					p.SourceLocale = detectionProgressResponse.DetectedSourceLanguages[0].LanguageID
+					params.SourceLocale = detectionProgressResponse.DetectedSourceLanguages[0].LanguageID
 				}
 			}
 		}
 
-		params := api.StartParams{
-			SourceLocaleIO:  p.SourceLocale,
-			TargetLocaleIDs: p.TargetLocales,
+		startParams := api.StartParams{
+			SourceLocaleID:  params.SourceLocale,
+			TargetLocaleIDs: params.TargetLocales,
 		}
 		rlog.Debugf("start translation")
-		translatorStartResponse, err := s.fileTranslator.Start(p.AccountUID, uploadFileResponse.FileUID, params)
+		translatorStartResponse, err := s.fileTranslator.Start(params.AccountUID, uploadFileResponse.FileUID, startParams)
 		if err != nil {
 			return nil, err
 		}
@@ -131,7 +143,7 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 				return nil, errors.New("timeout exceeded for polling file translation progress FileUID:" + string(uploadFileResponse.FileUID))
 			}
 			rlog.Debugf("check translation progress")
-			progressResponse, err := s.fileTranslator.Progress(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
+			progressResponse, err := s.fileTranslator.Progress(params.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID)
 			if err != nil {
 				return nil, err
 			}
@@ -172,21 +184,21 @@ func (s service) RunTranslate(ctx context.Context, p TranslateParams, files []st
 
 			for _, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
 				rlog.Debugf("download start")
-				reader, err := s.downloader.File(p.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID, localeProcessStatus.LocaleID)
+				reader, err := s.downloader.File(params.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID, localeProcessStatus.LocaleID)
 				if err != nil {
 					return nil, err
 				}
 				rlog.Debugf("download finished")
 				ext := filepath.Ext(file)
 				filenameLocale := strings.TrimSuffix(file, ext) + "_" + localeProcessStatus.LocaleID + ext
-				outputDirectory, err := filepath.Abs(p.OutputDirectory)
+				outputDirectory, err := filepath.Abs(params.OutputDirectory)
 				if err != nil {
 					return nil, clierror.UIError{
 						Err:         err,
 						Operation:   "get absolute output directory",
 						Description: "unable to get absolute path for output directory",
 						Fields: map[string]string{
-							"outputDirectory": p.OutputDirectory,
+							"outputDirectory": params.OutputDirectory,
 						},
 					}
 				}
