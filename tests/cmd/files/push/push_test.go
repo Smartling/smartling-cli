@@ -48,7 +48,7 @@ func TestFilesPush(t *testing.T) {
 			name:              "Override file type",
 			args:              append(subCommands, filename, "--type", "PLAIN_TEXT"),
 			expectedOutputs:   []string{filename, "(PLAIN_TEXT)", "successfully", "ACCEPTED"},
-			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR", "error", "errors"},
 			wantErr:           false,
 		},
 		{

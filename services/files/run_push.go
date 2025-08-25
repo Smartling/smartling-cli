@@ -17,6 +17,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/batches"
+	smfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -211,9 +212,20 @@ Check that file exists and readable by current user.`,
 				},
 			}
 		}
-		fileType, found := api.TypeByExt[filepath.Ext(file)]
+		var fileType api.Type
+		var found bool
+		if params.FileType != "" {
+			fileType, found = smfile.ParseType(api.FirstType, api.LastType, params.FileType)
+			if !found {
+				rlog.Debugf("unknown override file type: %s", params.FileType)
+			}
+		}
 		if !found {
-			rlog.Debugf("unknown file type: %s", file)
+			var found bool
+			fileType, found = api.TypeByExt[filepath.Ext(file)]
+			if !found {
+				rlog.Debugf("unknown file type for file: %s", file)
+			}
 		}
 		locales := params.Locales
 		if len(locales) == 0 {
