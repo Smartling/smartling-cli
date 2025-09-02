@@ -42,7 +42,7 @@ can be used to override detected file type.
   > ?  — matches any single char except '/';
   > [xyz]   — matches 'x', 'y' or 'z' charachers;
   > [!xyz]  — matches not 'x', 'y' or 'z' charachers;
-  > {a,b,c} — matches alternatives a, b or c; </uri>
+  > {a,b,c} — matches alternatives a, b or c; </file>
 
 
   --user <user>

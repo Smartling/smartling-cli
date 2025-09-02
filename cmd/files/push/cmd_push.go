@@ -55,7 +55,7 @@ File type will be deduced from file extension. If file extension is unknown,
 type should be specified manually by using --type option. That option also
 can be used to override detected file type.
 
-<file> ` + help.GlobPattern + ` </uri>
+<file> ` + help.GlobPattern + ` </file>
 
 ` + help.AuthenticationOptions,
 		Example: `
