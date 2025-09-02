@@ -21,7 +21,7 @@ func NewDeleteCmd(initializer files.SrvInitializer) *cobra.Command {
 
 Removes files from project according to specified pattern.
 
-<uri> ` + help.GlobPattern + ` </uri>
+` + "`<uri>` " + help.GlobPattern + ` 
 
 If special value of "-" is specified as <uri>, then program will expect
 to read files list from stdin:

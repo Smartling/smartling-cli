@@ -17,14 +17,14 @@ to read files list from stdin:
 
   cat files.txt | smartling-cli files pull -
 
-<uri> argument supports globbing with following patterns:
+`<uri>` argument supports globbing with following patterns:
 
   > ** — matches any number of any chars;
   > *  — matches any number of chars except '/';
   > ?  — matches any single char except '/';
   > [xyz]   — matches 'x', 'y' or 'z' charachers;
   > [!xyz]  — matches not 'x', 'y' or 'z' charachers;
-  > {a,b,c} — matches alternatives a, b or c; </uri>
+  > {a,b,c} — matches alternatives a, b or c; 
 
 If --locale flag is not specified, all available locales are downloaded. To
 see available locales, use "status" command.

@@ -8,14 +8,14 @@ smartling-cli files delete — removes files from project.
 
 Removes files from project according to specified pattern.
 
-<uri> argument supports globbing with following patterns:
+`<uri>` argument supports globbing with following patterns:
 
   > ** — matches any number of any chars;
   > *  — matches any number of chars except '/';
   > ?  — matches any single char except '/';
   > [xyz]   — matches 'x', 'y' or 'z' charachers;
   > [!xyz]  — matches not 'x', 'y' or 'z' charachers;
-  > {a,b,c} — matches alternatives a, b or c; </uri>
+  > {a,b,c} — matches alternatives a, b or c; 
 
 If special value of "-" is specified as <uri>, then program will expect
 to read files list from stdin:

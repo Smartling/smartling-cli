@@ -42,7 +42,7 @@ Following variables are available:
   > .LastUploaded — timestamp when file was last uploaded;
   > .HasInstructions — true/false if file has translation instructions;
 
-<uri> ` + help.GlobPattern + ` </uri>
+` + "`<uri>` " + help.GlobPattern + `
 
 
 Available options:

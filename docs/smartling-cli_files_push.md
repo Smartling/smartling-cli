@@ -35,14 +35,14 @@ File type will be deduced from file extension. If file extension is unknown,
 type should be specified manually by using --type option. That option also
 can be used to override detected file type.
 
-<file> argument supports globbing with following patterns:
+`<file>` argument supports globbing with following patterns:
 
   > ** — matches any number of any chars;
   > *  — matches any number of chars except '/';
   > ?  — matches any single char except '/';
   > [xyz]   — matches 'x', 'y' or 'z' charachers;
   > [!xyz]  — matches not 'x', 'y' or 'z' charachers;
-  > {a,b,c} — matches alternatives a, b or c; </file>
+  > {a,b,c} — matches alternatives a, b or c; 
 
 
   --user <user>

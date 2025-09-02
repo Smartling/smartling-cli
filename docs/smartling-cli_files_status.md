@@ -41,14 +41,14 @@ Following variables are available:
   > .FileURI — full file URI in Smartling system;
   > .Locale — locale ID for translated file and empty for source file;
 
-<uri> argument supports globbing with following patterns:
+`<uri>` argument supports globbing with following patterns:
 
   > ** — matches any number of any chars;
   > *  — matches any number of chars except '/';
   > ?  — matches any single char except '/';
   > [xyz]   — matches 'x', 'y' or 'z' charachers;
   > [!xyz]  — matches not 'x', 'y' or 'z' charachers;
-  > {a,b,c} — matches alternatives a, b or c; </uri>
+  > {a,b,c} — matches alternatives a, b or c; 
 
 
 Available options:

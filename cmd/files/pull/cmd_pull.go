@@ -40,7 +40,7 @@ to read files list from stdin:
 
   cat files.txt | smartling-cli files pull -
 
-<uri> ` + help.GlobPattern + ` </uri>
+` + "`<uri>` " + help.GlobPattern + ` 
 
 If --locale flag is not specified, all available locales are downloaded. To
 see available locales, use "status" command.

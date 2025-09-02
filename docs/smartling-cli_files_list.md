@@ -34,14 +34,14 @@ Following variables are available:
   > .LastUploaded — timestamp when file was last uploaded;
   > .HasInstructions — true/false if file has translation instructions;
 
-<uri> argument supports globbing with following patterns:
+`<uri>` argument supports globbing with following patterns:
 
   > ** — matches any number of any chars;
   > *  — matches any number of chars except '/';
   > ?  — matches any single char except '/';
   > [xyz]   — matches 'x', 'y' or 'z' charachers;
   > [!xyz]  — matches not 'x', 'y' or 'z' charachers;
-  > {a,b,c} — matches alternatives a, b or c; </uri>
+  > {a,b,c} — matches alternatives a, b or c;
 
 
 Available options:
