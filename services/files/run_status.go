@@ -110,14 +110,16 @@ func (s service) RunStatus(params StatusParams) error {
 				state = "missing"
 			}
 
-			writeFileStatus(tableWriter, map[string]string{
+			if err := writeFileStatus(tableWriter, map[string]string{
 				"Path":     path,
 				"Locale":   locale,
 				"State":    state,
 				"Progress": progress,
 				"Strings":  fmt.Sprint(translation.CompletedStringCount),
 				"Words":    fmt.Sprint(translation.CompletedWordCount),
-			})
+			}); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -129,8 +131,8 @@ func (s service) RunStatus(params StatusParams) error {
 	return nil
 }
 
-func writeFileStatus(table *tabwriter.Writer, row map[string]string) {
-	fmt.Fprintf(
+func writeFileStatus(table *tabwriter.Writer, row map[string]string) error {
+	if _, err := fmt.Fprintf(
 		table,
 		"%s\t%s\t%s\t%s\t%s\t%s\n",
 		row["Path"],
@@ -139,7 +141,10 @@ func writeFileStatus(table *tabwriter.Writer, row map[string]string) {
 		row["Progress"],
 		row["Strings"],
 		row["Words"],
-	)
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
 func isFileExists(path string) bool {

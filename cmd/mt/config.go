@@ -37,6 +37,9 @@ func BindFileConfig(cmd *cobra.Command) (FileConfig, error) {
 	dir := resolveConfigDirectory(cmd)
 	filename := resolveConfigFile(cmd)
 	path, err := config.GetPath(dir, filename, false)
+	if err != nil {
+		return FileConfig{}, err
+	}
 	var config FileConfig
 	data, err := os.ReadFile(path)
 	if err != nil && os.IsNotExist(err) {

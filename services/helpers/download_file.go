@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -69,7 +70,11 @@ func DownloadFile(
 		)
 	}
 
-	defer writer.Close()
+	defer func() {
+		if err := writer.Close(); err != nil {
+			fmt.Printf("unable to close output file: %s\n", err)
+		}
+	}()
 
 	_, err = io.Copy(writer, reader)
 	if err != nil {

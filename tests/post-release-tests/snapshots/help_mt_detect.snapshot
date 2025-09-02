@@ -1,0 +1,42 @@
+Detect the source language of files using Smartling's File MT API.
+
+Usage:
+  smartling-cli mt detect <file|pattern> [flags]
+
+Flags:
+      --format string            Output format template.
+                                 Default: {{.File}}	{{.Language}}
+                                 
+                                 {{.File}} - Original file path
+                                 {{.Language}} - Detected language code (default "{{.File}}\t{{.Language}}\n")
+  -h, --help                     help for detect
+      --input-directory string   Input directory with files (default ".")
+  -s, --short                    Output only detected languages.
+      --type string              Override the automatically detected file type. 
+                                 A complete list of supported types can be found in the API documentation:
+                                 https://api-reference.smartling.com/#tag/File-Machine-Translations-(MT)/operation/fileUpload
+
+Global Flags:
+  -a, --account string               Account ID to operate on.
+                                     This option overrides config value "account_id".
+  -c, --config string                Config file in YAML format.
+                                     By default CLI will look for file named
+                                     "smartling.yml" in current directory and in all
+                                     intermediate parents, emulating git behavior.
+  -k, --insecure                     Skip HTTPS certificate validation.
+      --operation-directory string   Sets directory to operate on, usually, to store or to
+                                     read files.  Depends on command. (default ".")
+      --output string                Output format: table, json, simple (default "simple")
+      --output-mode string           Output mode: dynamic, static (default "static")
+  -p, --project string               Project ID to operate on.
+                                     This option overrides config value "project_id".
+      --proxy string                 Use specified URL as proxy server.
+      --secret string                Token Secret which will be used for authentication.
+                                     This option overrides config value "secret".
+      --smartling-url string         Specify base Smartling URL, merely for testing
+                                     purposes.
+      --threads uint32               If command can be executed concurrently, it will be
+                                     executed for at most <number> of threads. (default 4)
+      --user string                  User ID which will be used for authentication.
+                                     This option overrides config value "user_id".
+  -v, --verbose count                Verbose logging

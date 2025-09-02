@@ -17,8 +17,12 @@ func TestNewListCmd(t *testing.T) {
 	projectsSrv := srvmocks.NewMockService(t)
 	shortArg := true
 	projectsSrv.On("RunList", shortArg).Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunList was called with %d args", len(args)))
-		fmt.Fprintln(buf, fmt.Sprintf("short: %v", args[0]))
+		if _, err := fmt.Fprintf(buf, "RunList was called with %d args\n", len(args)); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := fmt.Fprintf(buf, "short: %v\n", args[0]); err != nil {
+			t.Fatal(err)
+		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)

@@ -71,6 +71,7 @@ _linter:
 	go install github.com/mgechev/revive@v1.10.0
 
 lint:
+	golangci-lint run ./... && \
 	revive -config .revive.toml ./...
 
 _mockery-install:

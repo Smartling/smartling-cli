@@ -19,9 +19,15 @@ func TestNewRenameCmd(t *testing.T) {
 	oldArg := "_old"
 	newArg := "_new"
 	filesSrv.On("RunRename", oldArg, newArg).Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunRename was called with %d args", len(args)))
-		fmt.Fprintln(buf, fmt.Sprintf("old: %v", args[0]))
-		fmt.Fprintln(buf, fmt.Sprintf("new: %v", args[1]))
+		if _, err := fmt.Fprintf(buf, "RunRename was called with %d args\n", len(args)); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := fmt.Fprintf(buf, "old: %v\n", args[0]); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := fmt.Fprintf(buf, "new: %v\n", args[1]); err != nil {
+			t.Fatal(err)
+		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)

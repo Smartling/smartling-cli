@@ -4,9 +4,9 @@ go 1.24.3
 
 require (
 	dario.cat/mergo v1.0.2
-	github.com/Smartling/api-sdk-go v0.0.0-20250710055855-1a14ef42c0b4
+	github.com/Smartling/api-sdk-go v0.0.0-20250825152248-be95181892e1
 	github.com/charmbracelet/bubbles v0.21.0
-	github.com/charmbracelet/bubbletea v1.3.4
+	github.com/charmbracelet/bubbletea v1.3.6
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/gobwas/glob v0.2.3
 	github.com/goccy/go-yaml v1.18.0
@@ -43,7 +43,7 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/zazab/zhash v0.0.0-20221031090444-2b0d50417446 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/term v0.33.0 // indirect
 	golang.org/x/text v0.27.0 // indirect

@@ -32,7 +32,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			return nil, err
 		}
 
-		fileType, found := api.FileTypeByExt[filepath.Ext(file)]
+		fileType, found := api.TypeByExt[filepath.Ext(file)]
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
 		}
@@ -60,8 +60,12 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		update.Detect = pointer.NewP("start")
 		updates <- update
 
+		started := time.Now()
 		var processed bool
 		for !processed {
+			if time.Since(started) > pollingDuration {
+				return nil, errors.New("timeout exceeded for polling detection progress of LanguageDetectionUID: " + detectFileLanguageResponse.LanguageDetectionUID)
+			}
 			rlog.Debugf("check detection progress")
 			detectionProgressResponse, err := s.translationControl.DetectionProgress(p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
 			if err != nil {
@@ -74,7 +78,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			rlog.Debugf("progress state: %s", detectionProgressResponse.State)
 			switch strings.ToUpper(detectionProgressResponse.State) {
 			case api.QueuedTranslatedState, api.ProcessingTranslatedState:
-				time.Sleep(pollingIntervalSeconds)
+				time.Sleep(pollingInterval)
 				continue
 			case api.FailedTranslatedState, api.CanceledTranslatedState, api.CompletedTranslatedState:
 				processed = true
