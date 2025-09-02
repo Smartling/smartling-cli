@@ -31,6 +31,12 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 		Use:   "detect <file|pattern>",
 		Short: "Detect the source language of files using Smartling's File MT API.",
 		Long:  `Detect the source language of files using Smartling's File MT API.`,
+		Example: `
+# Detect file language
+
+smartling-cli mt detect document.txt
+
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return clierror.UIError{

@@ -40,7 +40,7 @@ to read files list from stdin:
 
   cat files.txt | smartling-cli files pull -
 
-<uri> ` + help.GlobPattern + `
+<uri> ` + help.GlobPattern + ` </uri>
 
 If --locale flag is not specified, all available locales are downloaded. To
 see available locales, use "status" command.
@@ -85,6 +85,11 @@ Available options:
                characters transformed;
     > contextMatchingInstrumented — to use with Chrome Context Capture;
 ` + help.AuthenticationOptions,
+		Example: `
+# Download translated files
+
+smartling-cli files pull "**/*.json" --locale fr-FR --locale de-DE
+`,
 		Run: func(_ *cobra.Command, args []string) {
 			if len(args) > 0 {
 				uri = args[0]

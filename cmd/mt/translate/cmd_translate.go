@@ -39,6 +39,16 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 		Use:   "translate <file|pattern>",
 		Short: "Translate files using Smartling's File Machine Translation API.",
 		Long:  `Translate files using Smartling's File Machine Translation API.`,
+		Example: `
+# Translate with automatic language detection
+
+smartling-cli mt translate document.txt --target-locale es-ES
+
+# Translate with explicit source language
+
+smartling-cli mt translate document.txt --source-locale en --target-locale fr-FR
+
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			if len(args) != 1 {

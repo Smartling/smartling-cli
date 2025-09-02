@@ -18,6 +18,12 @@ func NewFilesCmd() *cobra.Command {
 		Aliases: []string{"f"},
 		Short:   "Used to access various files sub-commands.",
 		Long:    `Used to access various files sub-commands.`,
+		Example: `
+# Check file status across locales
+
+smartling-cli files status
+
+`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
 				if err := cmd.Help(); err != nil {

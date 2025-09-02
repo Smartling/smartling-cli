@@ -42,7 +42,7 @@ Following variables are available:
   > .LastUploaded — timestamp when file was last uploaded;
   > .HasInstructions — true/false if file has translation instructions;
 
-<uri> ` + help.GlobPattern + `
+<uri> ` + help.GlobPattern + ` </uri>
 
 
 Available options:
@@ -55,6 +55,11 @@ Available options:
   --format <format>
     Override default listing format.
 ` + help.AuthenticationOptions,
+		Example: `
+# List project files
+
+smartling-cli files list
+`,
 		Run: func(_ *cobra.Command, args []string) {
 			var uri string
 			if len(args) > 0 {

@@ -50,7 +50,7 @@ Following variables are available:
   > .FileURI — full file URI in Smartling system;
   > .Locale — locale ID for translated file and empty for source file;
 
-<uri> ` + help.GlobPattern + `
+<uri> ` + help.GlobPattern + ` </uri>
 
 
 Available options:

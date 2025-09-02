@@ -12,8 +12,8 @@ require (
 	github.com/goccy/go-yaml v1.18.0
 	github.com/kovetskiy/lorg v1.2.0
 	github.com/reconquest/hierr-go v0.0.0-20170824213838-7d09c0176fd2
-	github.com/spf13/cobra v1.9.1
-	github.com/spf13/pflag v1.0.6
+	github.com/spf13/cobra v1.10.1
+	github.com/spf13/pflag v1.0.9
 	github.com/stretchr/testify v1.10.0
 	github.com/tcnksm/go-input v0.0.0-20180404061846-548a7d7a8ee8
 	golang.org/x/sync v0.16.0

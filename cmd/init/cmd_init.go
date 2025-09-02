@@ -36,7 +36,7 @@ config values prior dialog:
   smartling-cli init --user=your_user_id
 
 Also, --dry-run option can be used to just look at resulting config without
-overwritting anything:
+overwriting anything:
 
   smartling-cli init --dry-run
 
@@ -57,6 +57,18 @@ Default config values can be passed via following options:` +
 			help.AuthenticationOptions + `
   -p --project <project>
     Specify default project.`,
+		Example: `
+# Create a configuration file with your Smartling API credentials:
+# This creates a smartling.yml file in your current directory with your project settings.
+# Note: Running init again will overwrite the existing configuration file.
+
+smartling-cli init
+
+# Dry run of init command without overwriting the existing configuration file.
+
+smartling-cli init --dry-run
+
+`,
 		Run: func(_ *cobra.Command, _ []string) {
 			s, err := srvInitializer.InitSrv()
 			if err != nil {

@@ -36,6 +36,12 @@ Available options:
   -s --short
     List only project IDs.
 ` + help.AuthenticationOptions,
+		Example: `
+# List all projects in your account
+
+smartling-cli projects list
+
+`,
 		Run: func(_ *cobra.Command, _ []string) {
 			s, err := initializer.InitProjectsSrv()
 			if err != nil {
