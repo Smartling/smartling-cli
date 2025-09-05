@@ -30,22 +30,51 @@ if [ -z "$TAG" ]; then
     read -r TAG
 fi
 
-# Validate tag exists
+# Validate tag exists or offer to create it
 if ! git rev-parse --verify "refs/tags/$TAG" >/dev/null 2>&1; then
-    echo "Error: Tag '$TAG' does not exist in this repository."
-    echo "Available tags:"
-    git tag --sort=-version:refname | head -10
-    exit 1
+    echo "Tag '$TAG' does not exist in this repository."
+    echo ""
+    echo "Current HEAD: $(git rev-parse --short HEAD) - $(git log -1 --pretty=format:'%s')"
+    echo ""
+    echo "Would you like to create tag '$TAG' at the current HEAD? (y/N)"
+    read -r CREATE_TAG
+    
+    if [ "$CREATE_TAG" != "y" ] && [ "$CREATE_TAG" != "Y" ]; then
+        echo "Tag creation cancelled."
+        echo "Available tags (excluding v-prefixed tags):"
+        git tag --sort=-version:refname | grep -v "^v" | head -10
+        exit 1
+    fi
+    
+    # Create and push tag
+    echo "Creating tag '$TAG'..."
+    if git tag -a "$TAG" -m "Release $TAG"; then
+        echo "✓ Tag '$TAG' created"
+        echo "Pushing tag to remote..."
+        if git push origin "$TAG"; then
+            echo "✓ Tag '$TAG' pushed to remote"
+        else
+            echo "⚠ Warning: Failed to push tag to remote. Continue anyway? (y/N)"
+            read -r CONTINUE
+            if [ "$CONTINUE" != "y" ] && [ "$CONTINUE" != "Y" ]; then
+                echo "Release notes generation cancelled."
+                exit 1
+            fi
+        fi
+    else
+        echo "❌ Failed to create tag '$TAG'"
+        exit 1
+    fi
+else
+    echo "✓ Tag '$TAG' found"
 fi
-
-echo "✓ Tag '$TAG' found"
 ```
 
 ### Step 2: Find Previous Tag
 
 ```bash
-# Get the previous tag for comparison
-PREV_TAG=$(git tag --sort=-version:refname | grep -A1 "^$TAG$" | tail -1)
+# Get the previous tag for comparison (ignoring tags starting with 'v')
+PREV_TAG=$(git tag --sort=-version:refname | grep -v "^v" | grep -A1 "^$TAG$" | tail -1)
 
 if [ "$PREV_TAG" = "$TAG" ] || [ -z "$PREV_TAG" ]; then
     # This is the first tag, use initial commit
@@ -156,19 +185,42 @@ fi
 ## Usage Examples:
 
 ```bash
-# Generate release notes for a specific tag
+# Generate release notes for a specific existing tag
 /release-notes 1.5.2
+
+# Generate release notes for a new tag (will create tag if it doesn't exist)
+/release-notes 1.6.0
 
 # Generate release notes (will prompt for tag)
 /release-notes
 ```
 
+### Example Tag Creation Flow:
+
+```bash
+$ /release-notes 1.6.0
+Tag '1.6.0' does not exist in this repository.
+
+Current HEAD: a1b2c3d - Add new authentication feature
+
+Would you like to create tag '1.6.0' at the current HEAD? (y/N) y
+Creating tag '1.6.0'...
+✓ Tag '1.6.0' created
+Pushing tag to remote...
+✓ Tag '1.6.0' pushed to remote
+✓ Previous tag: 1.5.2
+Analyzing commits between 1.5.2 and 1.6.0...
+```
+
 ## Error Handling:
 
-- Validates tag existence before proceeding
+- Validates tag existence, offers to create if missing
+- Confirms tag creation with user before proceeding
+- Handles tag creation and push failures gracefully
 - Handles first release scenario (no previous tag)
 - Graceful failure if GitHub operations fail
 - Shows manual fallback options
 - Confirms user approval before publishing
+- Allows continuation even if tag push fails (with warning)
 
 The command follows the existing release note format from the repository, categorizing changes into Internal Improvements, New Features, and Configuration Structure sections as appropriate.
