@@ -62,11 +62,11 @@ Default config values can be passed via following options:` +
 # This creates a smartling.yml file in your current directory with your project settings.
 # Note: Running init again will overwrite the existing configuration file.
 
-smartling-cli init
+  smartling-cli init
 
 # Dry run of init command without overwriting the existing configuration file.
 
-smartling-cli init --dry-run
+  smartling-cli init --dry-run
 
 `,
 		Run: func(_ *cobra.Command, _ []string) {

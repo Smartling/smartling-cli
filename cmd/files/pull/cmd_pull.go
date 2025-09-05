@@ -88,7 +88,8 @@ Available options:
 		Example: `
 # Download translated files
 
-smartling-cli files pull "**/*.json" --locale fr-FR --locale de-DE
+  smartling-cli files pull "**/*.json" --locale fr-FR --locale de-DE
+
 `,
 		Run: func(_ *cobra.Command, args []string) {
 			if len(args) > 0 {

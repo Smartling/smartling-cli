@@ -39,7 +39,7 @@ Available options:
 		Example: `
 # List all projects in your account
 
-smartling-cli projects list
+  smartling-cli projects list
 
 `,
 		Run: func(_ *cobra.Command, _ []string) {

@@ -42,11 +42,11 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 		Example: `
 # Translate with automatic language detection
 
-smartling-cli mt translate document.txt --target-locale es-ES
+  smartling-cli mt translate document.txt --target-locale es-ES
 
 # Translate with explicit source language
 
-smartling-cli mt translate document.txt --source-locale en --target-locale fr-FR
+  smartling-cli mt translate document.txt --source-locale en --target-locale fr-FR
 
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -89,7 +89,7 @@ smartling-cli mt translate document.txt --source-locale en --target-locale fr-FR
 	translateCmd.Flags().StringVar(&sourceLocale, sourceLocaleFlag, "", "Explicitly specify source language")
 	translateCmd.Flags().StringArrayVarP(&targetLocales, targetLocaleFlag, "l", nil, `Target language(s). Can be specified multiple times.
 Example: Specifying two target locales
-smartling-cli mt translate --target-locale fr --target-locale es-ES`)
+  smartling-cli mt translate --target-locale fr --target-locale es-ES`)
 	translateCmd.Flags().StringVar(&overrideFileType, overrideFileTypeFlag, "", `Override the automatically detected file type. 
 A complete list of supported types can be found in the API documentation:
 https://api-reference.smartling.com/#tag/File-Machine-Translations-(MT)/operation/fileUpload`)

@@ -34,7 +34,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 		Example: `
 # Detect file language
 
-smartling-cli mt detect document.txt
+  smartling-cli mt detect document.txt
 
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {

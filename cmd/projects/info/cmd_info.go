@@ -25,7 +25,7 @@ Available options:` + help.AuthenticationOptions,
 		Example: `
 # View project information
 
-smartling-cli projects info
+  smartling-cli projects info
 
 `,
 		Run: func(_ *cobra.Command, _ []string) {

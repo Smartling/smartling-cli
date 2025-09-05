@@ -49,7 +49,7 @@ Available options:
 		Example: `
 # List all target locales
 
-smartling-cli projects locales
+  smartling-cli projects locales
 
 `,
 		Run: func(_ *cobra.Command, _ []string) {

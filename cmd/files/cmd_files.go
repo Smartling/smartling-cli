@@ -21,7 +21,7 @@ func NewFilesCmd() *cobra.Command {
 		Example: `
 # Check file status across locales
 
-smartling-cli files status
+  smartling-cli files status
 
 `,
 		Run: func(cmd *cobra.Command, args []string) {

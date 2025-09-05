@@ -58,7 +58,8 @@ Available options:
 		Example: `
 # List project files
 
-smartling-cli files list
+  smartling-cli files list
+
 `,
 		Run: func(_ *cobra.Command, args []string) {
 			var uri string
