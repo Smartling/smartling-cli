@@ -46,6 +46,12 @@ Available options:
   --format
     Use specific output format instead of default.
 ` + help.AuthenticationOptions,
+		Example: `
+# List all target locales
+
+smartling-cli projects locales
+
+`,
 		Run: func(_ *cobra.Command, _ []string) {
 			s, err := initializer.InitProjectsSrv()
 			if err != nil {

@@ -61,6 +61,9 @@ _pkg-init:
 %:
 	GOOS=$(basename $@) go build -o bin/smartling.$@
 
+docs:
+	go run ./main.go docs
+
 tidy:
 	go mod tidy
 
@@ -90,3 +93,4 @@ test_integration:
 	go test ./tests/cmd/files/delete/...
 	go test ./tests/cmd/projects/...
 	go test ./tests/cmd/init/...
+

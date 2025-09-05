@@ -55,9 +55,39 @@ File type will be deduced from file extension. If file extension is unknown,
 type should be specified manually by using --type option. That option also
 can be used to override detected file type.
 
-<file> ` + help.GlobPattern + `
+` + "`<file>` " + help.GlobPattern + ` 
 
 ` + help.AuthenticationOptions,
+		Example: `
+# Upload files to a translation job
+
+smartling-cli files push my-file.txt --job "Website Update" --authorize
+
+# Upload multiple files with pattern matching
+
+smartling-cli files push "src/**/*.json" --job "App Localization"
+
+# Manual branch naming
+
+smartling-cli files push "**/*.txt" --branch "feature-branch"
+
+# Automatic Git branch detection
+
+smartling-cli files push "**/*.txt" --branch "@auto"
+
+# All JSON files in subdirectories
+
+smartling-cli files push "**/*.json"
+
+# Specific file types
+
+smartling-cli files push "**/*.{json,xml,properties}"
+
+# Files matching naming convention
+
+smartling-cli files push "**/messages_*.properties"
+
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			var (

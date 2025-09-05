@@ -22,6 +22,12 @@ Displays detailed information for specific project.
 Project should be specified either in config or via --project option.
 
 Available options:` + help.AuthenticationOptions,
+		Example: `
+# View project information
+
+smartling-cli projects info
+
+`,
 		Run: func(_ *cobra.Command, _ []string) {
 			s, err := initializer.InitProjectsSrv()
 			if err != nil {
