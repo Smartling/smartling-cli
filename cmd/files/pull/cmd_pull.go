@@ -25,8 +25,9 @@ var (
 // NewPullCmd creates a new command to pull files.
 func NewPullCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	pullCmd := &cobra.Command{
-		Use:   "pull <uri>",
-		Short: "Pulls specified files from server.",
+		Use:     "pull <uri>",
+		Aliases: []string{"download"},
+		Short:   "Pulls specified files from server.",
 		Long: `smartling-cli files pull — downloads translated files from project.
 
 Downloads files from specified project into local directory.
@@ -86,9 +87,13 @@ Available options:
     > contextMatchingInstrumented — to use with Chrome Context Capture;
 ` + help.AuthenticationOptions,
 		Example: `
-# Download translated files
+# Pull translated files
 
   smartling-cli files pull "**/*.json" --locale fr-FR --locale de-DE
+
+# Use the alias 'download' to achieve the same result
+
+  smartling-cli files download "**/*.json" --locale fr-FR --locale de-DE
 
 `,
 		Run: func(_ *cobra.Command, args []string) {
