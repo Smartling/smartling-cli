@@ -87,7 +87,7 @@ smartling-cli files push <file> <uri> --job <job name> [--authorize] [--locale <
 
   smartling-cli files push "**/*.{json,xml,properties}"
 
-# Files matching naming convention with the command alias 'upload' 
+# Files matching naming convention with the command alias 'upload'
 
   smartling-cli files upload "**/messages_*.properties"
 
