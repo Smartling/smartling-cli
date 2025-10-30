@@ -84,7 +84,7 @@ can be used to override detected file type.
 
   smartling-cli files push "**/*.{json,xml,properties}"
 
-# Files matching naming convention with the command alias 'upload' 
+# Files matching naming convention with the command alias 'upload'
 
   smartling-cli files upload "**/messages_*.properties"
 
