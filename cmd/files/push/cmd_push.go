@@ -22,8 +22,9 @@ func NewPushCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	)
 
 	pushCmd := &cobra.Command{
-		Use:   "push <file> <uri> --job <job name> [--authorize] [--locale <locale>]",
-		Short: "Creates job and uploads specified file into this job.",
+		Use:     "push <file> <uri> --job <job name> [--authorize] [--locale <locale>]",
+		Aliases: []string{"upload"},
+		Short:   "Creates job and uploads specified file into this job.",
 		Long: `smartling-cli files push <file> [<uri>] --job <job name> [--authorize] [--locale <locale>] [--type <type>] [--branch (@auto|<branch name>)] [--directory <work dir>] [--directive <smartling directive>]
 
 Creates a new job (or reuses existing) in Smartling TMS and uploads designated
@@ -63,9 +64,9 @@ can be used to override detected file type.
 
   smartling-cli files push my-file.txt --job "Website Update" --authorize
 
-# Upload multiple files with pattern matching
+# Upload multiple files using pattern matching with the command alias ‘upload’
 
-  smartling-cli files push "src/**/*.json" --job "App Localization"
+  smartling-cli files upload "src/**/*.json" --job "App Localization"
 
 # Manual branch naming
 
@@ -83,9 +84,9 @@ can be used to override detected file type.
 
   smartling-cli files push "**/*.{json,xml,properties}"
 
-# Files matching naming convention
+# Files matching naming convention with the command alias 'upload'
 
-  smartling-cli files push "**/messages_*.properties"
+  smartling-cli files upload "**/messages_*.properties"
 
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
