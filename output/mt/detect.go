@@ -60,10 +60,12 @@ func RenderDetectUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.Det
 	t.SetRows(updatedRows)
 }
 
-func toDetectTableRows(files []string) []table.Row {
-	res := make([]table.Row, len(files))
+func toDetectTableRows(files []string, targetLocalesQnt uint8) []table.Row {
+	res := make([]table.Row, len(files)+int(targetLocalesQnt))
 	for i, v := range files {
-		res[i] = toDetectTableRow(v)
+		for j := uint8(0); j < targetLocalesQnt; j++ {
+			res[2*i+int(j)] = toDetectTableRow(v)
+		}
 	}
 	return res
 }
@@ -110,6 +112,6 @@ func (t DetectDataProvider) RowByHeaderName() RowByHeaderName {
 }
 
 // ToTableRows converts slice with files to slice with table rows
-func (t DetectDataProvider) ToTableRows(files []string) []table.Row {
-	return toDetectTableRows(files)
+func (t DetectDataProvider) ToTableRows(files []string, targetLocalesQnt uint8) []table.Row {
+	return toDetectTableRows(files, targetLocalesQnt)
 }
