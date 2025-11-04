@@ -14,14 +14,14 @@ type Static struct {
 }
 
 // Init inits Static
-func (s *Static) Init(dataProvider TableDataProvider, files []string, outputFormat, outputTemplate string) {
+func (s *Static) Init(dataProvider TableDataProvider, files []string, targetLocalesQnt uint8, outputFormat, outputTemplate string) {
 	s.OutputFormat = GetOutputFormat(outputFormat, outputTemplate)
 	s.dataProvider = dataProvider
 
 	s.model.Headers = dataProvider.Headers()
 	s.model.RowByHeader = dataProvider.RowByHeaderName()
 
-	rows := dataProvider.ToTableRows(files)
+	rows := dataProvider.ToTableRows(files, targetLocalesQnt)
 
 	s.model.Data = rows
 }
@@ -45,6 +45,9 @@ func (s *Static) Update(updates chan any) error {
 			}
 			if row, found := rowByHeader["translate"]; found && update.Translate != nil {
 				s.model.Data[update.ID][row] = pointer.PNew(update.Translate)
+			}
+			if row, found := rowByHeader["translated_file"]; found && update.TranslatedFile != nil {
+				s.model.Data[update.ID][row] = pointer.PNew(update.TranslatedFile)
 			}
 			if row, found := rowByHeader["download"]; found {
 				s.model.Data[update.ID][row] = done

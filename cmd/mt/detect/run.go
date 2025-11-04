@@ -36,7 +36,7 @@ func run(ctx context.Context,
 		}
 	}
 	var dataProvider output.DetectDataProvider
-	render := output.InitRender(outputParams, dataProvider, files)
+	render := output.InitRender(outputParams, dataProvider, files, 1)
 	renderRun := make(chan struct{})
 	var runGroup errgroup.Group
 	runGroup.Go(func() error {

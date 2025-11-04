@@ -99,6 +99,7 @@ https://api-reference.smartling.com/#tag/File-Machine-Translations-(MT)/operatio
 Default: `+output.DefaultTranslateTemplate+`
 {{.File}} - Original file path
 {{.Locale}} - Target locale
+{{.TranslatedFile}} - Translated file
 {{name .File}} - File name without extension
 {{ext .File}} - File extension
 {{dir .Directory}} - Directory path`)
