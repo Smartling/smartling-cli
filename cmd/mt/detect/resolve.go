@@ -34,10 +34,14 @@ func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, fileOrPatter
 		FlagName: "account",
 		Config:   accountIDConfig,
 	})
+	accountUID := api.AccountUID(accountUIDParam)
+	if err := accountUID.Validate(); err != nil {
+		return srv.DetectParams{}, err
+	}
 	return srv.DetectParams{
 		FileType:       fileTypeParam,
 		InputDirectory: inputDirectoryParam,
 		FileOrPattern:  fileOrPattern,
-		AccountUID:     api.AccountUID(accountUIDParam),
+		AccountUID:     accountUID,
 	}, nil
 }
