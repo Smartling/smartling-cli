@@ -45,6 +45,13 @@ func TestFilesPush(t *testing.T) {
 			wantErr:           false,
 		},
 		{
+			name:              "One-file upload without Job with URI",
+			args:              append(subCommands, "--nojob", filename, "/texts/"+filename),
+			expectedOutputs:   []string{filename, "(plaintext)", "overwritten"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
+		},
+		{
 			name:              "Override file type",
 			args:              append(subCommands, filename, "--type", "PLAIN_TEXT"),
 			expectedOutputs:   []string{filename, "(PLAIN_TEXT)", "successfully", "ACCEPTED"},
