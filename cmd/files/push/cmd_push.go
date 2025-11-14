@@ -19,6 +19,7 @@ func NewPushCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 		directory  string
 		directives []string
 		job        string
+		nojob      bool
 	)
 
 	pushCmd := &cobra.Command{
@@ -121,6 +122,7 @@ can be used to override detected file type.
 				FileType:    fileType,
 				Directives:  directives,
 				JobIDOrName: job,
+				NoJob:       nojob,
 			}
 
 			return s.RunPush(ctx, p)
@@ -143,6 +145,7 @@ Override automatically detected file type.`)
 Provide a name for the Smartling translation job or job UID.
 All files will be uploaded into this job.
 If the flag is not specified then the "CLI uploads" name will be used.`)
+	pushCmd.Flags().BoolVarP(&nojob, "nojob", "", false, `Skip job creation when uploading the file.`)
 
 	return pushCmd
 }
