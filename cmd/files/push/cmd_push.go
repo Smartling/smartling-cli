@@ -69,6 +69,10 @@ can be used to override detected file type.
 
   smartling-cli files upload "src/**/*.json" --job "App Localization"
 
+# Upload multiple files without job creating 
+
+  smartling-cli files upload "src/**/*.json" --nojob
+
 # Manual branch naming
 
   smartling-cli files push "**/*.txt" --branch "feature-branch"

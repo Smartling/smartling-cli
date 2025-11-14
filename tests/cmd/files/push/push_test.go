@@ -52,6 +52,13 @@ func TestFilesPush(t *testing.T) {
 			wantErr:           false,
 		},
 		{
+			name:              "Incorrect param combination",
+			args:              append(subCommands, "--nojob", "--job", "test validation of param combination", filename, "/texts/"+filename),
+			expectedOutputs:   []string{"invalid params combination", "job", "nojob", "Error"},
+			unexpectedOutputs: []string{"overwritten"},
+			wantErr:           true,
+		},
+		{
 			name:              "Override file type",
 			args:              append(subCommands, filename, "--type", "PLAIN_TEXT"),
 			expectedOutputs:   []string{filename, "(PLAIN_TEXT)", "successfully", "ACCEPTED"},
@@ -86,7 +93,7 @@ func TestFilesPush(t *testing.T) {
 			testCmd := exec.Command("./smartling-cli", tt.args...)
 			testCmd.Dir = absDir
 			out, err := testCmd.CombinedOutput()
-			if err != nil {
+			if !tt.wantErr && err != nil {
 				t.Fatalf("error: %v, output: %s", err, string(out))
 			}
 			if len(tt.expectedOutputs) > 0 {
