@@ -66,6 +66,9 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 		if err != nil {
 			return nil, err
 		}
+		if err := uploadFileResponse.FileUID.Validate(); err != nil {
+			return nil, err
+		}
 		rlog.Debugf("finish upload")
 
 		update := TranslateUpdates{ID: uint32(fileID), Upload: pointer.NewP(true)}
@@ -122,9 +125,9 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 		update.Translate = pointer.NewP("start")
 		updates <- update
 
-		if translatorStartResponse.MtUID == "" {
+		if err := translatorStartResponse.MtUID.Validate(); err != nil {
 			return nil, clierror.UIError{
-				Err:       errors.New("empty mtUid on start translation"),
+				Err:       err,
 				Operation: "Start translation",
 				Fields: map[string]string{
 					"startTranslationCode": translatorStartResponse.Code,
@@ -202,7 +205,7 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 						},
 					}
 				}
-				if err := os.MkdirAll(outputDirectory, 0755); err != nil {
+				if err := os.MkdirAll(outputDirectory, 0o755); err != nil {
 					return nil, clierror.UIError{
 						Err:         err,
 						Operation:   "create output directory",
@@ -231,7 +234,6 @@ func (s service) GetFiles(inputDirectory, fileOrPattern string) ([]string, error
 		base,
 		pattern,
 	)
-
 	if err != nil {
 		return nil, clierror.UIError{
 			Err:       err,
