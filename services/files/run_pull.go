@@ -36,7 +36,7 @@ func (p PullParams) validate() error {
 	if p.URI == "" && !p.All {
 		return fmt.Errorf("uri or --all is required")
 	}
-	if p.All && p.URI != "" && p.URI != "." && p.URI != "**" {
+	if p.All && p.URI != "" {
 		return clierror.ErrConflictingParams([]string{"uri", "all"})
 	}
 	return nil
