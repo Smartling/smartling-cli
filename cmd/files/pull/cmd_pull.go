@@ -14,6 +14,7 @@ import (
 
 var (
 	uri        string
+	all        bool
 	source     bool
 	progress   string
 	retrieve   string
@@ -68,11 +69,14 @@ Available options:
   --source
     Download source files along with translated files.
 
+  --all
+    Download all files.
+
   —d ——directory <dir>
     Download files into specified directory.
 
   --format <format>
-    Specify format for download file nmae.
+    Specify format for download file name.
 
   --progress <percents>
     Specify minimum of translation progress in percents.
@@ -95,6 +99,9 @@ Available options:
 
   smartling-cli files download "**/*.json" --locale fr-FR --locale de-DE
 
+# Pull all translated files
+
+  smartling-cli files pull --all
 `,
 		Run: func(_ *cobra.Command, args []string) {
 			if len(args) > 0 {
@@ -109,6 +116,7 @@ Available options:
 
 			params := files.PullParams{
 				URI:       uri,
+				All:       all,
 				Format:    formatPath,
 				Directory: directory,
 				Source:    source,
@@ -124,6 +132,7 @@ Available options:
 		},
 	}
 
+	pullCmd.Flags().BoolVar(&all, "all", false, `Pulls all files.`)
 	pullCmd.Flags().BoolVar(&source, "source", false, `Pulls source file as well.`)
 	pullCmd.Flags().StringVar(&progress, "progress", "", `Pulls only translations that are at least specified percent of work complete.`)
 	pullCmd.Flags().StringVar(&retrieve, "retrieve", "", `Retrieval type: pending, published, pseudo or contextMatchingInstrumented.`)

@@ -39,9 +39,23 @@ func TestFilesPull(t *testing.T) {
 		},
 		{
 			name:              "Download translated files files",
-			args:              append(subCommands, "*.txt", "-l", "uk-UA"),
+			args:              append(subCommands, "**/*.txt", "-l", "uk-UA"),
 			expectedOutputs:   []string{"downloaded", "txt"},
 			unexpectedOutputs: []string{"ERROR", "DEBUG"},
+			wantErr:           false,
+		},
+		{
+			name:              "Download translated files files without --all",
+			args:              append(subCommands),
+			expectedOutputs:   []string{"ERROR"},
+			unexpectedOutputs: []string{"downloaded"},
+			wantErr:           true,
+		},
+		{
+			name:              "Download all translated files files with `**`",
+			args:              append(subCommands, "**"),
+			expectedOutputs:   []string{"downloaded"},
+			unexpectedOutputs: []string{"ERROR"},
 			wantErr:           false,
 		},
 	}

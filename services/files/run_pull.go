@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Smartling/smartling-cli/services/helpers"
+	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
@@ -22,6 +23,7 @@ import (
 // PullParams is the parameters for the RunPull method.
 type PullParams struct {
 	URI       string
+	All       bool
 	Format    string
 	Directory string
 	Source    bool
@@ -30,8 +32,21 @@ type PullParams struct {
 	Retrieve  string
 }
 
+func (p PullParams) validate() error {
+	if p.URI == "" && !p.All {
+		return fmt.Errorf("uri or --all is required")
+	}
+	if p.All && p.URI != "" && p.URI != "." && p.URI != "**" {
+		return clierror.ErrConflictingParams([]string{"uri", "all"})
+	}
+	return nil
+}
+
 // RunPull pulls translations for files from the Smartling based on the provided parameters.
 func (s service) RunPull(params PullParams) error {
+	if err := params.validate(); err != nil {
+		return err
+	}
 	if params.Format == "" {
 		params.Format = format.DefaultFilePullFormat
 	}
