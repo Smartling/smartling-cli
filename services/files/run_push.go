@@ -347,7 +347,10 @@ func (s service) runPushWithoutJob(params PushParams, files []string, projectID 
 			request.FileType = smfile.FileType(fileConfig.Push.Type)
 		}
 
-		request.Smartling.Directives = fileConfig.Push.Directives
+		request.Smartling.Directives = map[string]string{}
+		if fileConfig.Push.Directives != nil {
+			request.Smartling.Directives = fileConfig.Push.Directives
+		}
 
 		for _, directive := range params.Directives {
 			spec := strings.SplitN(directive, "=", 2)
@@ -360,10 +363,6 @@ func (s service) runPushWithoutJob(params PushParams, files []string, projectID 
 
 					`Should be in the form of <name>=<value>.`,
 				)
-			}
-
-			if request.Smartling.Directives == nil {
-				request.Smartling.Directives = map[string]string{}
 			}
 
 			request.Smartling.Directives[spec[0]] = spec[1]
