@@ -64,7 +64,7 @@ func toDetectTableRows(files []string, targetLocalesQnt uint8) []table.Row {
 	res := make([]table.Row, len(files)*int(targetLocalesQnt))
 	for i, v := range files {
 		for j := uint8(0); j < targetLocalesQnt; j++ {
-			res[2*i+int(j)] = toDetectTableRow(v)
+			res[int(targetLocalesQnt)*i+int(j)] = toDetectTableRow(v)
 		}
 	}
 	return res
