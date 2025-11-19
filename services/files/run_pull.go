@@ -34,7 +34,7 @@ type PullParams struct {
 
 func (p PullParams) validate() error {
 	if p.URI == "" && !p.All {
-		return fmt.Errorf("uri or --all is required")
+		return fmt.Errorf("either uri or --all is required")
 	}
 	if p.All && p.URI != "" {
 		return clierror.ErrConflictingParams([]string{"uri", "all"})
