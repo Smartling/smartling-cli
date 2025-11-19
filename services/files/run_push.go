@@ -60,7 +60,7 @@ func (s service) RunPush(ctx context.Context, params PushParams) error {
 	if err := params.Validate(); err != nil {
 		return hierr.Errorf(
 			err,
-			"The provided parameter combination is invalid. Please correct it.",
+			"Validation failed for the provided command parameters.",
 		)
 	}
 	if params.Branch == "@auto" {
