@@ -37,8 +37,20 @@ type PushParams struct {
 
 // Validate checks that the PushParams are valid
 func (p PushParams) Validate() error {
-	if p.JobIDOrName != "" && p.NoJob {
-		return ErrInvalidParamCombination([]string{"job", "nojob"})
+	if p.NoJob {
+		var incompatibleWithParams []string
+		if p.JobIDOrName != "" {
+			incompatibleWithParams = append(incompatibleWithParams, "job")
+		}
+		if p.Authorize {
+			incompatibleWithParams = append(incompatibleWithParams, "authorize")
+		}
+		if len(p.Locales) > 0 {
+			incompatibleWithParams = append(incompatibleWithParams, "locale")
+		}
+		if len(incompatibleWithParams) > 0 {
+			return clierror.ErrIncompatibleParams("nojob", incompatibleWithParams)
+		}
 	}
 	return nil
 }
