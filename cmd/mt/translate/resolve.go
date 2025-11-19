@@ -56,6 +56,10 @@ func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (srv.Transla
 		FlagName: "account",
 		Config:   accountIDConfig,
 	})
+	accountUID := api.AccountUID(accountUIDParam)
+	if err := accountUID.Validate(); err != nil {
+		return srv.TranslateParams{}, err
+	}
 	params := srv.TranslateParams{
 		SourceLocale:     sourceLocaleParam,
 		TargetLocales:    resolveTargetLocale(cmd, fileConfig),
@@ -63,7 +67,7 @@ func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (srv.Transla
 		OutputDirectory:  outputDirectoryParam,
 		Progress:         progressParam,
 		OverrideFileType: overrideFileTypeParam,
-		AccountUID:       api.AccountUID(accountUIDParam),
+		AccountUID:       accountUID,
 	}
 	params.Directives, err = resolveDirectives(cmd, fileConfig)
 	if err != nil {

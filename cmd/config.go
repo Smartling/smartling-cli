@@ -6,6 +6,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	sdk "github.com/Smartling/api-sdk-go"
+	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/kovetskiy/lorg"
 )
 
@@ -44,6 +45,9 @@ func Config() (config.Config, error) {
 	}
 	cnf, err := config.BuildConfigFromFlags(params)
 	if err != nil {
+		return config.Config{}, err
+	}
+	if err := api.AccountUID(cnf.AccountID).Validate(); err != nil {
 		return config.Config{}, err
 	}
 	return cnf, nil
