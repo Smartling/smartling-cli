@@ -149,7 +149,7 @@ Override automatically detected file type.`)
 Provide a name for the Smartling translation job or job UID.
 All files will be uploaded into this job.
 If the flag is not specified then the "CLI uploads" name will be used.`)
-	pushCmd.Flags().BoolVarP(&nojob, "nojob", "", false, `Skip job creation when uploading the file.`)
+	pushCmd.Flags().BoolVarP(&nojob, "nojob", "", false, `Upload the file without adding it to a translation job. The file will be available in Smartling but will not be part of any translation workflow.`)
 
 	return pushCmd
 }
