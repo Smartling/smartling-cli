@@ -92,6 +92,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 		params.Progress = "0"
 	}
 
+	persentByExcludedFile := make(map[string]string)
 	percents, err := strconv.ParseInt(params.Progress, 10, 0)
 	if err != nil {
 		return hierr.Errorf(
@@ -138,12 +139,6 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 			)
 		}
 
-		if percents > 0 {
-			if complete < percents {
-				continue
-			}
-		}
-
 		if len(params.Locales) > 0 {
 			if !hasLocaleInList(locale.LocaleID, params.Locales) {
 				continue
@@ -171,6 +166,13 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 			return err
 		}
 
+		if percents > 0 {
+			if complete < percents {
+				persentByExcludedFile[path] = strconv.Itoa(int(complete))
+				continue
+			}
+		}
+
 		path = filepath.Join(params.Directory, path)
 
 		err = helpers.DownloadFile(
@@ -190,6 +192,10 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 		} else {
 			fmt.Printf("downloaded %s %d%%\n", path, int(complete))
 		}
+	}
+
+	for excludedFile, percent := range persentByExcludedFile {
+		fmt.Printf("skipped %s %s%% (threshold: %s)\n", excludedFile, percent, params.Progress)
 	}
 
 	return err
