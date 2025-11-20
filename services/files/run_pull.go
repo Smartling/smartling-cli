@@ -136,9 +136,8 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 
 		if locale.CompletedStringCount > 0 {
 			complete = int64(
-				100 *
-					float64(locale.CompletedStringCount) /
-					float64(status.TotalStringCount),
+				100 * float64(locale.CompletedStringCount) /
+					float64(locale.CompletedStringCount+locale.AuthorizedStringCount),
 			)
 		}
 
