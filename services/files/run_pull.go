@@ -87,14 +87,12 @@ func (s service) RunPull(params PullParams) error {
 }
 
 func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) error {
-	params.Progress = strings.TrimSpace(params.Progress)
-	params.Progress = strings.TrimSpace(strings.TrimSuffix(params.Progress, "%"))
-	if params.Progress == "" {
-		params.Progress = "0"
+	progress := strings.TrimSpace(params.Progress)
+	progress = strings.TrimSpace(strings.TrimSuffix(progress, "%"))
+	if progress == "" {
+		progress = "0"
 	}
-
-	percentByExcludedFile := make(map[string]string)
-	percents, err := strconv.ParseInt(params.Progress, 10, 0)
+	progressThreshold, err := strconv.ParseInt(progress, 10, 0)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -130,15 +128,6 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 	}
 
 	for _, locale := range translations {
-		var complete int64
-		if locale.CompletedStringCount > 0 {
-			if total := locale.CompletedStringCount + locale.AuthorizedStringCount; total > 0 {
-				complete = int64(
-					100 * float64(locale.CompletedStringCount) / float64(total),
-				)
-			}
-		}
-
 		if len(params.Locales) > 0 {
 			if !hasLocaleInList(locale.LocaleID, params.Locales) {
 				continue
@@ -166,11 +155,10 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 			return err
 		}
 
-		if percents > 0 {
-			if complete < percents {
-				percentByExcludedFile[path] = strconv.Itoa(int(complete))
-				continue
-			}
+		progressPercent := locale.ProgressPercent()
+		if progressThreshold > 0 && progressPercent < int(progressThreshold) {
+			fmt.Printf("skipped %s %s%% (threshold: %s%%)\n", path, progressPercent, params.Progress)
+			continue
 		}
 
 		path = filepath.Join(params.Directory, path)
@@ -190,12 +178,8 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 		if params.Source {
 			fmt.Printf("downloaded %s\n", path)
 		} else {
-			fmt.Printf("downloaded %s %d%%\n", path, int(complete))
+			fmt.Printf("downloaded %s %d%%\n", path, progressPercent)
 		}
-	}
-
-	for excludedFile, percent := range percentByExcludedFile {
-		fmt.Printf("skipped %s %s%% (threshold: %s%%)\n", excludedFile, percent, params.Progress)
 	}
 
 	return err
