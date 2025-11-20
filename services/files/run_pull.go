@@ -87,15 +87,13 @@ func (s service) RunPull(params PullParams) error {
 }
 
 func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) error {
-	if strings.HasSuffix(params.Progress, "%") {
-		params.Progress = strings.TrimSpace(strings.TrimSuffix(params.Progress, "%"))
-	}
-	params.Progress = strings.TrimSuffix(params.Progress, "%")
+	params.Progress = strings.TrimSpace(params.Progress)
+	params.Progress = strings.TrimSpace(strings.TrimSuffix(params.Progress, "%"))
 	if params.Progress == "" {
 		params.Progress = "0"
 	}
 
-	persentByExcludedFile := make(map[string]string)
+	percentByExcludedFile := make(map[string]string)
 	percents, err := strconv.ParseInt(params.Progress, 10, 0)
 	if err != nil {
 		return hierr.Errorf(
@@ -133,12 +131,12 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 
 	for _, locale := range translations {
 		var complete int64
-
 		if locale.CompletedStringCount > 0 {
-			complete = int64(
-				100 * float64(locale.CompletedStringCount) /
-					float64(locale.CompletedStringCount+locale.AuthorizedStringCount),
-			)
+			if total := locale.CompletedStringCount + locale.AuthorizedStringCount; total > 0 {
+				complete = int64(
+					100 * float64(locale.CompletedStringCount) / float64(total),
+				)
+			}
 		}
 
 		if len(params.Locales) > 0 {
@@ -170,7 +168,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 
 		if percents > 0 {
 			if complete < percents {
-				persentByExcludedFile[path] = strconv.Itoa(int(complete))
+				percentByExcludedFile[path] = strconv.Itoa(int(complete))
 				continue
 			}
 		}
@@ -196,7 +194,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 		}
 	}
 
-	for excludedFile, percent := range persentByExcludedFile {
+	for excludedFile, percent := range percentByExcludedFile {
 		fmt.Printf("skipped %s %s%% (threshold: %s%%)\n", excludedFile, percent, params.Progress)
 	}
 
