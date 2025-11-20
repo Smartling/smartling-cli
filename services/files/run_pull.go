@@ -87,6 +87,9 @@ func (s service) RunPull(params PullParams) error {
 }
 
 func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) error {
+	if strings.HasSuffix(params.Progress, "%") {
+		params.Progress = strings.TrimSpace(strings.TrimSuffix(params.Progress, "%"))
+	}
 	params.Progress = strings.TrimSuffix(params.Progress, "%")
 	if params.Progress == "" {
 		params.Progress = "0"
@@ -195,7 +198,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 	}
 
 	for excludedFile, percent := range persentByExcludedFile {
-		fmt.Printf("skipped %s %s%% (threshold: %s)\n", excludedFile, percent, params.Progress)
+		fmt.Printf("skipped %s %s%% (threshold: %s%%)\n", excludedFile, percent, params.Progress)
 	}
 
 	return err
