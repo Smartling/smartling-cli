@@ -162,10 +162,22 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 	// create new job if params.JobIDOrName is not a valid UUID
 	pattern := `^[a-z0-9]{12}$`
 	var jobUID string
+	var jobName string
 	if re := regexp.MustCompile(pattern); params.JobIDOrName != "" && re.MatchString(params.JobIDOrName) {
 		jobUID = params.JobIDOrName
+		jobNameResponse, err := s.JobApi.GetJob(projectID, jobUID)
+		if err != nil {
+			return clierror.UIError{
+				Err:         err,
+				Operation:   "Get",
+				Description: "Unable to get Job by UID",
+				Fields: map[string]string{
+					"jobUID": jobUID,
+				},
+			}
+		}
+		jobName = jobNameResponse.JobName
 	}
-	var jobName string
 	if jobUID == "" {
 		timeZoneName, err := timeZoneName()
 		if err != nil {
@@ -189,20 +201,6 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 		}
 		jobUID = createJobResponse.TranslationJobUID
 		jobName = createJobResponse.JobName
-	}
-	if jobName == "" {
-		jobNameResponse, err := s.JobApi.GetJob(projectID, jobUID)
-		if err != nil {
-			return clierror.UIError{
-				Err:         err,
-				Operation:   "Get",
-				Description: "Unable to get Job by UID",
-				Fields: map[string]string{
-					"jobUID": jobUID,
-				},
-			}
-		}
-		jobName = jobNameResponse.JobName
 	}
 	fmt.Printf("Smartling Job UID: %s\n", jobUID)
 	fmt.Printf("Smartling Job Name: %s\n", jobName)
