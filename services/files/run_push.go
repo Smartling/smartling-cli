@@ -439,5 +439,5 @@ func timeZoneName() (string, error) {
 }
 
 func getJobURL(projectUID, jobUID string) string {
-	return "https://dashboard.smartling.com/app/projects/" + projectUID + "/account-jobs/" + projectUID + ":" + jobUID
+return fmt.Sprintf("https://dashboard.smartling.com/app/projects/%s/account-jobs/%s:%s", projectUID, projectUID, jobUID)
 }
