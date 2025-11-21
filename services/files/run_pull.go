@@ -155,9 +155,12 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 			return err
 		}
 
-		progressPercent := locale.ProgressPercent()
+		progressPercent, err := locale.ProgressPercent(status.TotalStringCount)
+		if err != nil {
+			return err
+		}
 		if progressThreshold > 0 && progressPercent < int(progressThreshold) {
-			fmt.Printf("skipped %s %s%% (threshold: %s%%)\n", path, progressPercent, params.Progress)
+			fmt.Printf("skipped %s %d%% (threshold: %s%%)\n", path, progressPercent, params.Progress)
 			continue
 		}
 
