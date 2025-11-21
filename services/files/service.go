@@ -8,6 +8,7 @@ import (
 
 	sdk "github.com/Smartling/api-sdk-go"
 	batchapi "github.com/Smartling/api-sdk-go/api/batches"
+	jobapi "github.com/Smartling/api-sdk-go/api/job"
 )
 
 const defaultJobNameTemplate = "CLI uploads"
@@ -32,6 +33,7 @@ type Service interface {
 type service struct {
 	APIClient  sdk.APIClient
 	BatchApi   batchapi.Batch
+	JobApi     jobapi.Job
 	Config     config.Config
 	FileConfig config.FileConfig
 }
@@ -39,12 +41,14 @@ type service struct {
 // NewService creates a new instance of the Service with the provided client, and configurations.
 func NewService(client sdk.APIClient,
 	batchApi batchapi.Batch,
+	jobApi jobapi.Job,
 	config config.Config,
 	fileConfig config.FileConfig,
 ) Service {
 	return &service{
 		APIClient:  client,
 		BatchApi:   batchApi,
+		JobApi:     jobApi,
 		Config:     config,
 		FileConfig: fileConfig,
 	}

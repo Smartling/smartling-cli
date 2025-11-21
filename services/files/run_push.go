@@ -183,7 +183,7 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 			Salt:            api.RandomAlphanumericSalt,
 			TimeZoneName:    timeZoneName,
 		}
-		createJobResponse, err := s.BatchApi.CreateJob(ctx, projectID, payload)
+		createJobResponse, err := s.BatchApi.CreateJob(projectID, payload)
 		if err != nil {
 			return err
 		}
@@ -191,7 +191,7 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 		jobName = createJobResponse.JobName
 	}
 	if jobName == "" {
-		jobNameResponse, err := s.BatchApi.GetJob(projectID, jobUID)
+		jobNameResponse, err := s.JobApi.GetJob(projectID, jobUID)
 		if err != nil {
 			return clierror.UIError{
 				Err:         err,
@@ -209,7 +209,7 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 	jobURL := getJobURL(projectID, jobUID)
 	fmt.Printf("Smartling Job URL: %s\n", jobURL)
 
-	createBatchResponse, err := s.BatchApi.Create(ctx, projectID, api.CreateBatchPayload{
+	createBatchResponse, err := s.BatchApi.Create(projectID, api.CreateBatchPayload{
 		Authorize:         params.Authorize,
 		TranslationJobUID: jobUID,
 		FileUris:          fileUris,
@@ -293,7 +293,7 @@ Check that file exists and readable by current user.`,
 			return errors.New("timeout exceeded for polling batch status: " + createBatchResponse.BatchUID)
 		}
 		time.Sleep(pollingInterval)
-		getStatusResponse, err := s.BatchApi.GetStatus(ctx, projectID, createBatchResponse.BatchUID)
+		getStatusResponse, err := s.BatchApi.GetStatus(projectID, createBatchResponse.BatchUID)
 		if err != nil {
 			return clierror.UIError{
 				Err:         err,
