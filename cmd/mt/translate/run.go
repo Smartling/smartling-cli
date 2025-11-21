@@ -37,7 +37,7 @@ func run(ctx context.Context,
 		}
 	}
 	var dataProvider output.TranslateDataProvider
-	render := output.InitRender(outputParams, dataProvider, files)
+	render := output.InitRender(outputParams, dataProvider, files, uint8(len(params.TargetLocales)))
 	renderRun := make(chan struct{})
 	var runGroup errgroup.Group
 	runGroup.Go(func() error {
