@@ -9,7 +9,6 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
-	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
 )
 
@@ -26,16 +25,8 @@ func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig, fileOrPatter
 	if err != nil {
 		return srv.DetectParams{}, fmt.Errorf("unable to read config: %w", err)
 	}
-	var accountIDConfig *string
-	if cnf.AccountID != "" {
-		accountIDConfig = &cnf.AccountID
-	}
-	accountUIDParam := resolve.FallbackString(cmd.Root().PersistentFlags().Lookup("account"), resolve.StringParam{
-		FlagName: "account",
-		Config:   accountIDConfig,
-	})
-	accountUID := api.AccountUID(accountUIDParam)
-	if err := accountUID.Validate(); err != nil {
+	accountUID, err := resolve.FallbackAccount(cmd.Root().PersistentFlags().Lookup("account"), cnf.AccountID)
+	if err != nil {
 		return srv.DetectParams{}, err
 	}
 	return srv.DetectParams{
