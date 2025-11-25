@@ -54,7 +54,7 @@ func TestFilesPush(t *testing.T) {
 		{
 			name:              "Incorrect param combination",
 			args:              append(subCommands, "--nojob", "--job", "test validation of param combination", filename, "/texts/"+filename),
-			expectedOutputs:   []string{"invalid params combination", "job", "nojob", "Error"},
+			expectedOutputs:   []string{"parameter nojob is incompatible with: job", "job", "nojob", "Error"},
 			unexpectedOutputs: []string{"overwritten"},
 			wantErr:           true,
 		},

@@ -180,7 +180,7 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 			Salt:            api.RandomAlphanumericSalt,
 			TimeZoneName:    timeZoneName,
 		}
-		createJobResponse, err = s.BatchApi.CreateJob(projectID, payload)
+		createJobResponse, err := s.BatchApi.CreateJob(projectID, payload)
 		if err != nil {
 			return err
 		}
