@@ -46,6 +46,9 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		if err != nil {
 			return nil, err
 		}
+		if err := uploadFileResponse.FileUID.Validate(); err != nil {
+			return nil, err
+		}
 		rlog.Debugf("finish upload")
 
 		update.Upload = pointer.NewP(true)

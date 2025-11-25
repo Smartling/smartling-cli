@@ -3,6 +3,7 @@ package resolve
 import (
 	"os"
 
+	sdk "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/Smartling/smartling-cli/services/helpers/env"
 
 	"github.com/spf13/pflag"
@@ -64,4 +65,20 @@ func FallbackBool(flag *pflag.Flag, param BoolParam) bool {
 	}
 	// return default flag value
 	return true
+}
+
+func FallbackAccount(flag *pflag.Flag, accountIDConfig string) (sdk.AccountUID, error) {
+	var config *string
+	if accountIDConfig != "" {
+		config = &accountIDConfig
+	}
+	accountUIDParam := FallbackString(flag, StringParam{
+		FlagName: "account",
+		Config:   config,
+	})
+	accountUID := sdk.AccountUID(accountUIDParam)
+	if err := accountUID.Validate(); err != nil {
+		return "", err
+	}
+	return accountUID, nil
 }
