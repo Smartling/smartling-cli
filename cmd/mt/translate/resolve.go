@@ -14,7 +14,6 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
-	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/spf13/cobra"
 )
 
@@ -48,14 +47,10 @@ func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (srv.Transla
 		FlagName: overrideFileTypeFlag,
 	})
 
-	var accountIDConfig *string
-	if cnf.AccountID != "" {
-		accountIDConfig = &cnf.AccountID
+	accountUID, err := resolve.FallbackAccount(cmd.Root().PersistentFlags().Lookup("account"), cnf.AccountID)
+	if err != nil {
+		return srv.TranslateParams{}, err
 	}
-	accountUIDParam := resolve.FallbackString(cmd.Root().PersistentFlags().Lookup("account"), resolve.StringParam{
-		FlagName: "account",
-		Config:   accountIDConfig,
-	})
 	params := srv.TranslateParams{
 		SourceLocale:     sourceLocaleParam,
 		TargetLocales:    resolveTargetLocale(cmd, fileConfig),
@@ -63,7 +58,7 @@ func resolveParams(cmd *cobra.Command, fileConfig mtcmd.FileConfig) (srv.Transla
 		OutputDirectory:  outputDirectoryParam,
 		Progress:         progressParam,
 		OverrideFileType: overrideFileTypeParam,
-		AccountUID:       api.AccountUID(accountUIDParam),
+		AccountUID:       accountUID,
 	}
 	params.Directives, err = resolveDirectives(cmd, fileConfig)
 	if err != nil {
