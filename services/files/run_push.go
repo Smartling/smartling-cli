@@ -162,10 +162,22 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 	// create new job if params.JobIDOrName is not a valid UUID
 	pattern := `^[a-z0-9]{12}$`
 	var jobUID string
+	var jobName string
 	if re := regexp.MustCompile(pattern); params.JobIDOrName != "" && re.MatchString(params.JobIDOrName) {
 		jobUID = params.JobIDOrName
+		jobNameResponse, err := s.JobApi.GetJob(projectID, jobUID)
+		if err != nil {
+			return clierror.UIError{
+				Err:         err,
+				Operation:   "Get",
+				Description: "Unable to get Job by UID",
+				Fields: map[string]string{
+					"jobUID": jobUID,
+				},
+			}
+		}
+		jobName = jobNameResponse.JobName
 	}
-	var createJobResponse api.CreateJobResponse
 	if jobUID == "" {
 		timeZoneName, err := timeZoneName()
 		if err != nil {
@@ -183,12 +195,17 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 			Salt:            api.RandomAlphanumericSalt,
 			TimeZoneName:    timeZoneName,
 		}
-		createJobResponse, err = s.BatchApi.CreateJob(projectID, payload)
+		createJobResponse, err := s.BatchApi.CreateJob(projectID, payload)
 		if err != nil {
 			return err
 		}
 		jobUID = createJobResponse.TranslationJobUID
+		jobName = createJobResponse.JobName
 	}
+	fmt.Printf("Smartling Job UID: %s\n", jobUID)
+	fmt.Printf("Smartling Job Name: %s\n", jobName)
+	jobURL := getJobURL(projectID, jobUID)
+	fmt.Printf("Smartling Job URL: %s\n", jobURL)
 
 	createBatchResponse, err := s.BatchApi.Create(projectID, api.CreateBatchPayload{
 		Authorize:         params.Authorize,
@@ -419,4 +436,8 @@ func timeZoneName() (string, error) {
 	}
 
 	return info.Timezone, nil
+}
+
+func getJobURL(projectUID, jobUID string) string {
+return fmt.Sprintf("https://dashboard.smartling.com/app/projects/%s/account-jobs/%s:%s", projectUID, projectUID, jobUID)
 }
