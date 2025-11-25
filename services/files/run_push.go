@@ -32,10 +32,37 @@ type PushParams struct {
 	FileType    string
 	Directives  map[string]string
 	JobIDOrName string
+	NoJob       bool
+}
+
+// Validate checks that the PushParams are valid
+func (p PushParams) Validate() error {
+	if p.NoJob {
+		var incompatibleWithParams []string
+		if p.JobIDOrName != "" {
+			incompatibleWithParams = append(incompatibleWithParams, "job")
+		}
+		if p.Authorize {
+			incompatibleWithParams = append(incompatibleWithParams, "authorize")
+		}
+		if len(p.Locales) > 0 {
+			incompatibleWithParams = append(incompatibleWithParams, "locale")
+		}
+		if len(incompatibleWithParams) > 0 {
+			return clierror.ErrIncompatibleParams("nojob", incompatibleWithParams)
+		}
+	}
+	return nil
 }
 
 // RunPush uploads files to the Smartling project based on the provided parameters.
 func (s service) RunPush(ctx context.Context, params PushParams) error {
+	if err := params.Validate(); err != nil {
+		return hierr.Errorf(
+			err,
+			"Validation failed for the provided command parameters.",
+		)
+	}
 	if params.Branch == "@auto" {
 		var err error
 		params.Branch, err = getGitBranch()
@@ -106,55 +133,13 @@ func (s service) RunPush(ctx context.Context, params PushParams) error {
 		)
 	}
 
-	return s.runPush(ctx, params, files, s.Config.ProjectID)
+	if params.NoJob {
+		return s.runPushWithoutJob(params, files, s.Config.ProjectID)
+	}
+	return s.runPushWithJob(ctx, params, files, s.Config.ProjectID)
 }
 
-func getGitBranch() (string, error) {
-	dir, err := os.Getwd()
-	if err != nil {
-		return "", hierr.Errorf(
-			err,
-			"unable to get current working directory",
-		)
-	}
-
-	for {
-		if dir == "/" {
-			return "", hierr.Errorf(
-				err,
-				"no git repository can be found containing current directory",
-			)
-		}
-
-		_, err := os.Stat(filepath.Join(dir, ".git"))
-		if err != nil {
-			if !os.IsNotExist(err) {
-				return "", hierr.Errorf(
-					err,
-					`unable to get stats for "%s"`,
-					dir,
-				)
-			}
-
-			dir = filepath.Dir(dir)
-
-			continue
-		}
-		break
-	}
-
-	head, err := os.ReadFile(filepath.Join(dir, ".git", "HEAD"))
-	if err != nil {
-		return "", hierr.Errorf(
-			err,
-			"unable to read git HEAD",
-		)
-	}
-
-	return filepath.Base(strings.TrimSpace(string(head))), nil
-}
-
-func (s service) runPush(ctx context.Context, params PushParams, files []string, projectID string) error {
+func (s service) runPushWithJob(ctx context.Context, params PushParams, files []string, projectID string) error {
 	fileUris, err := getFileUris(s.Config.Path, params, files)
 	if err != nil {
 		return err
@@ -195,7 +180,7 @@ func (s service) runPush(ctx context.Context, params PushParams, files []string,
 			Salt:            api.RandomAlphanumericSalt,
 			TimeZoneName:    timeZoneName,
 		}
-		createJobResponse, err := s.BatchApi.CreateJob(projectID, payload)
+		createJobResponse, err = s.BatchApi.CreateJob(projectID, payload)
 		if err != nil {
 			return err
 		}
@@ -327,6 +312,128 @@ Check that file exists and readable by current user.`,
 	return nil
 }
 
+func (s service) runPushWithoutJob(params PushParams, files []string, projectID string) error {
+	fileUris, err := getFileUris(s.Config.Path, params, files)
+	if err != nil {
+		return err
+	}
+
+	var failedFiles []string
+	for fileID, file := range files {
+		fileConfig, err := s.Config.GetFileConfig(file)
+		if err != nil {
+			return clierror.NewError(
+				hierr.Errorf(
+					err,
+					`unable to retrieve file specific configuration`,
+				),
+
+				``,
+			)
+		}
+
+		contents, err := os.ReadFile(file)
+		if err != nil {
+			return clierror.NewError(
+				hierr.Errorf(
+					err,
+					`unable to read file contents "%s"`,
+					file,
+				),
+
+				`Check that file exists and readable by current user.`,
+			)
+		}
+
+		request := smfile.FileUploadRequest{
+			File:               contents,
+			Authorize:          params.Authorize,
+			LocalesToAuthorize: params.Locales,
+		}
+
+		request.FileURI = fileUris[fileID]
+
+		if fileConfig.Push.Type == "" {
+			if params.FileType == "" {
+				request.FileType = smfile.GetFileTypeByExtension(
+					filepath.Ext(file),
+				)
+
+				if request.FileType == smfile.FileTypeUnknown {
+					return clierror.NewError(
+						fmt.Errorf(
+							"unable to deduce file type from extension: %q",
+							filepath.Ext(file),
+						),
+
+						`You need to specify file type via --type option.`,
+					)
+				}
+			} else {
+				request.FileType = smfile.FileType(params.FileType)
+			}
+		} else {
+			request.FileType = smfile.FileType(fileConfig.Push.Type)
+		}
+
+		request.Smartling.Directives = map[string]string{}
+		if fileConfig.Push.Directives != nil {
+			request.Smartling.Directives = fileConfig.Push.Directives
+		}
+
+		for _, directive := range params.Directives {
+			spec := strings.SplitN(directive, "=", 2)
+			if len(spec) != 2 {
+				return clierror.NewError(
+					fmt.Errorf(
+						"invalid directive specification: %q",
+						directive,
+					),
+
+					`Should be in the form of <name>=<value>.`,
+				)
+			}
+
+			request.Smartling.Directives[spec[0]] = spec[1]
+		}
+
+		response, err := s.APIClient.UploadFile(projectID, request)
+
+		if err != nil {
+			if returnError(err) {
+				return clierror.NewError(
+					err,
+					fmt.Sprintf(`unable to upload file "%s"`, file),
+					`Check, that you have enough permissions to upload file to`+
+						` the specified project`,
+				)
+			}
+			_, _ = fmt.Fprintln(os.Stderr, "Unable to upload file "+file)
+			failedFiles = append(failedFiles, file)
+		} else {
+			status := "new"
+			if response.Overwritten {
+				status = "overwritten"
+			}
+
+			fmt.Printf(
+				"%s (%s) %s [%d strings %d words]\n",
+				fileUris[fileID],
+				request.FileType,
+				status,
+				response.StringCount,
+				response.WordCount,
+			)
+		}
+	}
+
+	if len(failedFiles) != 0 {
+		return clierror.NewError(fmt.Errorf("failed to upload %d files", len(failedFiles)), "failed to upload files "+strings.Join(failedFiles, ", "))
+	}
+
+	return nil
+}
+
 func (s service) getLocales(project string) ([]string, error) {
 	var locales []string
 	projectDetails, err := s.APIClient.GetProjectDetails(project)
@@ -340,6 +447,51 @@ func (s service) getLocales(project string) ([]string, error) {
 		locales = append(locales, targetLocale.LocaleID)
 	}
 	return locales, nil
+}
+
+func getGitBranch() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", hierr.Errorf(
+			err,
+			"unable to get current working directory",
+		)
+	}
+
+	for {
+		if dir == "/" {
+			return "", hierr.Errorf(
+				err,
+				"no git repository can be found containing current directory",
+			)
+		}
+
+		_, err := os.Stat(filepath.Join(dir, ".git"))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return "", hierr.Errorf(
+					err,
+					`unable to get stats for "%s"`,
+					dir,
+				)
+			}
+
+			dir = filepath.Dir(dir)
+
+			continue
+		}
+		break
+	}
+
+	head, err := os.ReadFile(filepath.Join(dir, ".git", "HEAD"))
+	if err != nil {
+		return "", hierr.Errorf(
+			err,
+			"unable to read git HEAD",
+		)
+	}
+
+	return filepath.Base(strings.TrimSpace(string(head))), nil
 }
 
 func getFileUris(configPath string, params PushParams, files []string) ([]string, error) {
