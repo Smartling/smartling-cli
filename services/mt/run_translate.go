@@ -68,7 +68,7 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 		}
 		rlog.Debugf("finish upload")
 
-		update := TranslateUpdates{ID: uint32(fileID), Upload: pointer.NewP(true)}
+		update := TranslateUpdates{ID: uint32(fileID * len(params.TargetLocales)), Upload: pointer.NewP(true)}
 		updates <- update
 
 		if params.SourceLocale == "" {
@@ -164,8 +164,7 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 			if progressResponse.State != api.CompletedTranslatedState {
 				break
 			}
-			var localeIDs []string
-			for _, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
+			for updateID, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
 				filename := filepath.Base(file)
 				ext := filepath.Ext(filename)
 				name := strings.TrimSuffix(filename, ext)
@@ -176,20 +175,16 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 					Ext:       ext,
 					Directory: filepath.Dir(file),
 				})
-				localeIDs = append(localeIDs, localeProcessStatus.LocaleID)
-			}
+				update.ID = uint32(fileID*len(params.TargetLocales) + updateID)
+				update.Locale = pointer.NewP(localeProcessStatus.LocaleID)
+				updates <- update
 
-			update.Locale = pointer.NewP(strings.Join(localeIDs, ","))
-			updates <- update
-
-			for _, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
 				rlog.Debugf("download start")
 				reader, err := s.downloader.File(params.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID, localeProcessStatus.LocaleID)
 				if err != nil {
 					return nil, err
 				}
 				rlog.Debugf("download finished")
-				ext := filepath.Ext(file)
 				filenameLocale := strings.TrimSuffix(file, ext) + "_" + localeProcessStatus.LocaleID + ext
 				outputDirectory, err := filepath.Abs(params.OutputDirectory)
 				if err != nil {
@@ -202,7 +197,7 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 						},
 					}
 				}
-				if err := os.MkdirAll(outputDirectory, 0755); err != nil {
+				if err := os.MkdirAll(outputDirectory, 0o755); err != nil {
 					return nil, clierror.UIError{
 						Err:         err,
 						Operation:   "create output directory",
@@ -215,9 +210,11 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 				if err := saveToFile(reader, filepath.Join(outputDirectory, filepath.Base(filenameLocale))); err != nil {
 					return nil, err
 				}
+				update.ID = uint32(fileID*len(params.TargetLocales) + updateID)
+				update.TranslatedFile = pointer.NewP(filepath.Base(filenameLocale))
+				update.Download = pointer.NewP(true)
+				updates <- update
 			}
-			update.Download = pointer.NewP(true)
-			updates <- update
 		}
 	}
 	return res, nil
@@ -231,7 +228,6 @@ func (s service) GetFiles(inputDirectory, fileOrPattern string) ([]string, error
 		base,
 		pattern,
 	)
-
 	if err != nil {
 		return nil, clierror.UIError{
 			Err:       err,
@@ -271,11 +267,12 @@ type TranslateOutput struct {
 
 // TranslateUpdates defines updates
 type TranslateUpdates struct {
-	ID        uint32
-	Locale    *string
-	Upload    *bool
-	Translate *string
-	Download  *bool
+	ID             uint32
+	Locale         *string
+	Upload         *bool
+	Translate      *string
+	TranslatedFile *string
+	Download       *bool
 }
 
 func saveToFile(r io.Reader, filepath string) error {
