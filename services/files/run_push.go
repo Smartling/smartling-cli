@@ -150,7 +150,7 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 	var jobName string
 	if re := regexp.MustCompile(pattern); params.JobIDOrName != "" && re.MatchString(params.JobIDOrName) {
 		jobUID = params.JobIDOrName
-		jobNameResponse, err := s.JobApi.GetJob(projectID, jobUID)
+		jobNameResponse, err := s.JobApi.Get(projectID, jobUID)
 		if err != nil {
 			return clierror.UIError{
 				Err:         err,

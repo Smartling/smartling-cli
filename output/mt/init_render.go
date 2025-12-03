@@ -1,7 +1,9 @@
 package mt
 
+import "github.com/Smartling/smartling-cli/output"
+
 // InitRender inits render for mt subcommands
-func InitRender(outputParams OutputParams, dataProvider TableDataProvider, files []string, targetLocalesQnt uint8) Renderer {
+func InitRender(outputParams output.Params, dataProvider TableDataProvider, files []string, targetLocalesQnt uint8) Renderer {
 	var render Renderer = &Static{}
 	if outputParams.Mode == "dynamic" {
 		render = &Dynamic{}

@@ -39,9 +39,9 @@ func (s service) RunStatus(params StatusParams) error {
 		return err
 	}
 
-	var tableWriter = table.NewTableWriter(os.Stdout)
+	tableWriter := table.NewTableWriter(os.Stdout)
 
-	var progress = progress.Progress{
+	progress := progress.Progress{
 		Total: len(files),
 	}
 
