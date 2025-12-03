@@ -3,7 +3,6 @@ package progress
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
@@ -13,19 +12,6 @@ import (
 	srv "github.com/Smartling/smartling-cli/services/jobs"
 
 	"github.com/spf13/cobra"
-)
-
-const (
-	outputFormatFlag = "output"
-)
-
-var (
-	outputFormat   string
-	allowedOutputs = []string{
-		"json",
-		"simple",
-	}
-	joinedAllowedOutputs = strings.Join(allowedOutputs, ", ")
 )
 
 // NewProgressCmd returns new progress command
@@ -41,6 +27,7 @@ func NewProgressCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
 			if len(args) != 1 {
 				return clierror.UIError{
 					Operation:   "check args",
@@ -48,12 +35,7 @@ func NewProgressCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 					Description: fmt.Sprintf("expected one argument, got: %d", len(args)),
 				}
 			}
-			var idOrName string
-			if len(args) == 1 {
-				idOrName = args[0]
-			}
-
-			ctx := cmd.Context()
+			idOrName := args[0]
 
 			cnf, err := rootcmd.Config()
 			if err != nil {
@@ -75,14 +57,9 @@ func NewProgressCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 				return err
 			}
 			outputParams := output.Params{Format: format}
-			if err != nil {
-				return err
-			}
 			return run(ctx, initializer, params, outputParams)
 		},
 	}
-
-	progressCmd.PersistentFlags().StringVar(&outputFormat, outputFormatFlag, "simple", "Output format: "+joinedAllowedOutputs)
 
 	return progressCmd
 }

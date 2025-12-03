@@ -69,11 +69,3 @@ type ProgressOutput struct {
 	PercentComplete   uint32
 	Json              []byte
 }
-
-// DetectUpdates defines updates
-type DetectUpdates struct {
-	ID       uint32
-	Language *string
-	Upload   *bool
-	Detect   *string
-}
