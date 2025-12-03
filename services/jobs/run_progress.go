@@ -42,8 +42,9 @@ func (s service) RunProgress(ctx context.Context, params ProgressParams) (Progre
 		if len(jobs) == 0 {
 			return ProgressOutput{}, nil
 		}
-		job := job.FindFirstJobByName(jobs, params.JobIDOrName)
-		translationJobUID = job.TranslationJobUID
+		if j, found := job.FindFirstJobByName(jobs, params.JobIDOrName); found {
+			translationJobUID = j.TranslationJobUID
+		}
 	}
 	if translationJobUID == "" {
 		return ProgressOutput{}, nil
