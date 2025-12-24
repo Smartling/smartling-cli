@@ -9,6 +9,7 @@ build: darwin windows.exe linux
 
 get:
 	go get
+	go mod vendor
 
 clean:
 	rm -rf bin pkg
@@ -59,7 +60,7 @@ _pkg-init:
 		$(shell git rev-list --count HEAD).$(shell git rev-parse --short HEAD))
 
 %:
-	GOOS=$(basename $@) go build -o bin/smartling.$@
+	GOOS=$(basename $@) go build -mod=mod -o bin/smartling.$@
 
 docs:
 	go run ./main.go docs
