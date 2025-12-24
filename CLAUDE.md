@@ -25,21 +25,49 @@ The CLI uses dependency injection through service initializers, making it testab
 ## Common Development Commands
 
 ### Build
+
+The project uses a Makefile-based build system that cross-compiles for multiple platforms:
+
 ```bash
 make all           # Clean, get dependencies, and build for all platforms
-make build         # Build for darwin, windows, linux
-go build          # Build for current platform
+make build         # Build for darwin, windows, linux (outputs to bin/ directory)
+go build          # Build for current platform only
 ```
 
+**Build outputs:**
+- `bin/smartling.darwin` - macOS binary
+- `bin/smartling.windows.exe` - Windows binary
+- `bin/smartling.linux` - Linux binary
+
+**Build time:** Typically takes 10-30 seconds depending on whether dependencies need to be downloaded.
+
 ### Testing
+
+The project has two test suites:
+
+#### Unit Tests
+Unit tests cover all command and service logic with mocked dependencies:
+
 ```bash
-make test_unit                                    # Run all unit tests
-make test_integration                             # Run all integration tests (requires binary in tests/cmd/bin/)
+make test_unit                                    # Run all unit tests (recommended)
 go test ./cmd/...                                 # Run all unit tests in cmd/
 go test ./cmd/files/push/                         # Run tests for a specific command
-go test ./tests/cmd/files/push/...                # Run specific integration test
-go test -v -run TestSpecificFunction ./cmd/...    # Run specific test function
+go test -v -run TestSpecificFunction ./cmd/...    # Run specific test function with verbose output
 ```
+
+**Expected results:** All unit tests should pass. Test suite includes 13+ test packages covering commands for files, projects, machine translation, and initialization.
+
+**Test time:** Unit tests typically complete in 2-5 seconds (many results are cached).
+
+#### Integration Tests
+Integration tests require a built binary and test the CLI end-to-end:
+
+```bash
+make test_integration                             # Run all integration tests (requires binary in tests/cmd/bin/)
+go test ./tests/cmd/files/push/...                # Run specific integration test
+```
+
+**Prerequisites:** Binary must be built and placed in `tests/cmd/bin/` before running integration tests.
 
 ### Code Quality
 ```bash

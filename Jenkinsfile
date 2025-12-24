@@ -8,9 +8,23 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        stage('Run Tests') {
             steps {
                 sh "docker pull golang"
+                sh """docker run -t --rm -v \${WORKSPACE}:/go/src/cli -w /go/src/cli golang bash -c '
+                    go install github.com/jstemmer/go-junit-report/v2@latest && \\
+                    go test -v ./cmd/... 2>&1 | tee /tmp/test-output.txt | /go/bin/go-junit-report -set-exit-code > test-results.xml
+                '"""
+            }
+            post {
+                always {
+                    junit 'test-results.xml'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
                 sh "docker run -t --rm -v ${WORKSPACE}:/go/src/cli -w /go/src/cli golang make"
             }
         }
