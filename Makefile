@@ -8,8 +8,7 @@ build: darwin windows.exe linux
 	@
 
 get:
-	go get
-	go mod vendor
+	go mod download
 
 clean:
 	rm -rf bin pkg
