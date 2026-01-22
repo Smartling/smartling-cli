@@ -2,11 +2,15 @@ package jobs
 
 import (
 	"context"
+	"errors"
 	"regexp"
 
 	"github.com/Smartling/api-sdk-go/api/job"
 	api "github.com/Smartling/api-sdk-go/api/mt"
 )
+
+// ErrJobNotFound is returned when a job is not found.
+var ErrJobNotFound = errors.New("job not found")
 
 // ProgressParams is the parameters for the RunProgress method.
 type ProgressParams struct {
@@ -40,7 +44,7 @@ func (s service) RunProgress(ctx context.Context, params ProgressParams) (Progre
 			return ProgressOutput{}, err
 		}
 		if len(jobs) == 0 {
-			return ProgressOutput{}, nil
+			return ProgressOutput{}, ErrJobNotFound
 		}
 		if j, found := job.FindFirstJobByName(jobs, params.JobIDOrName); found {
 			translationJobUID = j.TranslationJobUID
