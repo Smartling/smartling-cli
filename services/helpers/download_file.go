@@ -21,7 +21,7 @@ func DownloadFile(
 	retrievalType sdk.RetrievalType,
 ) error {
 	var (
-		reader io.Reader
+		reader io.ReadCloser
 		err    error
 	)
 
@@ -51,8 +51,13 @@ func DownloadFile(
 			)
 		}
 	}
+	defer func() {
+		if err := reader.Close(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+	}()
 
-	err = os.MkdirAll(filepath.Dir(path), 0755)
+	err = os.MkdirAll(filepath.Dir(path), 0o755)
 	if err != nil {
 		return hierr.Errorf(
 			err,
