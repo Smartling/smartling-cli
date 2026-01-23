@@ -182,12 +182,6 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 				update.Locale = pointer.NewP(localeProcessStatus.LocaleID)
 				updates <- update
 
-				rlog.Debugf("download start")
-				reader, err := s.downloader.File(params.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID, localeProcessStatus.LocaleID)
-				if err != nil {
-					return nil, err
-				}
-				rlog.Debugf("download finished")
 				filenameLocale := strings.TrimSuffix(file, ext) + "_" + localeProcessStatus.LocaleID + ext
 				outputDirectory, err := filepath.Abs(params.OutputDirectory)
 				if err != nil {
@@ -210,7 +204,21 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 						},
 					}
 				}
-				if err := saveToFile(reader, filepath.Join(outputDirectory, filepath.Base(filenameLocale))); err != nil {
+				err = func() error {
+					rlog.Debugf("download start")
+					reader, err := s.downloader.File(params.AccountUID, uploadFileResponse.FileUID, translatorStartResponse.MtUID, localeProcessStatus.LocaleID)
+					if err != nil {
+						return err
+					}
+					defer func() {
+						if err := reader.Close(); err != nil {
+							fmt.Fprintln(os.Stderr, err)
+						}
+					}()
+					rlog.Debugf("download finished")
+					return saveToFile(reader, filepath.Join(outputDirectory, filepath.Base(filenameLocale)))
+				}()
+				if err != nil {
 					return nil, err
 				}
 				update.ID = uint32(fileID*len(params.TargetLocales) + updateID)
