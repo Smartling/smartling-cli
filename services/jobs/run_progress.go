@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 
 	"github.com/Smartling/api-sdk-go/api/job"
@@ -14,9 +15,9 @@ var ErrJobNotFound = errors.New("job not found")
 
 // ProgressParams is the parameters for the RunProgress method.
 type ProgressParams struct {
-	AccountUID  api.AccountUID
-	ProjectUID  string
-	JobIDOrName string
+	AccountUID   api.AccountUID
+	ProjectUID   string
+	JobUIDOrName string
 }
 
 func (p ProgressParams) Validate() error {
@@ -33,25 +34,25 @@ func (s service) RunProgress(ctx context.Context, params ProgressParams) (Progre
 
 	pattern := `^[a-z0-9]{12}$`
 	var translationJobUID string
-	if re := regexp.MustCompile(pattern); params.JobIDOrName != "" && re.MatchString(params.JobIDOrName) {
-		if jb, err := s.job.Get(params.ProjectUID, params.JobIDOrName); err == nil {
+	if re := regexp.MustCompile(pattern); params.JobUIDOrName != "" && re.MatchString(params.JobUIDOrName) {
+		if jb, err := s.job.Get(params.ProjectUID, params.JobUIDOrName); err == nil {
 			translationJobUID = jb.TranslationJobUID
 		}
 	}
 	if translationJobUID == "" {
-		jobs, err := s.job.GetAllByName(params.ProjectUID, params.JobIDOrName)
+		jobs, err := s.job.GetAllByName(params.ProjectUID, params.JobUIDOrName)
 		if err != nil {
 			return ProgressOutput{}, err
 		}
 		if len(jobs) == 0 {
 			return ProgressOutput{}, ErrJobNotFound
 		}
-		if j, found := job.FindFirstJobByName(jobs, params.JobIDOrName); found {
+		if j, found := job.FindFirstJobByName(jobs, params.JobUIDOrName); found {
 			translationJobUID = j.TranslationJobUID
 		}
 	}
 	if translationJobUID == "" {
-		return ProgressOutput{}, nil
+		return ProgressOutput{}, fmt.Errorf("job no found for given job UID or job name: %s", params.JobUIDOrName)
 	}
 
 	progress, err := s.job.Progress(params.ProjectUID, translationJobUID)

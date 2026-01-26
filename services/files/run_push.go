@@ -144,7 +144,7 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 	if err != nil {
 		return err
 	}
-	// create new job if params.JobIDOrName is not a valid UUID
+	// create new job if params.JobUIDOrName is not a valid UUID
 	pattern := `^[a-z0-9]{12}$`
 	var jobUID string
 	var jobName string

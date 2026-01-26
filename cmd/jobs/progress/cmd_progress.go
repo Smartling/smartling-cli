@@ -119,9 +119,9 @@ Available options:` + help.AuthenticationOptions,
 			}
 
 			params := srv.ProgressParams{
-				AccountUID:  accountUID,
-				ProjectUID:  cnf.ProjectID,
-				JobIDOrName: idOrName,
+				AccountUID:   accountUID,
+				ProjectUID:   cnf.ProjectID,
+				JobUIDOrName: idOrName,
 			}
 			format, err := cmd.Parent().PersistentFlags().GetString("output")
 			if err != nil {
