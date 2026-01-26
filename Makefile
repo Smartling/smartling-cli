@@ -8,7 +8,7 @@ build: darwin windows.exe linux
 	@
 
 get:
-	go get
+	go mod download
 
 clean:
 	rm -rf bin pkg
@@ -59,7 +59,7 @@ _pkg-init:
 		$(shell git rev-list --count HEAD).$(shell git rev-parse --short HEAD))
 
 %:
-	GOOS=$(basename $@) go build -o bin/smartling.$@
+	GOOS=$(basename $@) go build -mod=mod -o bin/smartling.$@
 
 docs:
 	go run ./main.go docs
@@ -87,6 +87,7 @@ test_unit:
 test_integration:
 	go test ./tests/cmd/files/push/...
 	go test ./tests/cmd/files/pull/...
+	go test ./tests/cmd/jobs/progress/...
 	go test ./tests/cmd/files/list/...
 	go test ./tests/cmd/files/status/...
 	go test ./tests/cmd/files/rename/...

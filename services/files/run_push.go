@@ -144,13 +144,13 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 	if err != nil {
 		return err
 	}
-	// create new job if params.JobIDOrName is not a valid UUID
+	// create new job if params.JobUIDOrName is not a valid UUID
 	pattern := `^[a-z0-9]{12}$`
 	var jobUID string
 	var jobName string
 	if re := regexp.MustCompile(pattern); params.JobIDOrName != "" && re.MatchString(params.JobIDOrName) {
 		jobUID = params.JobIDOrName
-		jobNameResponse, err := s.JobApi.GetJob(projectID, jobUID)
+		jobNameResponse, err := s.JobApi.Get(projectID, jobUID)
 		if err != nil {
 			return clierror.UIError{
 				Err:         err,

@@ -21,7 +21,8 @@ type Service interface {
 
 // NewService creates a new implementation of the Service
 func NewService(downloader api.Downloader, fileTranslator api.FileTranslator,
-	uploader api.Uploader, translationControl api.TranslationControl) Service {
+	uploader api.Uploader, translationControl api.TranslationControl,
+) Service {
 	return service{
 		downloader:         downloader,
 		fileTranslator:     fileTranslator,

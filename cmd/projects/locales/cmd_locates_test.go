@@ -22,10 +22,10 @@ func TestNewLocaLesCmd(t *testing.T) {
 		Source: false,
 	}
 	projectsSrv.On("RunLocales", params).Run(func(args mock.Arguments) {
-		if _, err := fmt.Fprintf(buf, "RunLocales was called with %d args", len(args)); err != nil {
+		if _, err := fmt.Fprintf(buf, "RunLocales was called with %d args\n", len(args)); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := fmt.Fprintf(buf, "params: %v", args[0]); err != nil {
+		if _, err := fmt.Fprintf(buf, "params: %v\n", args[0]); err != nil {
 			t.Fatal(err)
 		}
 	}).Return(nil)

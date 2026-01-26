@@ -12,9 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	dryRun bool
-)
+var dryRun bool
 
 // NewInitCmd creates a new command to initialize the Smartling CLI.
 func NewInitCmd(srvInitializer SrvInitializer) *cobra.Command {
