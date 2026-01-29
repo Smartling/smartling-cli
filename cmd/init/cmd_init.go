@@ -6,15 +6,13 @@ import (
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
-	"github.com/Smartling/smartling-cli/services/init"
+	initialize "github.com/Smartling/smartling-cli/services/init"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/spf13/cobra"
 )
 
-var (
-	dryRun bool
-)
+var dryRun bool
 
 // NewInitCmd creates a new command to initialize the Smartling CLI.
 func NewInitCmd(srvInitializer SrvInitializer) *cobra.Command {
