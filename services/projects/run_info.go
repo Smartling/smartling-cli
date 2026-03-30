@@ -35,7 +35,7 @@ func (s service) RunInfo() error {
 		status = "archived"
 	}
 
-	info := [][]interface{}{
+	info := [][]any{
 		{"ID", details.ProjectID},
 		{"ACCOUNT", details.AccountUID},
 		{"NAME", details.ProjectName},

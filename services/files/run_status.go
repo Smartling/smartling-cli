@@ -72,7 +72,7 @@ func (s service) RunStatus(params StatusParams) error {
 				file,
 				defaultFormat,
 				format.UsePullFormat,
-				map[string]interface{}{
+				map[string]any{
 					"FileURI": file.FileURI,
 					"Locale":  translation.LocaleID,
 				},

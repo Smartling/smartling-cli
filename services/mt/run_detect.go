@@ -9,7 +9,6 @@ import (
 	"time"
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
-	"github.com/Smartling/smartling-cli/services/helpers/pointer"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
@@ -51,7 +50,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		}
 		rlog.Debugf("finish upload")
 
-		update.Upload = pointer.NewP(true)
+		update.Upload = new(true)
 		updates <- update
 
 		rlog.Debugf("detect language")
@@ -60,7 +59,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			return nil, err
 		}
 
-		update.Detect = pointer.NewP("start")
+		update.Detect = new("start")
 		updates <- update
 
 		started := time.Now()
@@ -75,7 +74,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 				return nil, err
 			}
 
-			update.Detect = pointer.NewP(detectionProgressResponse.State)
+			update.Detect = new(detectionProgressResponse.State)
 			updates <- update
 
 			rlog.Debugf("progress state: %s", detectionProgressResponse.State)
@@ -93,7 +92,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			}
 
 			if len(detectionProgressResponse.DetectedSourceLanguages) > 0 {
-				update.Language = pointer.NewP(detectionProgressResponse.DetectedSourceLanguages[0].LanguageID)
+				update.Language = new(detectionProgressResponse.DetectedSourceLanguages[0].LanguageID)
 			}
 
 			updates <- update

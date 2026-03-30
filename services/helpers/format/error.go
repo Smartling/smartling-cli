@@ -12,7 +12,7 @@ import (
 type ExecutionError struct {
 	Cause  error
 	Format string
-	Data   interface{}
+	Data   any
 }
 
 func (err ExecutionError) Error() string {
