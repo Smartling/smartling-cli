@@ -22,7 +22,7 @@ func ReadFilesFromStdin() ([]sdkfile.File, error) {
 
 	var files []sdkfile.File
 
-	for _, line := range strings.Split(string(lines), "\n") {
+	for line := range strings.SplitSeq(string(lines), "\n") {
 		if line == "" {
 			continue
 		}

@@ -13,7 +13,7 @@ func ExecuteFileFormat(
 	file sdkfile.File,
 	fallback string,
 	getter func(config config.FileConfig) string,
-	data interface{},
+	data any,
 ) (string, error) {
 	local, err := config.GetFileConfig(file.FileURI)
 	if err != nil {

@@ -146,7 +146,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 			file,
 			params.Format,
 			useFormat,
-			map[string]interface{}{
+			map[string]any{
 				"FileURI": file.FileURI,
 				"Locale":  locale.LocaleID,
 			},

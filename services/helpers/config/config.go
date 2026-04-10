@@ -14,12 +14,12 @@ import (
 // FileConfig is the configuration from file.
 type FileConfig struct {
 	Pull struct {
-		Format string `yaml:"format,omitempty"`
-	} `yaml:"pull,omitempty"`
+		Format string `yaml:"format,omitzero"`
+	} `yaml:"pull,omitzero"`
 	Push struct {
-		Type       string            `yaml:"type,omitempty"`
-		Directives map[string]string `yaml:"directives,omitempty,flow"`
-	} `yaml:"push,omitempty"`
+		Type       string            `yaml:"type,omitzero"`
+		Directives map[string]string `yaml:"directives,omitzero,flow"`
+	} `yaml:"push,omitzero"`
 }
 
 // Config is the configuration for the Smartling CLI.
@@ -27,12 +27,12 @@ type Config struct {
 	UserID    string `yaml:"user_id"`
 	Secret    string `yaml:"secret"`
 	AccountID string `yaml:"account_id"`
-	ProjectID string `yaml:"project_id,omitempty"`
+	ProjectID string `yaml:"project_id,omitzero"`
 	Threads   uint32 `yaml:"threads"`
 
 	Files map[string]FileConfig `yaml:"files"`
 
-	Proxy string `yaml:"proxy,omitempty"`
+	Proxy string `yaml:"proxy,omitzero"`
 
 	Path string `yaml:"-"`
 }

@@ -1,7 +1,6 @@
 package detect
 
 import (
-	"context"
 	"errors"
 	"testing"
 
@@ -16,7 +15,7 @@ import (
 )
 
 func TestRunGetFilesError(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	initializer := cmdmocks.NewMockSrvInitializer(t)
 	mtSrv := srvmocks.NewMockService(t)
 	filesErr := errors.New("files error")
@@ -39,7 +38,7 @@ func TestRunGetFilesError(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	initializer := cmdmocks.NewMockSrvInitializer(t)
 	mtSrv := srvmocks.NewMockService(t)
 

@@ -12,7 +12,6 @@ import (
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
-	"github.com/Smartling/smartling-cli/services/helpers/pointer"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
@@ -71,7 +70,7 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 		}
 		rlog.Debugf("finish upload")
 
-		update := TranslateUpdates{ID: uint32(fileID * len(params.TargetLocales)), Upload: pointer.NewP(true)}
+		update := TranslateUpdates{ID: uint32(fileID * len(params.TargetLocales)), Upload: new(true)}
 		updates <- update
 
 		if params.SourceLocale == "" {
@@ -122,7 +121,7 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 			return nil, err
 		}
 
-		update.Translate = pointer.NewP("start")
+		update.Translate = new("start")
 		updates <- update
 
 		if err := translatorStartResponse.MtUID.Validate(); err != nil {
@@ -151,7 +150,7 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 				return nil, err
 			}
 
-			update.Translate = pointer.NewP(progressResponse.State)
+			update.Translate = new(progressResponse.State)
 			updates <- update
 
 			rlog.Debugf("progress state: %s", progressResponse.State)
@@ -179,7 +178,7 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 					Directory: filepath.Dir(file),
 				})
 				update.ID = uint32(fileID*len(params.TargetLocales) + updateID)
-				update.Locale = pointer.NewP(localeProcessStatus.LocaleID)
+				update.Locale = new(localeProcessStatus.LocaleID)
 				updates <- update
 
 				filenameLocale := strings.TrimSuffix(file, ext) + "_" + localeProcessStatus.LocaleID + ext
@@ -222,8 +221,8 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 					return nil, err
 				}
 				update.ID = uint32(fileID*len(params.TargetLocales) + updateID)
-				update.TranslatedFile = pointer.NewP(filepath.Base(filenameLocale))
-				update.Download = pointer.NewP(true)
+				update.TranslatedFile = new(filepath.Base(filenameLocale))
+				update.Download = new(true)
 				updates <- update
 			}
 		}
