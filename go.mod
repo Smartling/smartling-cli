@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	dario.cat/mergo v1.0.2
-	github.com/Smartling/api-sdk-go v0.0.0-20260330123236-a623cd723454
+	github.com/Smartling/api-sdk-go v0.0.0-20260410075653-e9a5f6c2d30e
 	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.6
 	github.com/charmbracelet/lipgloss v1.1.0
