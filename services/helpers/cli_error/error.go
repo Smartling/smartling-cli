@@ -6,11 +6,11 @@ import "fmt"
 type Error struct {
 	Cause       error
 	Description string
-	Args        []interface{}
+	Args        []any
 }
 
 // NewError creates a new Error instance with the provided cause, description, and optional arguments.
-func NewError(cause error, description string, args ...interface{}) Error {
+func NewError(cause error, description string, args ...any) Error {
 	return Error{
 		Cause:       cause,
 		Description: description,

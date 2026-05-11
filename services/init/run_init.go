@@ -23,10 +23,10 @@ func (s service) RunInit(dryRun bool) error {
 
 	prompt := func(
 		message string,
-		value interface{},
+		value any,
 		zero bool,
 		hidden bool,
-		variable interface{},
+		variable any,
 	) {
 		display := regexp.MustCompile(`^(.{1,3}).*$`).ReplaceAllString(
 			fmt.Sprint(value),
