@@ -50,7 +50,7 @@ Available options:
   smartling-cli jobs progress aabbccdd --output json
 
 `,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			if !slices.Contains(allowedOutputs, outputFormat) {
 				return fmt.Errorf("invalid output: %s (allowed: %s)", outputFormat, joinedAllowedOutputs)
 			}

@@ -35,9 +35,12 @@ func NewMTCmd() *cobra.Command {
 		Use:   "mt",
 		Short: "File Machine Translations",
 		Long:  `Machine Translations offers a simple way to upload files and execute actions on them without any complex setup required`,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			if !slices.Contains(allowedOutputs, outputFormat) {
 				return fmt.Errorf("invalid output: %s (allowed: %s)", outputFormat, joinedAllowedOutputs)
+			}
+			if !slices.Contains(allowedOutputModes, outputMode) {
+				return fmt.Errorf("invalid output-mode: %s (allowed: %s)", outputMode, joinedAllowedOutputModes)
 			}
 			return nil
 		},

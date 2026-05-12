@@ -13,6 +13,8 @@ import (
 // ErrJobNotFound is returned when a job is not found.
 var ErrJobNotFound = errors.New("job not found")
 
+var jobUIDPattern = regexp.MustCompile(`^[a-z0-9]{12}$`)
+
 // ProgressParams is the parameters for the RunProgress method.
 type ProgressParams struct {
 	AccountUID   api.AccountUID
@@ -27,37 +29,42 @@ func (p ProgressParams) Validate() error {
 	return nil
 }
 
-func (s service) RunProgress(ctx context.Context, params ProgressParams) (ProgressOutput, error) {
+func (s service) RunProgress(_ context.Context, params ProgressParams) (ProgressOutput, error) {
 	if err := params.Validate(); err != nil {
 		return ProgressOutput{}, err
 	}
 
-	pattern := `^[a-z0-9]{12}$`
 	var translationJobUID string
-	if re := regexp.MustCompile(pattern); params.JobUIDOrName != "" && re.MatchString(params.JobUIDOrName) {
-		if jb, err := s.job.Get(params.ProjectUID, params.JobUIDOrName); err == nil {
+	if params.JobUIDOrName != "" && jobUIDPattern.MatchString(params.JobUIDOrName) {
+		jb, err := s.job.Get(params.ProjectUID, params.JobUIDOrName)
+		switch {
+		case err == nil:
 			translationJobUID = jb.TranslationJobUID
+		case errors.Is(err, job.ErrNotFound):
+			// 12-char input wasn't a UID — could still be a job name, fall through
+		default:
+			return ProgressOutput{}, fmt.Errorf("get job by UID %q: %w", params.JobUIDOrName, err)
 		}
 	}
+
 	if translationJobUID == "" {
-		jobs, err := s.job.GetAllByName(params.ProjectUID, params.JobUIDOrName)
+		jobs, err := s.job.SearchByName(params.ProjectUID, params.JobUIDOrName)
 		if err != nil {
-			return ProgressOutput{}, err
+			return ProgressOutput{}, fmt.Errorf("search jobs by name %q: %w", params.JobUIDOrName, err)
 		}
 		if len(jobs) == 0 {
 			return ProgressOutput{}, ErrJobNotFound
 		}
-		if j, found := job.FindFirstJobByName(jobs, params.JobUIDOrName); found {
-			translationJobUID = j.TranslationJobUID
+		j, found := job.FindFirstJobByName(jobs, params.JobUIDOrName)
+		if !found {
+			return ProgressOutput{}, ErrJobNotFound
 		}
-	}
-	if translationJobUID == "" {
-		return ProgressOutput{}, fmt.Errorf("job no found for given job UID or job name: %s", params.JobUIDOrName)
+		translationJobUID = j.TranslationJobUID
 	}
 
 	progress, err := s.job.Progress(params.ProjectUID, translationJobUID)
 	if err != nil {
-		return ProgressOutput{}, err
+		return ProgressOutput{}, fmt.Errorf("get job progress for %q: %w", translationJobUID, err)
 	}
 
 	return ProgressOutput{
@@ -72,6 +79,6 @@ func (s service) RunProgress(ctx context.Context, params ProgressParams) (Progre
 type ProgressOutput struct {
 	TranslationJobUID string
 	TotalWordCount    uint32
-	PercentComplete   uint32
+	PercentComplete   float64
 	Json              []byte
 }

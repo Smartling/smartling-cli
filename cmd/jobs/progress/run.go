@@ -2,6 +2,7 @@ package progress
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	jobscmd "github.com/Smartling/smartling-cli/cmd/jobs"
@@ -29,11 +30,14 @@ func run(ctx context.Context,
 
 	progressOutput, err := jobSrv.RunProgress(ctx, params)
 	if err != nil {
+		if errors.Is(err, srv.ErrJobNotFound) {
+			return clierror.UIError{
+				Operation:   "find job",
+				Err:         err,
+				Description: fmt.Sprintf("no job found for %q", params.JobUIDOrName),
+			}
+		}
 		return err
-	}
-
-	if progressOutput.TranslationJobUID == "" {
-		return fmt.Errorf("translation job no found for given job UID or job name: %s", params.JobUIDOrName)
 	}
 
 	outputFormat := jobs.GetOutputFormat(outputParams.Format)
