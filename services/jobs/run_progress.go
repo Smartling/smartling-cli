@@ -10,10 +10,12 @@ import (
 	api "github.com/Smartling/api-sdk-go/api/mt"
 )
 
-// ErrJobNotFound is returned when a job is not found.
-var ErrJobNotFound = errors.New("job not found")
-
-var jobUIDPattern = regexp.MustCompile(`^[a-z0-9]{12}$`)
+var (
+	// ErrJobNotFound is returned when a job is not found.
+	ErrJobNotFound     = errors.New("job not found")
+	errEmptyProjectUID = errors.New("project UID is required")
+	jobUIDPattern      = regexp.MustCompile(`^[a-z0-9]{12}$`)
+)
 
 // ProgressParams is the parameters for the RunProgress method.
 type ProgressParams struct {
@@ -25,6 +27,9 @@ type ProgressParams struct {
 func (p ProgressParams) Validate() error {
 	if err := p.AccountUID.Validate(); err != nil {
 		return err
+	}
+	if p.ProjectUID == "" {
+		return errEmptyProjectUID
 	}
 	return nil
 }

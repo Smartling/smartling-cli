@@ -6,7 +6,7 @@ import (
 	api "github.com/Smartling/api-sdk-go/api/job"
 )
 
-// Service defines behavior for interacting with Smartling MT.
+// Service defines behavior for interacting with Smartling jobs.
 type Service interface {
 	RunProgress(ctx context.Context, p ProgressParams) (ProgressOutput, error)
 }

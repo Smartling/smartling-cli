@@ -7,7 +7,7 @@ import (
 	jobapi "github.com/Smartling/api-sdk-go/api/job"
 )
 
-// SrvInitializer defines files service initializer
+// SrvInitializer defines jobs service initializer
 type SrvInitializer interface {
 	InitJobSrv() (srv.Service, error)
 }
