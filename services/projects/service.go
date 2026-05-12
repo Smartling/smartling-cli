@@ -1,6 +1,8 @@
 package projects
 
 import (
+	"context"
+
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 
 	sdk "github.com/Smartling/api-sdk-go"
@@ -8,9 +10,9 @@ import (
 
 // Service defines behavior for interacting with Smartling projects.
 type Service interface {
-	RunInfo() error
-	RunList(short bool) error
-	RunLocales(params LocalesParams) error
+	RunInfo(ctx context.Context) error
+	RunList(ctx context.Context, short bool) error
+	RunLocales(ctx context.Context, params LocalesParams) error
 }
 
 // service provides methods to interact with Smartling projects.

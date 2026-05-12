@@ -1,6 +1,7 @@
 package files
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -22,19 +23,19 @@ type StatusParams struct {
 }
 
 // RunStatus retrieves and outputs the status of files in the Smartling project.
-func (s service) RunStatus(params StatusParams) error {
+func (s service) RunStatus(ctx context.Context, params StatusParams) error {
 	defaultFormat := params.Format
 	if defaultFormat == "" {
 		defaultFormat = format.DefaultFileStatusFormat
 	}
 
 	projectID := s.Config.ProjectID
-	info, err := s.APIClient.GetProjectDetails(projectID)
+	info, err := s.APIClient.GetProjectDetails(ctx, projectID)
 	if err != nil {
 		return err
 	}
 
-	files, err := globfiles.Remote(s.APIClient.ListAllFiles, projectID, params.URI)
+	files, err := globfiles.Remote(ctx, s.APIClient.ListAllFiles, projectID, params.URI)
 	if err != nil {
 		return err
 	}
@@ -46,7 +47,7 @@ func (s service) RunStatus(params StatusParams) error {
 	}
 
 	for _, file := range files {
-		status, err := s.APIClient.GetFileStatus(projectID, file.FileURI)
+		status, err := s.APIClient.GetFileStatus(ctx, projectID, file.FileURI)
 		if err != nil {
 			return err
 		}

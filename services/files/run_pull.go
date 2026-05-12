@@ -1,6 +1,7 @@
 package files
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -43,7 +44,7 @@ func (p PullParams) validate() error {
 }
 
 // RunPull pulls translations for files from the Smartling based on the provided parameters.
-func (s service) RunPull(params PullParams) error {
+func (s service) RunPull(ctx context.Context, params PullParams) error {
 	if err := params.validate(); err != nil {
 		return err
 	}
@@ -61,7 +62,7 @@ func (s service) RunPull(params PullParams) error {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(s.APIClient.ListAllFiles, s.Config.ProjectID, params.URI)
+		files, err = globfiles.Remote(ctx, s.APIClient.ListAllFiles, s.Config.ProjectID, params.URI)
 		if err != nil {
 			return err
 		}
@@ -73,7 +74,7 @@ func (s service) RunPull(params PullParams) error {
 		// func closure required to pass different file objects to goroutines
 		func(file sdkfile.File) {
 			pool.Do(func() {
-				err := s.downloadFileTranslations(params, file)
+				err := s.downloadFileTranslations(ctx, params, file)
 				if err != nil {
 					rlog.Error(err)
 				}
@@ -86,7 +87,7 @@ func (s service) RunPull(params PullParams) error {
 	return nil
 }
 
-func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) error {
+func (s service) downloadFileTranslations(ctx context.Context, params PullParams, file sdkfile.File) error {
 	progress := strings.TrimSpace(params.Progress)
 	progress = strings.TrimSpace(strings.TrimSuffix(progress, "%"))
 	if progress == "" {
@@ -107,7 +108,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 	}
 
 	projectID := s.Config.ProjectID
-	status, err := s.APIClient.GetFileStatus(projectID, file.FileURI)
+	status, err := s.APIClient.GetFileStatus(ctx, projectID, file.FileURI)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -167,6 +168,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 		path = filepath.Join(params.Directory, path)
 
 		err = helpers.DownloadFile(
+			ctx,
 			s.APIClient,
 			projectID,
 			file,

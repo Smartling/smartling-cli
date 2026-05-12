@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -134,7 +135,7 @@ func (s service) RunPush(ctx context.Context, params PushParams) error {
 	}
 
 	if params.NoJob {
-		return s.runPushWithoutJob(params, files, s.Config.ProjectID)
+		return s.runPushWithoutJob(ctx, params, files, s.Config.ProjectID)
 	}
 	return s.runPushWithJob(ctx, params, files, s.Config.ProjectID)
 }
@@ -150,7 +151,7 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 	var jobName string
 	if re := regexp.MustCompile(pattern); params.JobIDOrName != "" && re.MatchString(params.JobIDOrName) {
 		jobUID = params.JobIDOrName
-		jobNameResponse, err := s.JobApi.GetJob(projectID, jobUID)
+		jobNameResponse, err := s.JobApi.GetJob(ctx, projectID, jobUID)
 		if err != nil {
 			return clierror.UIError{
 				Err:         err,
@@ -180,7 +181,7 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 			Salt:            api.RandomAlphanumericSalt,
 			TimeZoneName:    timeZoneName,
 		}
-		createJobResponse, err := s.BatchApi.CreateJob(projectID, payload)
+		createJobResponse, err := s.BatchApi.CreateJob(ctx, projectID, payload)
 		if err != nil {
 			return err
 		}
@@ -192,7 +193,7 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 	jobURL := getJobURL(projectID, jobUID)
 	fmt.Printf("Smartling Job URL: %s\n", jobURL)
 
-	createBatchResponse, err := s.BatchApi.Create(projectID, api.CreateBatchPayload{
+	createBatchResponse, err := s.BatchApi.Create(ctx, projectID, api.CreateBatchPayload{
 		Authorize:         params.Authorize,
 		TranslationJobUID: jobUID,
 		FileUris:          fileUris,
@@ -231,7 +232,7 @@ Check that file exists and readable by current user.`,
 		}
 		locales := params.Locales
 		if len(locales) == 0 {
-			locales, err = s.getLocales(projectID)
+			locales, err = s.getLocales(ctx, projectID)
 			if err != nil {
 				return err
 			}
@@ -261,7 +262,7 @@ Check that file exists and readable by current user.`,
 		}
 		rlog.Debugf("uploaded file %v", uploadFileResponse)
 		fmt.Printf(
-			"%s (%s) %s [code: %s]\n",
+			"%s (%s) %s [code: %d]\n",
 			fileUris[fileID],
 			payload.FileType,
 			"uploaded",
@@ -276,14 +277,14 @@ Check that file exists and readable by current user.`,
 			return errors.New("timeout exceeded for polling batch status: " + createBatchResponse.BatchUID)
 		}
 		time.Sleep(pollingInterval)
-		getStatusResponse, err := s.BatchApi.GetStatus(projectID, createBatchResponse.BatchUID)
+		getStatusResponse, err := s.BatchApi.GetStatus(ctx, projectID, createBatchResponse.BatchUID)
 		if err != nil {
 			return clierror.UIError{
 				Err:         err,
 				Operation:   "GetStatus",
 				Description: `unable to get status for batch`,
 				Fields: map[string]string{
-					"code": getStatusResponse.Code,
+					"code": strconv.Itoa(getStatusResponse.Code),
 				},
 			}
 		}
@@ -312,7 +313,7 @@ Check that file exists and readable by current user.`,
 	return nil
 }
 
-func (s service) runPushWithoutJob(params PushParams, files []string, projectID string) error {
+func (s service) runPushWithoutJob(ctx context.Context, params PushParams, files []string, projectID string) error {
 	fileUris, err := getFileUris(s.Config.Path, params, files)
 	if err != nil {
 		return err
@@ -397,7 +398,7 @@ func (s service) runPushWithoutJob(params PushParams, files []string, projectID 
 			request.Smartling.Directives[spec[0]] = spec[1]
 		}
 
-		response, err := s.APIClient.UploadFile(projectID, request)
+		response, err := s.APIClient.UploadFile(ctx, projectID, request)
 
 		if err != nil {
 			if returnError(err) {
@@ -434,9 +435,9 @@ func (s service) runPushWithoutJob(params PushParams, files []string, projectID 
 	return nil
 }
 
-func (s service) getLocales(project string) ([]string, error) {
+func (s service) getLocales(ctx context.Context, project string) ([]string, error) {
 	var locales []string
-	projectDetails, err := s.APIClient.GetProjectDetails(project)
+	projectDetails, err := s.APIClient.GetProjectDetails(ctx, project)
 	if err != nil {
 		return nil, err
 	}

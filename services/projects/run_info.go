@@ -1,6 +1,7 @@
 package projects
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -13,8 +14,8 @@ import (
 
 // RunInfo retrieves and output project details.
 // Returns an error if any
-func (s service) RunInfo() error {
-	details, err := s.Client.GetProjectDetails(s.Config.ProjectID)
+func (s service) RunInfo(ctx context.Context) error {
+	details, err := s.Client.GetProjectDetails(ctx, s.Config.ProjectID)
 	if err != nil {
 		if _, ok := err.(sdkerror.NotFoundError); ok {
 			return clierror.ProjectNotFoundError{}

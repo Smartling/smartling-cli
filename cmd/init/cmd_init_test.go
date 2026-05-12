@@ -15,8 +15,8 @@ import (
 func TestNewInitCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
 	initSrv := srvmocks.NewMockService(t)
-	initSrv.On("RunInit", false).Run(func(args mock.Arguments) {
-		if _, err := fmt.Fprintf(buf, "RunInit was called with: %v\n", args[0]); err != nil {
+	initSrv.On("RunInit", mock.Anything, false).Run(func(args mock.Arguments) {
+		if _, err := fmt.Fprintf(buf, "RunInit was called with: %v\n", args[1]); err != nil {
 			t.Fatal(err)
 		}
 	}).Return(nil)
@@ -46,8 +46,8 @@ func TestNewInitCmd(t *testing.T) {
 func TestNewInitCmdDryRun(t *testing.T) {
 	buf := new(bytes.Buffer)
 	initSrv := srvmocks.NewMockService(t)
-	initSrv.On("RunInit", true).Run(func(args mock.Arguments) {
-		if _, err := fmt.Fprintf(buf, "RunInit was called with: %v\n", args[0]); err != nil {
+	initSrv.On("RunInit", mock.Anything, true).Run(func(args mock.Arguments) {
+		if _, err := fmt.Fprintf(buf, "RunInit was called with: %v\n", args[1]); err != nil {
 			t.Fatal(err)
 		}
 	}).Return(nil)

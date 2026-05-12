@@ -25,17 +25,17 @@ func TestNewPullCmd(t *testing.T) {
 		Progress:  "20%",
 		Retrieve:  "none",
 	}
-	filesSrv.On("RunPull", params).Run(func(args mock.Arguments) {
+	filesSrv.On("RunPull", mock.Anything, params).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunPull was called with %d args\n", len(args)); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := fmt.Fprintf(buf, "params: %v\n", args[0]); err != nil {
+		if _, err := fmt.Fprintf(buf, "params: %v\n", args[1]); err != nil {
 			t.Fatal(err)
 		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("InitFilesSrv").Return(filesSrv, nil)
+	initializer.On("InitFilesSrv", mock.Anything).Return(filesSrv, nil)
 
 	cmd := NewPullCmd(initializer)
 
@@ -58,7 +58,7 @@ func TestNewPullCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := fmt.Sprintf(`RunPull was called with 1 args
+	expected := fmt.Sprintf(`RunPull was called with 2 args
 params: %v
 `, params)
 

@@ -28,13 +28,14 @@ Available options:` + help.AuthenticationOptions,
   smartling-cli projects info
 
 `,
-		Run: func(_ *cobra.Command, _ []string) {
-			s, err := initializer.InitProjectsSrv()
+		Run: func(cmd *cobra.Command, _ []string) {
+			ctx := cmd.Context()
+			s, err := initializer.InitProjectsSrv(ctx)
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
 				os.Exit(1)
 			}
-			err = s.RunInfo()
+			err = s.RunInfo(ctx)
 			if err != nil {
 				rlog.Errorf("failed to run info: %s", err)
 				os.Exit(1)

@@ -28,7 +28,8 @@ Available options:
   -p --project <project>
     Specify project to use.
 ` + help.AuthenticationOptions,
-		Run: func(_ *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx := cmd.Context()
 			if len(args) > 0 {
 				old = args[0]
 			}
@@ -36,13 +37,13 @@ Available options:
 				new = args[1]
 			}
 
-			s, err := initializer.InitFilesSrv()
+			s, err := initializer.InitFilesSrv(ctx)
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				os.Exit(1)
 			}
 
-			err = s.RunRename(old, new)
+			err = s.RunRename(ctx, old, new)
 			if err != nil {
 				rlog.Errorf("failed to run rename: %s", err)
 				os.Exit(1)

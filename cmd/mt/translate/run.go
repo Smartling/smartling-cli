@@ -20,7 +20,7 @@ func run(ctx context.Context,
 	fileOrPattern string,
 	outputParams output.OutputParams) error {
 	rlog.Debugf("running translate with params: %v", params)
-	mtSrv, err := initializer.InitMTSrv()
+	mtSrv, err := initializer.InitMTSrv(ctx)
 	if err != nil {
 		return clierror.UIError{
 			Operation:   "init",

@@ -2,12 +2,14 @@ package initialize
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"regexp"
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
+	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
@@ -18,7 +20,7 @@ import (
 )
 
 // RunInit initializes the Smartling CLI.
-func (s service) RunInit(dryRun bool) error {
+func (s service) RunInit(ctx context.Context, dryRun bool) error {
 	fmt.Printf("Generating %s...\n\n", s.Config.Path)
 
 	prompt := func(
@@ -123,8 +125,8 @@ func (s service) RunInit(dryRun bool) error {
 
 	fmt.Println("Testing connection to Smartling API...")
 
-	s.Client = sdk.NewHttpAPIClient(s.Config.UserID, s.Config.Secret)
-	err = s.Client.Authenticate()
+	s.Client = sdk.NewHttpAPIClient(client.NewHTTPClient(), s.Config.UserID, s.Config.Secret)
+	err = s.Client.Authenticate(ctx)
 	if err != nil {
 		if _, ok := err.(sdkerror.NotAuthorizedError); ok {
 			return clierror.NewError(

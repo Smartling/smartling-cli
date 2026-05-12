@@ -46,7 +46,8 @@ Available options:
   --overwrite
     Overwrite existing translations.
 ` + help.AuthenticationOptions,
-		Run: func(_ *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx := cmd.Context()
 			var (
 				uri    string
 				file   string
@@ -62,7 +63,7 @@ Available options:
 				locale = args[2]
 			}
 
-			s, err := initializer.InitFilesSrv()
+			s, err := initializer.InitFilesSrv(ctx)
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				os.Exit(1)
@@ -76,7 +77,7 @@ Available options:
 				PostTranslation: postTranslation,
 				Overwrite:       overwrite,
 			}
-			err = s.RunImport(params)
+			err = s.RunImport(ctx, params)
 			if err != nil {
 				rlog.Errorf("failed to run import: %s", err)
 				os.Exit(1)

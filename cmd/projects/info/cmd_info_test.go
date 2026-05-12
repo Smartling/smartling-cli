@@ -15,14 +15,14 @@ import (
 func TestNewInfoCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
 	projectsSrv := srvmocks.NewMockService(t)
-	projectsSrv.On("RunInfo").Run(func(args mock.Arguments) {
+	projectsSrv.On("RunInfo", mock.Anything).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunInfo was called with %d args\n", len(args)); err != nil {
 			t.Fatal(err)
 		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("InitProjectsSrv").Return(projectsSrv, nil)
+	initializer.On("InitProjectsSrv", mock.Anything).Return(projectsSrv, nil)
 
 	cmd := NewInfoCmd(initializer)
 
@@ -35,7 +35,7 @@ func TestNewInfoCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := "RunInfo was called with 0 args"
+	expected := "RunInfo was called with 1 args"
 
 	if !strings.Contains(output, expected) {
 		t.Errorf("Expected output to contain %q, got %q", expected, output)
