@@ -63,7 +63,10 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		updates <- update
 
 		started := time.Now()
-		var processed bool
+		var (
+			processed        bool
+			detectedLanguage string
+		)
 		for !processed {
 			if time.Since(started) > pollingDuration {
 				return nil, errors.New("timeout exceeded for polling detection progress of LanguageDetectionUID: " + detectFileLanguageResponse.LanguageDetectionUID)
@@ -92,7 +95,8 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			}
 
 			if len(detectionProgressResponse.DetectedSourceLanguages) > 0 {
-				update.Language = new(detectionProgressResponse.DetectedSourceLanguages[0].LanguageID)
+				detectedLanguage = detectionProgressResponse.DetectedSourceLanguages[0].LanguageID
+				update.Language = new(detectedLanguage)
 			}
 
 			updates <- update
@@ -100,7 +104,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 
 		res = append(res, DetectOutput{
 			File:       string(uploadFileResponse.FileUID),
-			Language:   detectFileLanguageResponse.LanguageDetectionUID,
+			Language:   detectedLanguage,
 			Confidence: "",
 		})
 	}
