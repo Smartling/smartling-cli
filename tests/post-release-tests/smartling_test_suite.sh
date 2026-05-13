@@ -146,7 +146,7 @@ app.version=1.0.0
 EOF
 
     # German translation file for import testing
-    cat > "${TEST_FILES_DIR}/test_de.properties" << 'EOF'
+    cat > "${TEST_FILES_DIR}/test_de-DE.properties" << 'EOF'
 app.title=Test Application DE
 app.description=This is a test application DE
 app.version=1.0.0
@@ -216,7 +216,7 @@ test_file_operations_workflow() {
     
     local test_file="${TEST_FILES_DIR}/test.txt"
     local test_prop_file="${TEST_FILES_DIR}/test.properties"
-    local test_prop_translation_file_de="${TEST_FILES_DIR}/test_de.properties"
+    local test_prop_translation_file_de="${TEST_FILES_DIR}/test_de-DE.properties"
     local test_prop_translation_file_fr="${TEST_FILES_DIR}/test_fr-FR.properties"
     local file_uri1="/test-workflow/test.txt"
     local file_uri2="/test-workflow/test-copy.txt"
@@ -240,7 +240,7 @@ test_file_operations_workflow() {
 
     # 2. Upload test file
     log_info "Step 2: Upload test file"
-    if run_cli "files push $test_file $file_uri1 --job \"Post deploy tests\" --locale de"; then
+    if run_cli "files push $test_file $file_uri1 --job \"Post deploy tests\" --locale de-DE"; then
         test_pass "File upload (original)"
     else
         test_fail "File upload (original)" "Upload failed"
@@ -250,7 +250,7 @@ test_file_operations_workflow() {
     # 3. Upload same file with different URI
     log_info "Step 3: Upload same file with different URI"
     # Directive is required to avoid issue with namespace when we Rename file (see test below)
-    if run_cli "files push $test_file $file_uri2 --job \"Post deploy tests\" --locale de --directive 'file_uri_as_namespace=false'"; then
+    if run_cli "files push $test_file $file_uri2 --job \"Post deploy tests\" --locale de-DE --directive 'file_uri_as_namespace=false'"; then
         test_pass "File upload (copy)"
     else
         test_fail "File upload (copy)" "Upload failed"
@@ -267,10 +267,10 @@ test_file_operations_workflow() {
         return 1
     fi
 
-    if run_cli "files import test.properties $test_prop_translation_file_de de --published"; then
-        test_pass "Import translations (de)"
+    if run_cli "files import test.properties $test_prop_translation_file_de de-DE --published"; then
+        test_pass "Import translations (de-DE)"
     else
-        test_fail "Import translations (de)" "Import failed"
+        test_fail "Import translations (de-DE)" "Import failed"
     fi
 
     if run_cli "files import test.properties $test_prop_translation_file_fr fr-FR --published"; then

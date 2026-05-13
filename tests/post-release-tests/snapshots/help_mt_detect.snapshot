@@ -3,6 +3,14 @@ Detect the source language of files using Smartling's File MT API.
 Usage:
   smartling-cli mt detect <file|pattern> [flags]
 
+Examples:
+
+# Detect file language
+
+  smartling-cli mt detect document.txt
+
+
+
 Flags:
       --format string            Output format template.
                                  Default: {{.File}}	{{.Language}}
