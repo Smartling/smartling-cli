@@ -34,6 +34,15 @@ type TranslateParams struct {
 func (s service) RunTranslate(ctx context.Context, params TranslateParams, files []string, updates chan any) ([]TranslateOutput, error) {
 	var res []TranslateOutput
 
+	// rowsPerFile is the upper bound on TUI rows reserved per file. Must match
+	// the renderer's preallocation in cmd/mt/translate/run.go so row IDs stay
+	// in range when len(TargetLocales) == 0 or when the server returns more
+	// locales than were requested.
+	rowsPerFile := len(params.TargetLocales)
+	if rowsPerFile == 0 {
+		rowsPerFile = 1
+	}
+
 	for fileID, file := range files {
 		rlog.Debugf("Running translate for file %s", file)
 		contents, err := getContent(params.InputDirectory, file)
@@ -71,7 +80,7 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 		}
 		rlog.Debugf("finish upload")
 
-		update := TranslateUpdates{ID: uint32(fileID * len(params.TargetLocales)), Upload: new(true)}
+		update := TranslateUpdates{ID: uint32(fileID * rowsPerFile), Upload: new(true)}
 		updates <- update
 
 		if params.SourceLocale == "" {
@@ -167,7 +176,11 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 			if progressResponse.State != api.CompletedTranslatedState {
 				break
 			}
-			for updateID, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
+			for localeIdx, localeProcessStatus := range progressResponse.LocaleProcessStatuses {
+				if localeIdx >= rowsPerFile {
+					rlog.Debugf("dropping update for unexpected extra locale %q from server (file=%q row capacity=%d)", localeProcessStatus.LocaleID, file, rowsPerFile)
+					continue
+				}
 				filename := filepath.Base(file)
 				ext := filepath.Ext(filename)
 				name := strings.TrimSuffix(filename, ext)
@@ -178,7 +191,8 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 					Ext:       ext,
 					Directory: filepath.Dir(file),
 				})
-				update.ID = uint32(fileID*len(params.TargetLocales) + updateID)
+				rowID := uint32(fileID*rowsPerFile + localeIdx)
+				update.ID = rowID
 				update.Locale = new(localeProcessStatus.LocaleID)
 				updates <- update
 
@@ -221,7 +235,7 @@ func (s service) RunTranslate(ctx context.Context, params TranslateParams, files
 				if err != nil {
 					return nil, err
 				}
-				update.ID = uint32(fileID*len(params.TargetLocales) + updateID)
+				update.ID = rowID
 				update.TranslatedFile = new(filepath.Base(filenameLocale))
 				update.Download = new(true)
 				updates <- update

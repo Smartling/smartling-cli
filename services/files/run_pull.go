@@ -14,11 +14,11 @@ import (
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/reader"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
-	threadpool "github.com/Smartling/smartling-cli/services/helpers/thread_pool"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
+	"golang.org/x/sync/errgroup"
 )
 
 // PullParams is the parameters for the RunPull method.
@@ -68,21 +68,24 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 		}
 	}
 
-	pool := threadpool.NewThreadPool(s.Config.Threads)
-
-	for _, file := range files {
-		// func closure required to pass different file objects to goroutines
-		func(file sdkfile.File) {
-			pool.Do(func() {
-				err := s.downloadFileTranslations(ctx, params, file)
-				if err != nil {
-					rlog.Error(err)
-				}
-			})
-		}(file)
+	group, groupCtx := errgroup.WithContext(ctx)
+	if s.Config.Threads > 0 {
+		group.SetLimit(int(s.Config.Threads))
 	}
 
-	pool.Wait()
+	for _, file := range files {
+		group.Go(func() error {
+			if err := groupCtx.Err(); err != nil {
+				return nil
+			}
+			if err := s.downloadFileTranslations(groupCtx, params, file); err != nil {
+				rlog.Error(err)
+			}
+			return nil
+		})
+	}
+
+	_ = group.Wait()
 
 	return nil
 }
