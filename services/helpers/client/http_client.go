@@ -22,7 +22,7 @@ func NewHTTPClient() *http.Client {
 			KeepAlive: 30 * time.Second,
 		}).DialContext,
 		TLSHandshakeTimeout:   10 * time.Second,
-		ResponseHeaderTimeout: 30 * time.Second,
+		ResponseHeaderTimeout: 5 * time.Minute,
 		ExpectContinueTimeout: 1 * time.Second,
 		MaxIdleConns:          100,
 		MaxIdleConnsPerHost:   10,
