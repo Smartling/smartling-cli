@@ -1,6 +1,8 @@
 package initialize
 
 import (
+	"context"
+
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 
 	sdk "github.com/Smartling/api-sdk-go"
@@ -8,7 +10,7 @@ import (
 
 // Service defines behavior for initializing the Smartling CLI.
 type Service interface {
-	RunInit(dryRun bool) error
+	RunInit(ctx context.Context, dryRun bool) error
 }
 
 // service provides methods to init Smartling CLI.

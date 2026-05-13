@@ -107,7 +107,7 @@ can be used to override detected file type.
 				uri = args[1]
 			}
 
-			s, err := initializer.InitFilesSrv()
+			s, err := initializer.InitFilesSrv(ctx)
 			if err != nil {
 				return err
 			}

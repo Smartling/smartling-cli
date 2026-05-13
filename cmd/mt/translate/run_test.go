@@ -25,7 +25,7 @@ func TestRunGetFilesError(t *testing.T) {
 	}
 	fileOrPattern := "*.txt"
 
-	initializer.On("InitMTSrv").Return(mtSrv, nil)
+	initializer.On("InitMTSrv", mock.Anything).Return(mtSrv, nil)
 	mtSrv.On("GetFiles", params.InputDirectory, fileOrPattern).Return(nil, filesErr)
 
 	err := run(ctx, initializer, params, fileOrPattern, output.OutputParams{})
@@ -48,7 +48,7 @@ func TestRun(t *testing.T) {
 	fileOrPattern := "*.txt"
 	files := []string{"file1.txt", "file2.txt"}
 
-	initializer.On("InitMTSrv").Return(mtSrv, nil)
+	initializer.On("InitMTSrv", mock.Anything).Return(mtSrv, nil)
 	mtSrv.On("GetFiles", params.InputDirectory, fileOrPattern).
 		Return(files, nil)
 
@@ -71,7 +71,7 @@ func TestRunRunTranslateErr(t *testing.T) {
 	fileOrPattern := "*.txt"
 	files := []string{"file1.txt", "file2.txt"}
 
-	initializer.On("InitMTSrv").Return(mtSrv, nil)
+	initializer.On("InitMTSrv", mock.Anything).Return(mtSrv, nil)
 	mtSrv.On("GetFiles", params.InputDirectory, fileOrPattern).
 		Return(files, nil)
 

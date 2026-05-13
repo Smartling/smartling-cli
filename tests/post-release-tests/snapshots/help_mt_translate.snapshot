@@ -3,16 +3,29 @@ Translate files using Smartling's File Machine Translation API.
 Usage:
   smartling-cli mt translate <file|pattern> [flags]
 
+Examples:
+
+# Translate with automatic language detection
+
+  smartling-cli mt translate document.txt --target-locale es-ES
+
+# Translate with explicit source language
+
+  smartling-cli mt translate document.txt --source-locale en --target-locale fr-FR
+
+
+
 Flags:
       --directive stringArray       Smartling directive. Can be specified multiple times
       --format string               Translated file naming template.
-                                    Default: {{.File}}	{{.Locale}}
-                                    
+                                    Default: {{.File}}	{{.Locale}}	{{.TranslatedFile}}
+
                                     {{.File}} - Original file path
                                     {{.Locale}} - Target locale
+                                    {{.TranslatedFile}} - Translated file
                                     {{name .File}} - File name without extension
                                     {{ext .File}} - File extension
-                                    {{dir .Directory}} - Directory path (default "{{.File}}\t{{.Locale}}\n")
+                                    {{dir .Directory}} - Directory path (default "{{.File}}\t{{.Locale}}\t{{.TranslatedFile}}\n")
   -h, --help                        help for translate
       --input-directory string      Input directory with files (default ".")
       --output-directory string     Output directory for translated files (default ".")
@@ -20,7 +33,7 @@ Flags:
       --source-locale string        Explicitly specify source language
   -l, --target-locale stringArray   Target language(s). Can be specified multiple times.
                                     Example: Specifying two target locales
-                                    smartling-cli mt translate --target-locale fr --target-locale es-ES
+                                      smartling-cli mt translate --target-locale fr --target-locale es-ES
       --type string                 Override the automatically detected file type. 
                                     A complete list of supported types can be found in the API documentation:
                                     https://api-reference.smartling.com/#tag/File-Machine-Translations-(MT)/operation/fileUpload

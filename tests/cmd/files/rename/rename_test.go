@@ -23,14 +23,14 @@ func TestFilesRename(t *testing.T) {
 	}{
 		{
 			name:              "Files rename",
-			args:              append(subCommands, "website_menu.txt", "website_top_menu.txt"),
+			args:              append(subCommands, "/texts/website_menu.txt", "/texts/website_top_menu.txt"),
 			expectedOutputs:   []string{},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
 			name:              "Files revers rename",
-			args:              append(subCommands, "website_top_menu.txt", "website_menu.txt"),
+			args:              append(subCommands, "/texts/website_top_menu.txt", "/texts/website_menu.txt"),
 			expectedOutputs:   []string{},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,

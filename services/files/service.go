@@ -20,13 +20,13 @@ var (
 
 // Service defines behaviors to interact with Smartling files.
 type Service interface {
-	RunDelete(uri string) error
-	RunImport(params ImportParams) error
-	RunList(formatType string, short bool, uri string) error
-	RunPull(params PullParams) error
+	RunDelete(ctx context.Context, uri string) error
+	RunImport(ctx context.Context, params ImportParams) error
+	RunList(ctx context.Context, formatType string, short bool, uri string) error
+	RunPull(ctx context.Context, params PullParams) error
 	RunPush(ctx context.Context, params PushParams) error
-	RunRename(oldURI, newURI string) error
-	RunStatus(params StatusParams) error
+	RunRename(ctx context.Context, oldURI, newURI string) error
+	RunStatus(ctx context.Context, params StatusParams) error
 }
 
 // service provides methods to interact with Smartling files.

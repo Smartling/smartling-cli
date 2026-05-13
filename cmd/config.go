@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
@@ -54,12 +56,12 @@ func Config() (config.Config, error) {
 }
 
 // Client creates a new Smartling API client based on the configuration and CLI params.
-func Client() (sdk.HttpAPIClient, error) {
+func Client(ctx context.Context) (sdk.HttpAPIClient, error) {
 	cnf, err := Config()
 	if err != nil {
 		return sdk.HttpAPIClient{}, err
 	}
-	client, err := client.CreateClient(CLIClientConfig(), cnf, uint8(verbose))
+	client, err := client.CreateClient(ctx, CLIClientConfig(), cnf, uint8(verbose))
 	if err != nil {
 		return sdk.HttpAPIClient{}, err
 	}

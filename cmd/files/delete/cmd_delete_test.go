@@ -16,13 +16,13 @@ func TestNewDeleteCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
 	filesSrv := srvmocks.NewMockService(t)
 	uriArg := "https://example.com:8080/path/to/resource?search=a"
-	filesSrv.On("RunDelete", uriArg).Run(func(args mock.Arguments) {
+	filesSrv.On("RunDelete", mock.Anything, uriArg).Run(func(args mock.Arguments) {
 		fmt.Fprintf(buf, "RunDelete was called with %d args\n", len(args))
-		fmt.Fprintf(buf, "uri: %v\n", args[0])
+		fmt.Fprintf(buf, "uri: %v\n", args[1])
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("InitFilesSrv").Return(filesSrv, nil)
+	initializer.On("InitFilesSrv", mock.Anything).Return(filesSrv, nil)
 
 	cmd := NewDeleteCmd(initializer)
 
@@ -36,7 +36,7 @@ func TestNewDeleteCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := fmt.Sprintf(`RunDelete was called with 1 args
+	expected := fmt.Sprintf(`RunDelete was called with 2 args
 uri: %s
 `, uriArg)
 
