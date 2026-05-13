@@ -160,12 +160,11 @@ func (s service) downloadFileTranslations(ctx context.Context, params PullParams
 		if err != nil {
 			return err
 		}
+		path = filepath.Join(params.Directory, path)
 		if progressThreshold > 0 && progressPercent < int(progressThreshold) {
 			fmt.Printf("skipped %s %d%% (threshold: %s%%)\n", path, progressPercent, params.Progress)
 			continue
 		}
-
-		path = filepath.Join(params.Directory, path)
 
 		err = helpers.DownloadFile(
 			ctx,

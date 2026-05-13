@@ -5,7 +5,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -101,7 +100,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 
 		res = append(res, DetectOutput{
 			File:       string(uploadFileResponse.FileUID),
-			Language:   strconv.Itoa(detectFileLanguageResponse.Code),
+			Language:   detectFileLanguageResponse.LanguageDetectionUID,
 			Confidence: "",
 		})
 	}

@@ -151,7 +151,7 @@ func (s service) RunInit(ctx context.Context, dryRun bool) error {
 
 		fmt.Println(result.String())
 	} else {
-		err = os.WriteFile(s.Config.Path, result.Bytes(), 0644)
+		err = os.WriteFile(s.Config.Path, result.Bytes(), 0o600)
 		if err != nil {
 			return hierr.Errorf(
 				err,
