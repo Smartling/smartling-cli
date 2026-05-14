@@ -19,7 +19,7 @@ func run(ctx context.Context,
 	outputParams output.Params,
 ) error {
 	rlog.Debugf("running progress with params: %v", params)
-	jobSrv, err := initializer.InitJobSrv()
+	jobSrv, err := initializer.InitJobSrv(ctx)
 	if err != nil {
 		return clierror.UIError{
 			Operation:   "init",

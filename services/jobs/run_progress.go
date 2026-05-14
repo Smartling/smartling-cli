@@ -34,14 +34,14 @@ func (p ProgressParams) Validate() error {
 	return nil
 }
 
-func (s service) RunProgress(_ context.Context, params ProgressParams) (ProgressOutput, error) {
+func (s service) RunProgress(ctx context.Context, params ProgressParams) (ProgressOutput, error) {
 	if err := params.Validate(); err != nil {
 		return ProgressOutput{}, err
 	}
 
 	var translationJobUID string
 	if params.JobUIDOrName != "" && jobUIDPattern.MatchString(params.JobUIDOrName) {
-		jb, err := s.job.Get(params.ProjectUID, params.JobUIDOrName)
+		jb, err := s.job.GetJob(ctx, params.ProjectUID, params.JobUIDOrName)
 		switch {
 		case err == nil:
 			translationJobUID = jb.TranslationJobUID
@@ -53,7 +53,7 @@ func (s service) RunProgress(_ context.Context, params ProgressParams) (Progress
 	}
 
 	if translationJobUID == "" {
-		jobs, err := s.job.SearchByName(params.ProjectUID, params.JobUIDOrName)
+		jobs, err := s.job.SearchByName(ctx, params.ProjectUID, params.JobUIDOrName)
 		if err != nil {
 			return ProgressOutput{}, fmt.Errorf("search jobs by name %q: %w", params.JobUIDOrName, err)
 		}
@@ -67,7 +67,7 @@ func (s service) RunProgress(_ context.Context, params ProgressParams) (Progress
 		translationJobUID = j.TranslationJobUID
 	}
 
-	progress, err := s.job.Progress(params.ProjectUID, translationJobUID)
+	progress, err := s.job.Progress(ctx, params.ProjectUID, translationJobUID)
 	if err != nil {
 		return ProgressOutput{}, fmt.Errorf("get job progress for %q: %w", translationJobUID, err)
 	}
@@ -76,7 +76,7 @@ func (s service) RunProgress(_ context.Context, params ProgressParams) (Progress
 		TranslationJobUID: translationJobUID,
 		TotalWordCount:    progress.TotalWordCount,
 		PercentComplete:   progress.PercentComplete,
-		Json:              progress.Json,
+		JSON:              progress.JSON,
 	}, nil
 }
 
@@ -85,5 +85,5 @@ type ProgressOutput struct {
 	TranslationJobUID string
 	TotalWordCount    uint32
 	PercentComplete   float64
-	Json              []byte
+	JSON              []byte
 }

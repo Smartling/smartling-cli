@@ -1,6 +1,8 @@
 package jobs
 
 import (
+	"context"
+
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	srv "github.com/Smartling/smartling-cli/services/jobs"
 
@@ -9,7 +11,7 @@ import (
 
 // SrvInitializer defines jobs service initializer
 type SrvInitializer interface {
-	InitJobSrv() (srv.Service, error)
+	InitJobSrv(ctx context.Context) (srv.Service, error)
 }
 
 // NewSrvInitializer returns new SrvInitializer implementation
@@ -20,8 +22,8 @@ func NewSrvInitializer() SrvInitializer {
 type srvInitializer struct{}
 
 // InitJobSrv initializes `job` service with the client and configuration.
-func (i srvInitializer) InitJobSrv() (srv.Service, error) {
-	client, err := rootcmd.Client()
+func (i srvInitializer) InitJobSrv(ctx context.Context) (srv.Service, error) {
+	client, err := rootcmd.Client(ctx)
 	if err != nil {
 		return nil, err
 	}

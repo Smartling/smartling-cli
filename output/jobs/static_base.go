@@ -27,7 +27,7 @@ type JsonOutputFormat struct{}
 
 // FormatAndRender marshals table data into JSON and prints it.
 func (j JsonOutputFormat) FormatAndRender(data jobs.ProgressOutput) {
-	fmt.Println(string(data.Json))
+	fmt.Println(string(data.JSON))
 }
 
 // SimpleOutputFormat is simple output format for rendering data using a text template
