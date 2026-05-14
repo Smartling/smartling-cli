@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
@@ -69,7 +70,7 @@ func NewDetectCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				}
 			}
 
-			outputParams, err := mtcmd.ResolveOutputParams(cmd, fileConfig.MT.FileFormat)
+			outputParams, err := resolve.OutputParams(cmd, fileConfig.MT.FileFormat)
 			if err != nil {
 				return err
 			}

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	cmdmocks "github.com/Smartling/smartling-cli/cmd/mt/mocks"
-	output "github.com/Smartling/smartling-cli/output/mt"
+	"github.com/Smartling/smartling-cli/output"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 	srvmocks "github.com/Smartling/smartling-cli/services/mt/mocks"
@@ -28,7 +28,7 @@ func TestRunGetFilesError(t *testing.T) {
 	initializer.On("InitMTSrv", mock.Anything).Return(mtSrv, nil)
 	mtSrv.On("GetFiles", params.InputDirectory, params.FileOrPattern).Return(nil, filesErr)
 
-	err := run(ctx, initializer, params, output.OutputParams{})
+	err := run(ctx, initializer, params, output.Params{})
 
 	assert.Error(t, err)
 	uiErr, ok := err.(clierror.UIError)
@@ -55,7 +55,7 @@ func TestRun(t *testing.T) {
 	mtSrv.On("RunDetect", mock.Anything, params, files, mock.Anything).
 		Return([]srv.DetectOutput{}, nil)
 
-	err := run(ctx, initializer, params, output.OutputParams{})
+	err := run(ctx, initializer, params, output.Params{})
 
 	assert.Nil(t, err)
 }

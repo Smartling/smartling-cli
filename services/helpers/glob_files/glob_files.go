@@ -136,7 +136,6 @@ func LocallyFunc(
 			return nil
 		},
 	)
-
 	if err != nil {
 		return nil, hierr.Errorf(
 			err,
@@ -199,7 +198,6 @@ func LocallyFn(
 			return nil
 		},
 	)
-
 	if err != nil {
 		return nil, hierr.Errorf(
 			err,

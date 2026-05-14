@@ -17,13 +17,6 @@ type Model struct {
 	RowByHeader RowByHeaderName
 }
 
-// OutputParams defines the output configuration options for rendering data
-type OutputParams struct {
-	Mode     string
-	Format   string
-	Template string
-}
-
 // RenderAndExitIfErr renders error and exit iff err
 func RenderAndExitIfErr(err error) {
 	if err == nil {
