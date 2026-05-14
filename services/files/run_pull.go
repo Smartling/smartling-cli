@@ -2,7 +2,9 @@ package files
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -16,7 +18,9 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	sdk "github.com/Smartling/api-sdk-go"
+	sdkjob "github.com/Smartling/api-sdk-go/api/job"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
+	"github.com/gobwas/glob"
 	"github.com/reconquest/hierr-go"
 	"golang.org/x/sync/errgroup"
 )
@@ -24,18 +28,32 @@ import (
 // PullParams is the parameters for the RunPull method.
 type PullParams struct {
 	URI       string
+	JobUID    string
 	All       bool
 	Format    string
 	Directory string
 	Source    bool
 	Locales   []string
+	Resume    bool
+	DryRun    bool
 	Progress  string
 	Retrieve  string
 }
 
-func (p PullParams) validate() error {
-	if p.URI == "" && !p.All {
-		return fmt.Errorf("either uri or --all is required")
+func (p *PullParams) setDefaultFormatIfEmpty() {
+	if p.Format != "" {
+		return
+	}
+	if p.JobUID != "" {
+		p.Format = format.DefaultFilePullJobFormat
+		return
+	}
+	p.Format = format.DefaultFilePullFormat
+}
+
+func (p *PullParams) validate() error {
+	if p.URI == "" && p.JobUID == "" && !p.All {
+		return fmt.Errorf("either uri or --job-uid or --all is required")
 	}
 	if p.All && p.URI != "" {
 		return clierror.ErrIncompatibleParams("all", []string{"uri"})
@@ -48,24 +66,53 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 	if err := params.validate(); err != nil {
 		return err
 	}
-	if params.Format == "" {
-		params.Format = format.DefaultFilePullFormat
-	}
+	params.setDefaultFormatIfEmpty()
 
 	var (
-		err   error
-		files []sdkfile.File
+		err        error
+		files      []sdkfile.File
+		jobLocales []string
 	)
-	if params.URI == "-" {
+	switch {
+	case params.JobUID != "":
+		files, jobLocales, err = s.enumerateJobFiles(ctx, params.JobUID)
+	case params.URI == "-":
 		files, err = reader.ReadFilesFromStdin()
-		if err != nil {
-			return err
-		}
-	} else {
+	default:
 		files, err = globfiles.Remote(ctx, s.APIClient.ListAllFiles, s.Config.ProjectID, params.URI)
+	}
+	if err != nil {
+		return err
+	}
+
+	// When --job-uid is combined with a URI glob, filter the job's file list
+	// down to URIs that match the pattern.
+	if params.JobUID != "" && params.URI != "" && params.URI != "-" {
+		filtered, err := filterFilesByGlob(files, params.URI)
 		if err != nil {
 			return err
 		}
+		files = filtered
+	}
+
+	// Job enumeration may legitimately return zero files or zero locales (the
+	// job exists but is empty). enumerateJobFiles has already logged the reason
+	// to stderr; short-circuit cleanly here.
+	if params.JobUID != "" {
+		if len(files) == 0 || len(jobLocales) == 0 {
+			if len(jobLocales) == 0 {
+				rlog.Errorf("job %q has no target locales; nothing to download", params.JobUID)
+			}
+			return nil
+		}
+		params.Locales = filterLocales(jobLocales, params.Locales)
+		if len(params.Locales) == 0 {
+			return fmt.Errorf("job %q has no target locales matching the requested --locale filters", params.JobUID)
+		}
+	}
+
+	if params.DryRun {
+		return s.printDryRun(files, params)
 	}
 
 	group, groupCtx := errgroup.WithContext(ctx)
@@ -84,10 +131,49 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 			return nil
 		})
 	}
+	err = group.Wait()
+	return err
+}
 
-	_ = group.Wait()
-
+// printDryRun writes the resolved file × locale matrix to stdout without
+// calling GetFileStatus or downloading anything.
+func (s service) printDryRun(files []sdkfile.File, params PullParams) error {
+	for _, file := range files {
+		locales := params.Locales
+		if params.Source {
+			locales = append([]string{""}, locales...)
+		}
+		for _, locale := range locales {
+			path, err := s.renderPullPath(file, locale, params)
+			if err != nil {
+				return err
+			}
+			fmt.Println(filepath.Join(params.Directory, path))
+		}
+	}
 	return nil
+}
+
+// renderPullPath produces the on-disk relative path for a file/locale pair
+// using the pull format template, including the JobUID variable.
+func (s service) renderPullPath(file sdkfile.File, locale string, params PullParams) (string, error) {
+	useFormat := format.UsePullFormat
+	if params.Format != "" {
+		useFormat = func(_ config.FileConfig) string {
+			return params.Format
+		}
+	}
+	return format.ExecuteFileFormat(
+		s.Config,
+		file,
+		params.Format,
+		useFormat,
+		map[string]any{
+			"FileURI": file.FileURI,
+			"Locale":  locale,
+			"JobUID":  params.JobUID,
+		},
+	)
 }
 
 func (s service) downloadFileTranslations(ctx context.Context, params PullParams, file sdkfile.File) error {
@@ -138,23 +224,7 @@ func (s service) downloadFileTranslations(ctx context.Context, params PullParams
 			}
 		}
 
-		useFormat := format.UsePullFormat
-		if params.Format != "" {
-			useFormat = func(_ config.FileConfig) string {
-				return params.Format
-			}
-		}
-
-		path, err := format.ExecuteFileFormat(
-			s.Config,
-			file,
-			params.Format,
-			useFormat,
-			map[string]any{
-				"FileURI": file.FileURI,
-				"Locale":  locale.LocaleID,
-			},
-		)
+		path, err := s.renderPullPath(file, locale.LocaleID, params)
 		if err != nil {
 			return err
 		}
@@ -167,6 +237,13 @@ func (s service) downloadFileTranslations(ctx context.Context, params PullParams
 		if progressThreshold > 0 && progressPercent < int(progressThreshold) {
 			fmt.Printf("skipped %s %d%% (threshold: %s%%)\n", path, progressPercent, params.Progress)
 			continue
+		}
+
+		if params.Resume {
+			if _, err := os.Stat(path); err == nil {
+				fmt.Printf("skipped %s (already exists)\n", path)
+				continue
+			}
 		}
 
 		err = helpers.DownloadFile(
@@ -200,4 +277,71 @@ func hasLocaleInList(locale string, locales []string) bool {
 	}
 
 	return false
+}
+
+// enumerateJobFiles resolves the file × target-locale matrix for a job by
+// calling the Jobs API. Returns the source files attached to the job and the
+// list of target locales at the job level.
+func (s service) enumerateJobFiles(ctx context.Context, jobUID string) ([]sdkfile.File, []string, error) {
+	projectID := s.Config.ProjectID
+
+	job, err := s.JobApi.GetJob(ctx, projectID, jobUID)
+	if err != nil {
+		if errors.Is(err, sdkjob.ErrNotFound) {
+			return nil, nil, fmt.Errorf("job %q not found in project %q", jobUID, projectID)
+		}
+		return nil, nil, fmt.Errorf("unable to fetch job %q in project %q: %w", jobUID, projectID, err)
+	}
+
+	jobFiles, err := s.JobApi.ListFiles(ctx, projectID, jobUID)
+	if err != nil {
+		if errors.Is(err, sdkjob.ErrNotFound) {
+			return nil, nil, fmt.Errorf("job %q not found in project %q", jobUID, projectID)
+		}
+		return nil, nil, fmt.Errorf("unable to list files for job %q in project %q: %w", jobUID, projectID, err)
+	}
+
+	if len(jobFiles) == 0 {
+		rlog.Errorf("job %q has no files; nothing to download", jobUID)
+		return nil, job.TargetLocaleIDs, nil
+	}
+
+	files := make([]sdkfile.File, 0, len(jobFiles))
+	for _, jf := range jobFiles {
+		files = append(files, sdkfile.File{FileURI: jf.FileURI})
+	}
+	return files, job.TargetLocaleIDs, nil
+}
+
+// filterFilesByGlob keeps only files whose FileURI matches the provided glob
+// pattern. Uses the same gobwas/glob delimiter as globfiles.Remote so the
+// pattern behavior is identical for both code paths.
+func filterFilesByGlob(files []sdkfile.File, uri string) ([]sdkfile.File, error) {
+	pattern, err := glob.Compile(uri, '/')
+	if err != nil {
+		return nil, fmt.Errorf("invalid uri glob pattern %q: %w", uri, err)
+	}
+	out := make([]sdkfile.File, 0, len(files))
+	for _, f := range files {
+		if pattern.Match(f.FileURI) {
+			out = append(out, f)
+		}
+	}
+	return out, nil
+}
+
+// filterLocales returns the subset of locales (preserving order) that
+// also appears in filter, matched case-insensitively. If filter is
+// empty, locales is returned unchanged.
+func filterLocales(locales, filter []string) []string {
+	if len(filter) == 0 {
+		return locales
+	}
+	var res []string
+	for _, locale := range locales {
+		if hasLocaleInList(locale, filter) {
+			res = append(res, locale)
+		}
+	}
+	return res
 }

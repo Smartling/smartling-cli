@@ -39,8 +39,8 @@ func (_m *MockJob) EXPECT() *MockJob_Expecter {
 }
 
 // GetJob provides a mock function for the type MockJob
-func (_mock *MockJob) GetJob(ctx context.Context, projectID string, translationJobUID string) (job.GetJobResponse, error) {
-	ret := _mock.Called(ctx, projectID, translationJobUID)
+func (_mock *MockJob) GetJob(ctx context.Context, projectID string, jobUID string) (job.GetJobResponse, error) {
+	ret := _mock.Called(ctx, projectID, jobUID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetJob")
@@ -49,15 +49,15 @@ func (_mock *MockJob) GetJob(ctx context.Context, projectID string, translationJ
 	var r0 job.GetJobResponse
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (job.GetJobResponse, error)); ok {
-		return returnFunc(ctx, projectID, translationJobUID)
+		return returnFunc(ctx, projectID, jobUID)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) job.GetJobResponse); ok {
-		r0 = returnFunc(ctx, projectID, translationJobUID)
+		r0 = returnFunc(ctx, projectID, jobUID)
 	} else {
 		r0 = ret.Get(0).(job.GetJobResponse)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = returnFunc(ctx, projectID, translationJobUID)
+		r1 = returnFunc(ctx, projectID, jobUID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -72,12 +72,12 @@ type MockJob_GetJob_Call struct {
 // GetJob is a helper method to define mock.On call
 //   - ctx context.Context
 //   - projectID string
-//   - translationJobUID string
-func (_e *MockJob_Expecter) GetJob(ctx interface{}, projectID interface{}, translationJobUID interface{}) *MockJob_GetJob_Call {
-	return &MockJob_GetJob_Call{Call: _e.mock.On("GetJob", ctx, projectID, translationJobUID)}
+//   - jobUID string
+func (_e *MockJob_Expecter) GetJob(ctx interface{}, projectID interface{}, jobUID interface{}) *MockJob_GetJob_Call {
+	return &MockJob_GetJob_Call{Call: _e.mock.On("GetJob", ctx, projectID, jobUID)}
 }
 
-func (_c *MockJob_GetJob_Call) Run(run func(ctx context.Context, projectID string, translationJobUID string)) *MockJob_GetJob_Call {
+func (_c *MockJob_GetJob_Call) Run(run func(ctx context.Context, projectID string, jobUID string)) *MockJob_GetJob_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -105,14 +105,88 @@ func (_c *MockJob_GetJob_Call) Return(getJobResponse job.GetJobResponse, err err
 	return _c
 }
 
-func (_c *MockJob_GetJob_Call) RunAndReturn(run func(ctx context.Context, projectID string, translationJobUID string) (job.GetJobResponse, error)) *MockJob_GetJob_Call {
+func (_c *MockJob_GetJob_Call) RunAndReturn(run func(ctx context.Context, projectID string, jobUID string) (job.GetJobResponse, error)) *MockJob_GetJob_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListFiles provides a mock function for the type MockJob
+func (_mock *MockJob) ListFiles(ctx context.Context, projectID string, jobUID string) ([]job.JobFile, error) {
+	ret := _mock.Called(ctx, projectID, jobUID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListFiles")
+	}
+
+	var r0 []job.JobFile
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) ([]job.JobFile, error)); ok {
+		return returnFunc(ctx, projectID, jobUID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) []job.JobFile); ok {
+		r0 = returnFunc(ctx, projectID, jobUID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]job.JobFile)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, projectID, jobUID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockJob_ListFiles_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListFiles'
+type MockJob_ListFiles_Call struct {
+	*mock.Call
+}
+
+// ListFiles is a helper method to define mock.On call
+//   - ctx context.Context
+//   - projectID string
+//   - jobUID string
+func (_e *MockJob_Expecter) ListFiles(ctx interface{}, projectID interface{}, jobUID interface{}) *MockJob_ListFiles_Call {
+	return &MockJob_ListFiles_Call{Call: _e.mock.On("ListFiles", ctx, projectID, jobUID)}
+}
+
+func (_c *MockJob_ListFiles_Call) Run(run func(ctx context.Context, projectID string, jobUID string)) *MockJob_ListFiles_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockJob_ListFiles_Call) Return(jobFiles []job.JobFile, err error) *MockJob_ListFiles_Call {
+	_c.Call.Return(jobFiles, err)
+	return _c
+}
+
+func (_c *MockJob_ListFiles_Call) RunAndReturn(run func(ctx context.Context, projectID string, jobUID string) ([]job.JobFile, error)) *MockJob_ListFiles_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Progress provides a mock function for the type MockJob
-func (_mock *MockJob) Progress(ctx context.Context, projectID string, translationJobUID string) (job.GetJobProgressResponse, error) {
-	ret := _mock.Called(ctx, projectID, translationJobUID)
+func (_mock *MockJob) Progress(ctx context.Context, projectID string, jobUID string) (job.GetJobProgressResponse, error) {
+	ret := _mock.Called(ctx, projectID, jobUID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Progress")
@@ -121,15 +195,15 @@ func (_mock *MockJob) Progress(ctx context.Context, projectID string, translatio
 	var r0 job.GetJobProgressResponse
 	var r1 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (job.GetJobProgressResponse, error)); ok {
-		return returnFunc(ctx, projectID, translationJobUID)
+		return returnFunc(ctx, projectID, jobUID)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) job.GetJobProgressResponse); ok {
-		r0 = returnFunc(ctx, projectID, translationJobUID)
+		r0 = returnFunc(ctx, projectID, jobUID)
 	} else {
 		r0 = ret.Get(0).(job.GetJobProgressResponse)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = returnFunc(ctx, projectID, translationJobUID)
+		r1 = returnFunc(ctx, projectID, jobUID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -144,12 +218,12 @@ type MockJob_Progress_Call struct {
 // Progress is a helper method to define mock.On call
 //   - ctx context.Context
 //   - projectID string
-//   - translationJobUID string
-func (_e *MockJob_Expecter) Progress(ctx interface{}, projectID interface{}, translationJobUID interface{}) *MockJob_Progress_Call {
-	return &MockJob_Progress_Call{Call: _e.mock.On("Progress", ctx, projectID, translationJobUID)}
+//   - jobUID string
+func (_e *MockJob_Expecter) Progress(ctx interface{}, projectID interface{}, jobUID interface{}) *MockJob_Progress_Call {
+	return &MockJob_Progress_Call{Call: _e.mock.On("Progress", ctx, projectID, jobUID)}
 }
 
-func (_c *MockJob_Progress_Call) Run(run func(ctx context.Context, projectID string, translationJobUID string)) *MockJob_Progress_Call {
+func (_c *MockJob_Progress_Call) Run(run func(ctx context.Context, projectID string, jobUID string)) *MockJob_Progress_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -177,7 +251,7 @@ func (_c *MockJob_Progress_Call) Return(getJobProgressResponse job.GetJobProgres
 	return _c
 }
 
-func (_c *MockJob_Progress_Call) RunAndReturn(run func(ctx context.Context, projectID string, translationJobUID string) (job.GetJobProgressResponse, error)) *MockJob_Progress_Call {
+func (_c *MockJob_Progress_Call) RunAndReturn(run func(ctx context.Context, projectID string, jobUID string) (job.GetJobProgressResponse, error)) *MockJob_Progress_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -14,8 +14,11 @@ import (
 
 var (
 	uri        string
+	jobUID     string
 	all        bool
 	source     bool
+	resume     bool
+	dryRun     bool
 	progress   string
 	retrieve   string
 	directory  string
@@ -60,6 +63,7 @@ Following variables are available:
 
   > .FileURI — full file URI in Smartling system;
   > .Locale — locale ID for translated file and empty for source file;
+  > .JobUID — translation job UID, when --job-uid is set (otherwise empty);
 
 
 Available options:
@@ -89,6 +93,21 @@ Available options:
     > pseudo — returns modified version of original text with certain
                characters transformed;
     > contextMatchingInstrumented — to use with Chrome Context Capture;
+
+  --job-uid <jobUid>
+    Download every file × target-locale pair from a Smartling job.
+    Combines with the <uri> positional argument: when both are set, the
+    URI is treated as a glob filter applied to the job's file list.
+    Combines with --locale (filtered by the job's target locales).
+    When --format is not set, defaults to <jobUid>/<locale>/<fileUri>.
+
+  --resume
+    Skip files that already exist on disk. Useful for re-running a large
+    pull after a failure.
+
+  --dry-run
+    Print the file × locale matrix that would be downloaded, then exit 0.
+    Does not call GetFileStatus, so --progress filtering is not applied.
 ` + help.AuthenticationOptions,
 		Example: `
 # Pull translated files
@@ -102,6 +121,18 @@ Available options:
 # Download all translated files
 
   smartling-cli files download --all
+
+# Pull every file × target locale in a translation job
+
+  smartling-cli --threads 20 files pull --job-uid <jobUid>
+
+# Pull only .txt files from a job (URI glob filters the job file list)
+
+  smartling-cli files pull "**.txt" --job-uid <jobUid>
+
+# Preview what a job pull would download
+
+  smartling-cli files pull --job-uid <jobUid> --dry-run
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := cmd.Context()
@@ -117,6 +148,7 @@ Available options:
 
 			params := files.PullParams{
 				URI:       uri,
+				JobUID:    jobUID,
 				All:       all,
 				Format:    formatPath,
 				Directory: directory,
@@ -124,6 +156,8 @@ Available options:
 				Locales:   locales,
 				Progress:  progress,
 				Retrieve:  retrieve,
+				Resume:    resume,
+				DryRun:    dryRun,
 			}
 			err = s.RunPull(ctx, params)
 			if err != nil {
@@ -134,11 +168,14 @@ Available options:
 	}
 
 	pullCmd.Flags().BoolVar(&all, "all", false, `Download all files. Required if no file pattern is specified.`)
+	pullCmd.Flags().StringVar(&jobUID, "job-uid", "", "Filter downloads to files belonging to the specified job UID")
 	pullCmd.Flags().BoolVar(&source, "source", false, `Pulls source file as well.`)
 	pullCmd.Flags().StringVar(&progress, "progress", "", `Pulls only translations that are at least specified percent of work complete.`)
 	pullCmd.Flags().StringVar(&retrieve, "retrieve", "", `Retrieval type: pending, published, pseudo or contextMatchingInstrumented.`)
 	pullCmd.Flags().StringVarP(&directory, "directory", "d", ".", `Download all files to specified directory.`)
 	pullCmd.Flags().StringArrayVarP(&locales, "locale", "l", []string{}, `Authorize only specified locales.`)
+	pullCmd.Flags().BoolVar(&resume, "resume", false, `Resume a previously interrupted pull operation, skipping already downloaded files.`)
+	pullCmd.Flags().BoolVar(&dryRun, "dry-run", false, `Print the file × locale matrix that would be downloaded, then exit.`)
 	pullCmd.Flags().StringVar(&formatPath, "format", "", `Can be used to format path to downloaded files.
                            Note, that single file can be translated in
                            different locales, so format should include locale
