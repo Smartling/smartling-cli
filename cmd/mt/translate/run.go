@@ -43,7 +43,7 @@ func run(ctx context.Context,
 	if rowsPerFile == 0 {
 		rowsPerFile = 1
 	}
-	render := mtoutput.InitRender(outputParams, dataProvider, files, uint8(len(params.TargetLocales)))
+	render := mtoutput.InitRender(outputParams, dataProvider, files, rowsPerFile)
 	renderRun := make(chan struct{})
 	var runGroup errgroup.Group
 	runGroup.Go(func() error {

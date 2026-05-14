@@ -12,9 +12,10 @@ import (
 
 var (
 	// ErrJobNotFound is returned when a job is not found.
-	ErrJobNotFound     = errors.New("job not found")
-	errEmptyProjectUID = errors.New("project UID is required")
-	jobUIDPattern      = regexp.MustCompile(`^[a-z0-9]{12}$`)
+	ErrJobNotFound       = errors.New("job not found")
+	errEmptyProjectUID   = errors.New("project UID is required")
+	errEmptyJobUIDOrName = errors.New("job UID or job name is required")
+	jobUIDPattern        = regexp.MustCompile(`^[a-z0-9]{12}$`)
 )
 
 // ProgressParams is the parameters for the RunProgress method.
@@ -24,6 +25,7 @@ type ProgressParams struct {
 	JobUIDOrName string
 }
 
+// Validate validates params for RunProgress.
 func (p ProgressParams) Validate() error {
 	if err := p.AccountUID.Validate(); err != nil {
 		return err
@@ -31,9 +33,13 @@ func (p ProgressParams) Validate() error {
 	if p.ProjectUID == "" {
 		return errEmptyProjectUID
 	}
+	if p.JobUIDOrName == "" {
+		return errEmptyJobUIDOrName
+	}
 	return nil
 }
 
+// RunProgress resolves the job by UID or name and returns its translation progress.
 func (s service) RunProgress(ctx context.Context, params ProgressParams) (ProgressOutput, error) {
 	if err := params.Validate(); err != nil {
 		return ProgressOutput{}, err
