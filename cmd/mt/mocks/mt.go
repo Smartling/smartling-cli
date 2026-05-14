@@ -5,6 +5,8 @@
 package mtmocks
 
 import (
+	"context"
+
 	"github.com/Smartling/smartling-cli/services/mt"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -37,8 +39,8 @@ func (_m *MockSrvInitializer) EXPECT() *MockSrvInitializer_Expecter {
 }
 
 // InitMTSrv provides a mock function for the type MockSrvInitializer
-func (_mock *MockSrvInitializer) InitMTSrv() (mt.Service, error) {
-	ret := _mock.Called()
+func (_mock *MockSrvInitializer) InitMTSrv(ctx context.Context) (mt.Service, error) {
+	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for InitMTSrv")
@@ -46,18 +48,18 @@ func (_mock *MockSrvInitializer) InitMTSrv() (mt.Service, error) {
 
 	var r0 mt.Service
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func() (mt.Service, error)); ok {
-		return returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (mt.Service, error)); ok {
+		return returnFunc(ctx)
 	}
-	if returnFunc, ok := ret.Get(0).(func() mt.Service); ok {
-		r0 = returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(context.Context) mt.Service); ok {
+		r0 = returnFunc(ctx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(mt.Service)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func() error); ok {
-		r1 = returnFunc()
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -70,13 +72,20 @@ type MockSrvInitializer_InitMTSrv_Call struct {
 }
 
 // InitMTSrv is a helper method to define mock.On call
-func (_e *MockSrvInitializer_Expecter) InitMTSrv() *MockSrvInitializer_InitMTSrv_Call {
-	return &MockSrvInitializer_InitMTSrv_Call{Call: _e.mock.On("InitMTSrv")}
+//   - ctx context.Context
+func (_e *MockSrvInitializer_Expecter) InitMTSrv(ctx interface{}) *MockSrvInitializer_InitMTSrv_Call {
+	return &MockSrvInitializer_InitMTSrv_Call{Call: _e.mock.On("InitMTSrv", ctx)}
 }
 
-func (_c *MockSrvInitializer_InitMTSrv_Call) Run(run func()) *MockSrvInitializer_InitMTSrv_Call {
+func (_c *MockSrvInitializer_InitMTSrv_Call) Run(run func(ctx context.Context)) *MockSrvInitializer_InitMTSrv_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
 	})
 	return _c
 }
@@ -86,7 +95,7 @@ func (_c *MockSrvInitializer_InitMTSrv_Call) Return(service mt.Service, err erro
 	return _c
 }
 
-func (_c *MockSrvInitializer_InitMTSrv_Call) RunAndReturn(run func() (mt.Service, error)) *MockSrvInitializer_InitMTSrv_Call {
+func (_c *MockSrvInitializer_InitMTSrv_Call) RunAndReturn(run func(ctx context.Context) (mt.Service, error)) *MockSrvInitializer_InitMTSrv_Call {
 	_c.Call.Return(run)
 	return _c
 }

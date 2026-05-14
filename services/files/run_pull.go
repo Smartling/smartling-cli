@@ -1,6 +1,7 @@
 package files
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -13,11 +14,11 @@ import (
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/reader"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
-	threadpool "github.com/Smartling/smartling-cli/services/helpers/thread_pool"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/reconquest/hierr-go"
+	"golang.org/x/sync/errgroup"
 )
 
 // PullParams is the parameters for the RunPull method.
@@ -43,7 +44,7 @@ func (p PullParams) validate() error {
 }
 
 // RunPull pulls translations for files from the Smartling based on the provided parameters.
-func (s service) RunPull(params PullParams) error {
+func (s service) RunPull(ctx context.Context, params PullParams) error {
 	if err := params.validate(); err != nil {
 		return err
 	}
@@ -61,32 +62,35 @@ func (s service) RunPull(params PullParams) error {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(s.APIClient.ListAllFiles, s.Config.ProjectID, params.URI)
+		files, err = globfiles.Remote(ctx, s.APIClient.ListAllFiles, s.Config.ProjectID, params.URI)
 		if err != nil {
 			return err
 		}
 	}
 
-	pool := threadpool.NewThreadPool(s.Config.Threads)
-
-	for _, file := range files {
-		// func closure required to pass different file objects to goroutines
-		func(file sdkfile.File) {
-			pool.Do(func() {
-				err := s.downloadFileTranslations(params, file)
-				if err != nil {
-					rlog.Error(err)
-				}
-			})
-		}(file)
+	group, groupCtx := errgroup.WithContext(ctx)
+	if s.Config.Threads > 0 {
+		group.SetLimit(int(s.Config.Threads))
 	}
 
-	pool.Wait()
+	for _, file := range files {
+		group.Go(func() error {
+			if err := groupCtx.Err(); err != nil {
+				return nil
+			}
+			if err := s.downloadFileTranslations(groupCtx, params, file); err != nil {
+				rlog.Error(err)
+			}
+			return nil
+		})
+	}
+
+	_ = group.Wait()
 
 	return nil
 }
 
-func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) error {
+func (s service) downloadFileTranslations(ctx context.Context, params PullParams, file sdkfile.File) error {
 	progress := strings.TrimSpace(params.Progress)
 	progress = strings.TrimSpace(strings.TrimSuffix(progress, "%"))
 	if progress == "" {
@@ -107,7 +111,7 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 	}
 
 	projectID := s.Config.ProjectID
-	status, err := s.APIClient.GetFileStatus(projectID, file.FileURI)
+	status, err := s.APIClient.GetFileStatus(ctx, projectID, file.FileURI)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -159,14 +163,14 @@ func (s service) downloadFileTranslations(params PullParams, file sdkfile.File) 
 		if err != nil {
 			return err
 		}
+		path = filepath.Join(params.Directory, path)
 		if progressThreshold > 0 && progressPercent < int(progressThreshold) {
 			fmt.Printf("skipped %s %d%% (threshold: %s%%)\n", path, progressPercent, params.Progress)
 			continue
 		}
 
-		path = filepath.Join(params.Directory, path)
-
 		err = helpers.DownloadFile(
+			ctx,
 			s.APIClient,
 			projectID,
 			file,

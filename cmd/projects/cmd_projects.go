@@ -1,6 +1,7 @@
 package projects
 
 import (
+	"context"
 	"os"
 
 	"github.com/Smartling/smartling-cli/cmd"
@@ -33,7 +34,7 @@ func NewProjectsCmd() *cobra.Command {
 
 // SrvInitializer defines projects service initializer
 type SrvInitializer interface {
-	InitProjectsSrv() (projects.Service, error)
+	InitProjectsSrv(ctx context.Context) (projects.Service, error)
 }
 
 // NewSrvInitializer returns new SrvInitializer implementation
@@ -44,8 +45,8 @@ func NewSrvInitializer() SrvInitializer {
 type srvInitializer struct{}
 
 // InitProjectsSrv returns a new instance of projects service.
-func (s srvInitializer) InitProjectsSrv() (projects.Service, error) {
-	client, err := cmd.Client()
+func (s srvInitializer) InitProjectsSrv(ctx context.Context) (projects.Service, error) {
+	client, err := cmd.Client(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -16,17 +16,17 @@ func TestNewListCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
 	projectsSrv := srvmocks.NewMockService(t)
 	shortArg := true
-	projectsSrv.On("RunList", shortArg).Run(func(args mock.Arguments) {
+	projectsSrv.On("RunList", mock.Anything, shortArg).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunList was called with %d args\n", len(args)); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := fmt.Fprintf(buf, "short: %v\n", args[0]); err != nil {
+		if _, err := fmt.Fprintf(buf, "short: %v\n", args[1]); err != nil {
 			t.Fatal(err)
 		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("InitProjectsSrv").Return(projectsSrv, nil)
+	initializer.On("InitProjectsSrv", mock.Anything).Return(projectsSrv, nil)
 
 	cmd := NewListCmd(initializer)
 
@@ -40,7 +40,7 @@ func TestNewListCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := fmt.Sprintf(`RunList was called with 1 args
+	expected := fmt.Sprintf(`RunList was called with 2 args
 short: %v
 `, shortArg)
 

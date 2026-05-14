@@ -18,23 +18,23 @@ func TestNewListCmd(t *testing.T) {
 	formatTypeArg := "any"
 	shortArg := true
 	uriArg := "https://example.com:8080/path/to/resource?search=a"
-	filesSrv.On("RunList", formatTypeArg, shortArg, uriArg).Run(func(args mock.Arguments) {
+	filesSrv.On("RunList", mock.Anything, formatTypeArg, shortArg, uriArg).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunList was called with %d args\n", len(args)); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := fmt.Fprintf(buf, "format: %v\n", args[0]); err != nil {
+		if _, err := fmt.Fprintf(buf, "format: %v\n", args[1]); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := fmt.Fprintf(buf, "short: %v\n", args[1]); err != nil {
+		if _, err := fmt.Fprintf(buf, "short: %v\n", args[2]); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := fmt.Fprintf(buf, "uri: %v\n", args[2]); err != nil {
+		if _, err := fmt.Fprintf(buf, "uri: %v\n", args[3]); err != nil {
 			t.Fatal(err)
 		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("InitFilesSrv").Return(filesSrv, nil)
+	initializer.On("InitFilesSrv", mock.Anything).Return(filesSrv, nil)
 
 	cmd := NewListCmd(initializer)
 
@@ -52,7 +52,7 @@ func TestNewListCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := fmt.Sprintf(`RunList was called with 3 args
+	expected := fmt.Sprintf(`RunList was called with 4 args
 format: %s
 short: %v
 uri: %s

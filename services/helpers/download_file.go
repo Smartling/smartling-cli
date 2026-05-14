@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -13,6 +14,7 @@ import (
 
 // DownloadFile downloads a file.
 func DownloadFile(
+	ctx context.Context,
 	client sdk.APIClient,
 	project string,
 	file sdkfile.File,
@@ -26,7 +28,7 @@ func DownloadFile(
 	)
 
 	if locale == "" {
-		reader, err = client.DownloadFile(project, file.FileURI)
+		reader, err = client.DownloadFile(ctx, project, file.FileURI)
 		if err != nil {
 			return hierr.Errorf(
 				err,
@@ -40,7 +42,7 @@ func DownloadFile(
 		request.FileURI = file.FileURI
 		request.Type = retrievalType
 
-		reader, err = client.DownloadTranslation(project, locale, request)
+		reader, err = client.DownloadTranslation(ctx, project, locale, request)
 		if err != nil {
 			return hierr.Errorf(
 				err,

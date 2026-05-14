@@ -61,19 +61,20 @@ Available options:
   smartling-cli files list
 
 `,
-		Run: func(_ *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx := cmd.Context()
 			var uri string
 			if len(args) > 0 {
 				uri = args[0]
 			}
 
-			s, err := initializer.InitFilesSrv()
+			s, err := initializer.InitFilesSrv(ctx)
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				os.Exit(1)
 			}
 
-			err = s.RunList(formatType, short, uri)
+			err = s.RunList(ctx, formatType, short, uri)
 			if err != nil {
 				rlog.Errorf("failed to run list: %s", err)
 				os.Exit(1)

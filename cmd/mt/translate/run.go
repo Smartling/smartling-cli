@@ -22,7 +22,7 @@ func run(ctx context.Context,
 	outputParams output.Params,
 ) error {
 	rlog.Debugf("running translate with params: %v", params)
-	mtSrv, err := initializer.InitMTSrv()
+	mtSrv, err := initializer.InitMTSrv(ctx)
 	if err != nil {
 		return clierror.UIError{
 			Operation:   "init",
@@ -39,6 +39,10 @@ func run(ctx context.Context,
 		}
 	}
 	var dataProvider mtoutput.TranslateDataProvider
+	rowsPerFile := uint8(len(params.TargetLocales))
+	if rowsPerFile == 0 {
+		rowsPerFile = 1
+	}
 	render := mtoutput.InitRender(outputParams, dataProvider, files, uint8(len(params.TargetLocales)))
 	renderRun := make(chan struct{})
 	var runGroup errgroup.Group

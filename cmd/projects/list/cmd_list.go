@@ -42,14 +42,15 @@ Available options:
   smartling-cli projects list
 
 `,
-		Run: func(_ *cobra.Command, _ []string) {
-			s, err := initializer.InitProjectsSrv()
+		Run: func(cmd *cobra.Command, _ []string) {
+			ctx := cmd.Context()
+			s, err := initializer.InitProjectsSrv(ctx)
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
 				os.Exit(1)
 			}
 
-			err = s.RunList(short)
+			err = s.RunList(ctx, short)
 			if err != nil {
 				rlog.Errorf("failed to run list: %s", err)
 				os.Exit(1)

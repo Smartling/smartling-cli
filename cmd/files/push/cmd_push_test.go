@@ -36,7 +36,7 @@ func TestNewPushCmd(t *testing.T) {
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("InitFilesSrv").Return(filesSrv, nil)
+	initializer.On("InitFilesSrv", mock.Anything).Return(filesSrv, nil)
 
 	cmd := NewPushCmd(initializer)
 

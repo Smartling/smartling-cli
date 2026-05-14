@@ -4,6 +4,7 @@ import (
 	"os"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	initialize "github.com/Smartling/smartling-cli/services/init"
@@ -67,13 +68,13 @@ Default config values can be passed via following options:` +
   smartling-cli init --dry-run
 
 `,
-		Run: func(_ *cobra.Command, _ []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			s, err := srvInitializer.InitSrv()
 			if err != nil {
 				rlog.Errorf("failed to get init service: %s", err)
 				os.Exit(1)
 			}
-			err = s.RunInit(dryRun)
+			err = s.RunInit(cmd.Context(), dryRun)
 			if err != nil {
 				rlog.Errorf("failed to run init: %s", err)
 				os.Exit(1)
@@ -103,7 +104,7 @@ func (s srvInitializer) InitSrv() (initialize.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	smClient := sdk.NewHttpAPIClient(cnf.UserID, cnf.Secret)
+	smClient := sdk.NewHttpAPIClient(client.NewHTTPClient(), cnf.UserID, cnf.Secret)
 	srv := initialize.NewService(smClient, cnf)
 	return srv, nil
 }

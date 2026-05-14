@@ -7,6 +7,14 @@ Usage:
 Aliases:
   files, f
 
+Examples:
+
+# Check file status across locales
+
+  smartling-cli files status
+
+
+
 Available Commands:
   delete      Deletes given file from Smartling.
   import      Imports translations for given original file URI with.

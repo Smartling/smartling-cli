@@ -21,7 +21,7 @@ func run(ctx context.Context,
 	outputParams output.Params,
 ) error {
 	rlog.Debugf("running detect with params: %v", params)
-	mtSrv, err := initializer.InitMTSrv()
+	mtSrv, err := initializer.InitMTSrv(ctx)
 	if err != nil {
 		return clierror.UIError{
 			Operation:   "init",

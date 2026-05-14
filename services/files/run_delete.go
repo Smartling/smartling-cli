@@ -1,6 +1,7 @@
 package files
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Smartling/smartling-cli/services/helpers/cli_error"
@@ -12,7 +13,7 @@ import (
 )
 
 // RunDelete deletes files from the Smartling project based on the provided URI.
-func (s service) RunDelete(uri string) error {
+func (s service) RunDelete(ctx context.Context, uri string) error {
 	projectID := s.Config.ProjectID
 	var (
 		err   error
@@ -24,7 +25,7 @@ func (s service) RunDelete(uri string) error {
 			return err
 		}
 	} else {
-		files, err = globfiles.Remote(s.APIClient.ListAllFiles, projectID, uri)
+		files, err = globfiles.Remote(ctx, s.APIClient.ListAllFiles, projectID, uri)
 		if err != nil {
 			return err
 		}
@@ -39,7 +40,7 @@ func (s service) RunDelete(uri string) error {
 	}
 
 	for _, file := range files {
-		err := s.APIClient.DeleteFile(projectID, file.FileURI)
+		err := s.APIClient.DeleteFile(ctx, projectID, file.FileURI)
 		if err != nil {
 			return hierr.Errorf(
 				err,

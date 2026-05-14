@@ -41,7 +41,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		}
 		update := DetectUpdates{ID: uint32(fileID)}
 		rlog.Debugf("start upload")
-		uploadFileResponse, err := s.uploader.UploadFile(p.AccountUID, filepath.Base(file), request)
+		uploadFileResponse, err := s.uploader.UploadFile(ctx, p.AccountUID, filepath.Base(file), request)
 		if err != nil {
 			return nil, err
 		}
@@ -54,7 +54,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		updates <- update
 
 		rlog.Debugf("detect language")
-		detectFileLanguageResponse, err := s.translationControl.DetectFileLanguage(p.AccountUID, uploadFileResponse.FileUID)
+		detectFileLanguageResponse, err := s.translationControl.DetectFileLanguage(ctx, p.AccountUID, uploadFileResponse.FileUID)
 		if err != nil {
 			return nil, err
 		}
@@ -63,13 +63,16 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		updates <- update
 
 		started := time.Now()
-		var processed bool
+		var (
+			processed        bool
+			detectedLanguage string
+		)
 		for !processed {
 			if time.Since(started) > pollingDuration {
 				return nil, errors.New("timeout exceeded for polling detection progress of LanguageDetectionUID: " + detectFileLanguageResponse.LanguageDetectionUID)
 			}
 			rlog.Debugf("check detection progress")
-			detectionProgressResponse, err := s.translationControl.DetectionProgress(p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
+			detectionProgressResponse, err := s.translationControl.DetectionProgress(ctx, p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
 			if err != nil {
 				return nil, err
 			}
@@ -92,7 +95,8 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			}
 
 			if len(detectionProgressResponse.DetectedSourceLanguages) > 0 {
-				update.Language = new(detectionProgressResponse.DetectedSourceLanguages[0].LanguageID)
+				detectedLanguage = detectionProgressResponse.DetectedSourceLanguages[0].LanguageID
+				update.Language = new(detectedLanguage)
 			}
 
 			updates <- update
@@ -100,7 +104,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 
 		res = append(res, DetectOutput{
 			File:       string(uploadFileResponse.FileUID),
-			Language:   detectFileLanguageResponse.Code,
+			Language:   detectedLanguage,
 			Confidence: "",
 		})
 	}

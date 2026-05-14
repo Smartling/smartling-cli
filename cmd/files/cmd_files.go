@@ -1,6 +1,7 @@
 package files
 
 import (
+	"context"
 	"os"
 
 	"github.com/Smartling/smartling-cli/cmd"
@@ -41,7 +42,7 @@ func NewFilesCmd() *cobra.Command {
 
 // SrvInitializer defines files service initializer
 type SrvInitializer interface {
-	InitFilesSrv() (files.Service, error)
+	InitFilesSrv(ctx context.Context) (files.Service, error)
 }
 
 // NewSrvInitializer returns new SrvInitializer implementation
@@ -52,8 +53,8 @@ func NewSrvInitializer() SrvInitializer {
 type srvInitializer struct{}
 
 // InitFilesSrv initializes `files` service with the client and configuration.
-func (i srvInitializer) InitFilesSrv() (files.Service, error) {
-	client, err := cmd.Client()
+func (i srvInitializer) InitFilesSrv(ctx context.Context) (files.Service, error) {
+	client, err := cmd.Client(ctx)
 	if err != nil {
 		return nil, err
 	}

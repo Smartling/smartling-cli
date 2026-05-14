@@ -39,16 +39,16 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 }
 
 // RunDelete provides a mock function for the type MockService
-func (_mock *MockService) RunDelete(uri string) error {
-	ret := _mock.Called(uri)
+func (_mock *MockService) RunDelete(ctx context.Context, uri string) error {
+	ret := _mock.Called(ctx, uri)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunDelete")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(string) error); ok {
-		r0 = returnFunc(uri)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, uri)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -61,19 +61,25 @@ type MockService_RunDelete_Call struct {
 }
 
 // RunDelete is a helper method to define mock.On call
+//   - ctx context.Context
 //   - uri string
-func (_e *MockService_Expecter) RunDelete(uri interface{}) *MockService_RunDelete_Call {
-	return &MockService_RunDelete_Call{Call: _e.mock.On("RunDelete", uri)}
+func (_e *MockService_Expecter) RunDelete(ctx interface{}, uri interface{}) *MockService_RunDelete_Call {
+	return &MockService_RunDelete_Call{Call: _e.mock.On("RunDelete", ctx, uri)}
 }
 
-func (_c *MockService_RunDelete_Call) Run(run func(uri string)) *MockService_RunDelete_Call {
+func (_c *MockService_RunDelete_Call) Run(run func(ctx context.Context, uri string)) *MockService_RunDelete_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 string
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(string)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -84,22 +90,22 @@ func (_c *MockService_RunDelete_Call) Return(err error) *MockService_RunDelete_C
 	return _c
 }
 
-func (_c *MockService_RunDelete_Call) RunAndReturn(run func(uri string) error) *MockService_RunDelete_Call {
+func (_c *MockService_RunDelete_Call) RunAndReturn(run func(ctx context.Context, uri string) error) *MockService_RunDelete_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RunImport provides a mock function for the type MockService
-func (_mock *MockService) RunImport(params files.ImportParams) error {
-	ret := _mock.Called(params)
+func (_mock *MockService) RunImport(ctx context.Context, params files.ImportParams) error {
+	ret := _mock.Called(ctx, params)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunImport")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(files.ImportParams) error); ok {
-		r0 = returnFunc(params)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, files.ImportParams) error); ok {
+		r0 = returnFunc(ctx, params)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -112,19 +118,25 @@ type MockService_RunImport_Call struct {
 }
 
 // RunImport is a helper method to define mock.On call
+//   - ctx context.Context
 //   - params files.ImportParams
-func (_e *MockService_Expecter) RunImport(params interface{}) *MockService_RunImport_Call {
-	return &MockService_RunImport_Call{Call: _e.mock.On("RunImport", params)}
+func (_e *MockService_Expecter) RunImport(ctx interface{}, params interface{}) *MockService_RunImport_Call {
+	return &MockService_RunImport_Call{Call: _e.mock.On("RunImport", ctx, params)}
 }
 
-func (_c *MockService_RunImport_Call) Run(run func(params files.ImportParams)) *MockService_RunImport_Call {
+func (_c *MockService_RunImport_Call) Run(run func(ctx context.Context, params files.ImportParams)) *MockService_RunImport_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 files.ImportParams
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(files.ImportParams)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 files.ImportParams
+		if args[1] != nil {
+			arg1 = args[1].(files.ImportParams)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -135,22 +147,22 @@ func (_c *MockService_RunImport_Call) Return(err error) *MockService_RunImport_C
 	return _c
 }
 
-func (_c *MockService_RunImport_Call) RunAndReturn(run func(params files.ImportParams) error) *MockService_RunImport_Call {
+func (_c *MockService_RunImport_Call) RunAndReturn(run func(ctx context.Context, params files.ImportParams) error) *MockService_RunImport_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RunList provides a mock function for the type MockService
-func (_mock *MockService) RunList(formatType string, short bool, uri string) error {
-	ret := _mock.Called(formatType, short, uri)
+func (_mock *MockService) RunList(ctx context.Context, formatType string, short bool, uri string) error {
+	ret := _mock.Called(ctx, formatType, short, uri)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunList")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(string, bool, string) error); ok {
-		r0 = returnFunc(formatType, short, uri)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, bool, string) error); ok {
+		r0 = returnFunc(ctx, formatType, short, uri)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -163,31 +175,37 @@ type MockService_RunList_Call struct {
 }
 
 // RunList is a helper method to define mock.On call
+//   - ctx context.Context
 //   - formatType string
 //   - short bool
 //   - uri string
-func (_e *MockService_Expecter) RunList(formatType interface{}, short interface{}, uri interface{}) *MockService_RunList_Call {
-	return &MockService_RunList_Call{Call: _e.mock.On("RunList", formatType, short, uri)}
+func (_e *MockService_Expecter) RunList(ctx interface{}, formatType interface{}, short interface{}, uri interface{}) *MockService_RunList_Call {
+	return &MockService_RunList_Call{Call: _e.mock.On("RunList", ctx, formatType, short, uri)}
 }
 
-func (_c *MockService_RunList_Call) Run(run func(formatType string, short bool, uri string)) *MockService_RunList_Call {
+func (_c *MockService_RunList_Call) Run(run func(ctx context.Context, formatType string, short bool, uri string)) *MockService_RunList_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 string
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(string)
+			arg0 = args[0].(context.Context)
 		}
-		var arg1 bool
+		var arg1 string
 		if args[1] != nil {
-			arg1 = args[1].(bool)
+			arg1 = args[1].(string)
 		}
-		var arg2 string
+		var arg2 bool
 		if args[2] != nil {
-			arg2 = args[2].(string)
+			arg2 = args[2].(bool)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -198,22 +216,22 @@ func (_c *MockService_RunList_Call) Return(err error) *MockService_RunList_Call 
 	return _c
 }
 
-func (_c *MockService_RunList_Call) RunAndReturn(run func(formatType string, short bool, uri string) error) *MockService_RunList_Call {
+func (_c *MockService_RunList_Call) RunAndReturn(run func(ctx context.Context, formatType string, short bool, uri string) error) *MockService_RunList_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RunPull provides a mock function for the type MockService
-func (_mock *MockService) RunPull(params files.PullParams) error {
-	ret := _mock.Called(params)
+func (_mock *MockService) RunPull(ctx context.Context, params files.PullParams) error {
+	ret := _mock.Called(ctx, params)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunPull")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(files.PullParams) error); ok {
-		r0 = returnFunc(params)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, files.PullParams) error); ok {
+		r0 = returnFunc(ctx, params)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -226,19 +244,25 @@ type MockService_RunPull_Call struct {
 }
 
 // RunPull is a helper method to define mock.On call
+//   - ctx context.Context
 //   - params files.PullParams
-func (_e *MockService_Expecter) RunPull(params interface{}) *MockService_RunPull_Call {
-	return &MockService_RunPull_Call{Call: _e.mock.On("RunPull", params)}
+func (_e *MockService_Expecter) RunPull(ctx interface{}, params interface{}) *MockService_RunPull_Call {
+	return &MockService_RunPull_Call{Call: _e.mock.On("RunPull", ctx, params)}
 }
 
-func (_c *MockService_RunPull_Call) Run(run func(params files.PullParams)) *MockService_RunPull_Call {
+func (_c *MockService_RunPull_Call) Run(run func(ctx context.Context, params files.PullParams)) *MockService_RunPull_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 files.PullParams
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(files.PullParams)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 files.PullParams
+		if args[1] != nil {
+			arg1 = args[1].(files.PullParams)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -249,7 +273,7 @@ func (_c *MockService_RunPull_Call) Return(err error) *MockService_RunPull_Call 
 	return _c
 }
 
-func (_c *MockService_RunPull_Call) RunAndReturn(run func(params files.PullParams) error) *MockService_RunPull_Call {
+func (_c *MockService_RunPull_Call) RunAndReturn(run func(ctx context.Context, params files.PullParams) error) *MockService_RunPull_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -312,16 +336,16 @@ func (_c *MockService_RunPush_Call) RunAndReturn(run func(ctx context.Context, p
 }
 
 // RunRename provides a mock function for the type MockService
-func (_mock *MockService) RunRename(oldURI string, newURI string) error {
-	ret := _mock.Called(oldURI, newURI)
+func (_mock *MockService) RunRename(ctx context.Context, oldURI string, newURI string) error {
+	ret := _mock.Called(ctx, oldURI, newURI)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunRename")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(string, string) error); ok {
-		r0 = returnFunc(oldURI, newURI)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = returnFunc(ctx, oldURI, newURI)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -334,25 +358,31 @@ type MockService_RunRename_Call struct {
 }
 
 // RunRename is a helper method to define mock.On call
+//   - ctx context.Context
 //   - oldURI string
 //   - newURI string
-func (_e *MockService_Expecter) RunRename(oldURI interface{}, newURI interface{}) *MockService_RunRename_Call {
-	return &MockService_RunRename_Call{Call: _e.mock.On("RunRename", oldURI, newURI)}
+func (_e *MockService_Expecter) RunRename(ctx interface{}, oldURI interface{}, newURI interface{}) *MockService_RunRename_Call {
+	return &MockService_RunRename_Call{Call: _e.mock.On("RunRename", ctx, oldURI, newURI)}
 }
 
-func (_c *MockService_RunRename_Call) Run(run func(oldURI string, newURI string)) *MockService_RunRename_Call {
+func (_c *MockService_RunRename_Call) Run(run func(ctx context.Context, oldURI string, newURI string)) *MockService_RunRename_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 string
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(string)
+			arg0 = args[0].(context.Context)
 		}
 		var arg1 string
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -363,22 +393,22 @@ func (_c *MockService_RunRename_Call) Return(err error) *MockService_RunRename_C
 	return _c
 }
 
-func (_c *MockService_RunRename_Call) RunAndReturn(run func(oldURI string, newURI string) error) *MockService_RunRename_Call {
+func (_c *MockService_RunRename_Call) RunAndReturn(run func(ctx context.Context, oldURI string, newURI string) error) *MockService_RunRename_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RunStatus provides a mock function for the type MockService
-func (_mock *MockService) RunStatus(params files.StatusParams) error {
-	ret := _mock.Called(params)
+func (_mock *MockService) RunStatus(ctx context.Context, params files.StatusParams) error {
+	ret := _mock.Called(ctx, params)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunStatus")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(files.StatusParams) error); ok {
-		r0 = returnFunc(params)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, files.StatusParams) error); ok {
+		r0 = returnFunc(ctx, params)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -391,19 +421,25 @@ type MockService_RunStatus_Call struct {
 }
 
 // RunStatus is a helper method to define mock.On call
+//   - ctx context.Context
 //   - params files.StatusParams
-func (_e *MockService_Expecter) RunStatus(params interface{}) *MockService_RunStatus_Call {
-	return &MockService_RunStatus_Call{Call: _e.mock.On("RunStatus", params)}
+func (_e *MockService_Expecter) RunStatus(ctx interface{}, params interface{}) *MockService_RunStatus_Call {
+	return &MockService_RunStatus_Call{Call: _e.mock.On("RunStatus", ctx, params)}
 }
 
-func (_c *MockService_RunStatus_Call) Run(run func(params files.StatusParams)) *MockService_RunStatus_Call {
+func (_c *MockService_RunStatus_Call) Run(run func(ctx context.Context, params files.StatusParams)) *MockService_RunStatus_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 files.StatusParams
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(files.StatusParams)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 files.StatusParams
+		if args[1] != nil {
+			arg1 = args[1].(files.StatusParams)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -414,7 +450,7 @@ func (_c *MockService_RunStatus_Call) Return(err error) *MockService_RunStatus_C
 	return _c
 }
 
-func (_c *MockService_RunStatus_Call) RunAndReturn(run func(params files.StatusParams) error) *MockService_RunStatus_Call {
+func (_c *MockService_RunStatus_Call) RunAndReturn(run func(ctx context.Context, params files.StatusParams) error) *MockService_RunStatus_Call {
 	_c.Call.Return(run)
 	return _c
 }
