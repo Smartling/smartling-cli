@@ -66,7 +66,7 @@ _pkg-init:
 		$(shell git rev-list --count HEAD).$(shell git rev-parse --short HEAD))
 
 %:
-	GOOS=$(basename $@) go build -mod=mod -o bin/smartling.$@
+	CGO_ENABLED=0 GOOS=$(basename $@) go build -mod=mod -trimpath -ldflags="-s -w" -o bin/smartling.$@
 
 .PHONY: docs
 docs:
