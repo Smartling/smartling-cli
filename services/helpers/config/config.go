@@ -28,7 +28,7 @@ type Config struct {
 	Secret    string `yaml:"secret"`
 	AccountID string `yaml:"account_id"`
 	ProjectID string `yaml:"project_id,omitzero"`
-	Threads   uint32 `yaml:"threads"`
+	Threads   uint32 `yaml:"threads,omitzero"`
 
 	Files map[string]FileConfig `yaml:"files"`
 

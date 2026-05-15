@@ -39,6 +39,7 @@ type PullParams struct {
 	DryRun    bool
 	Progress  string
 	Retrieve  string
+	Threads   uint32
 }
 
 func (p *PullParams) setDefaultFormatIfEmpty() {
@@ -117,8 +118,8 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 	}
 
 	group, groupCtx := errgroup.WithContext(ctx)
-	if s.Config.Threads > 0 {
-		group.SetLimit(int(s.Config.Threads))
+	if params.Threads > 0 {
+		group.SetLimit(int(params.Threads))
 	}
 	var failed atomic.Int32
 	for _, file := range files {

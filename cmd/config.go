@@ -39,7 +39,6 @@ func Config() (config.Config, error) {
 		Secret:     secret,
 		Account:    account,
 		Project:    project,
-		Threads:    threads,
 		IsInit:     isInit,
 		IsFiles:    isFiles,
 		IsProjects: isProjects,

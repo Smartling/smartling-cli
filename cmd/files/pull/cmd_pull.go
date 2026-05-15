@@ -2,8 +2,11 @@ package pull
 
 import (
 	"os"
+	"strconv"
 
+	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	filescmd "github.com/Smartling/smartling-cli/cmd/files"
+	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
@@ -11,6 +14,8 @@ import (
 
 	"github.com/spf13/cobra"
 )
+
+const threadsFlag = "threads"
 
 var (
 	uri        string
@@ -24,6 +29,7 @@ var (
 	directory  string
 	formatPath string
 	locales    []string
+	threads    uint32
 )
 
 // NewPullCmd creates a new command to pull files.
@@ -146,6 +152,21 @@ Available options:
 				os.Exit(1)
 			}
 
+			var threadsCfg *string
+			if cnf, cnfErr := rootcmd.Config(); cnfErr == nil && cnf.Threads > 0 {
+				s := strconv.FormatUint(uint64(cnf.Threads), 10)
+				threadsCfg = new(s)
+			}
+			threadsParam := resolve.FallbackString(cmd.Flags().Lookup(threadsFlag), resolve.StringParam{
+				FlagName: threadsFlag,
+				Config:   threadsCfg,
+			})
+			threadsParamI, err := strconv.ParseUint(threadsParam, 10, 32)
+			if err != nil {
+				rlog.Errorf("failed to parse `threads` parameter: %s", err)
+				os.Exit(1)
+			}
+
 			params := files.PullParams{
 				URI:       uri,
 				JobUID:    jobUID,
@@ -158,6 +179,7 @@ Available options:
 				Retrieve:  retrieve,
 				Resume:    resume,
 				DryRun:    dryRun,
+				Threads:   uint32(threadsParamI),
 			}
 			err = s.RunPull(ctx, params)
 			if err != nil {
@@ -176,6 +198,8 @@ Available options:
 	pullCmd.Flags().StringArrayVarP(&locales, "locale", "l", []string{}, `Authorize only specified locales.`)
 	pullCmd.Flags().BoolVar(&resume, "resume", false, `Resume a previously interrupted pull operation, skipping already downloaded files.`)
 	pullCmd.Flags().BoolVar(&dryRun, "dry-run", false, `Print the file × locale matrix that would be downloaded, then exit.`)
+	pullCmd.Flags().Uint32Var(&threads, threadsFlag, 20, `If command can be executed concurrently, it will be
+executed for at most <number> of threads.`)
 	pullCmd.Flags().StringVar(&formatPath, "format", "", `Can be used to format path to downloaded files.
                            Note, that single file can be translated in
                            different locales, so format should include locale
