@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync/atomic"
 
 	"github.com/Smartling/smartling-cli/services/helpers"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
@@ -84,6 +85,9 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 	if err != nil {
 		return err
 	}
+	if len(files) == 0 {
+		return fmt.Errorf("no files found matching the provided parameters")
+	}
 
 	// When --job-uid is combined with a URI glob, filter the job's file list
 	// down to URIs that match the pattern.
@@ -92,18 +96,15 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 		if err != nil {
 			return err
 		}
+		if len(filtered) == 0 {
+			return fmt.Errorf("job %q has no files matching uri pattern %q", params.JobUID, params.URI)
+		}
 		files = filtered
 	}
 
-	// Job enumeration may legitimately return zero files or zero locales (the
-	// job exists but is empty). enumerateJobFiles has already logged the reason
-	// to stderr; short-circuit cleanly here.
 	if params.JobUID != "" {
-		if len(files) == 0 || len(jobLocales) == 0 {
-			if len(jobLocales) == 0 {
-				rlog.Errorf("job %q has no target locales; nothing to download", params.JobUID)
-			}
-			return nil
+		if len(jobLocales) == 0 {
+			return fmt.Errorf("job %q has no target locales; nothing to download", params.JobUID)
 		}
 		params.Locales = filterLocales(jobLocales, params.Locales)
 		if len(params.Locales) == 0 {
@@ -119,20 +120,24 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 	if s.Config.Threads > 0 {
 		group.SetLimit(int(s.Config.Threads))
 	}
-
+	var failed atomic.Int32
 	for _, file := range files {
 		group.Go(func() error {
 			if err := groupCtx.Err(); err != nil {
 				return nil
 			}
 			if err := s.downloadFileTranslations(groupCtx, params, file); err != nil {
+				failed.Add(1)
 				rlog.Error(err)
 			}
 			return nil
 		})
 	}
-	err = group.Wait()
-	return err
+	_ = group.Wait()
+	if n := failed.Load(); n > 0 {
+		return fmt.Errorf("%d file(s) failed to download; see log for details", n)
+	}
+	return nil
 }
 
 // printDryRun writes the resolved file × locale matrix to stdout without
@@ -191,10 +196,6 @@ func (s service) downloadFileTranslations(ctx context.Context, params PullParams
 	}
 
 	retrievalType := sdk.RetrievalType(params.Retrieve)
-
-	if params.Format == "" {
-		params.Format = format.DefaultFileStatusFormat
-	}
 
 	projectID := s.Config.ProjectID
 	status, err := s.APIClient.GetFileStatus(ctx, projectID, file.FileURI)
@@ -280,30 +281,29 @@ func hasLocaleInList(locale string, locales []string) bool {
 }
 
 // enumerateJobFiles resolves the file × target-locale matrix for a job by
-// calling the Jobs API. Returns the source files attached to the job and the
-// list of target locales at the job level.
+// calling the Jobs API.
 func (s service) enumerateJobFiles(ctx context.Context, jobUID string) ([]sdkfile.File, []string, error) {
+	var (
+		job      sdkjob.GetJobResponse
+		jobFiles []sdkjob.JobFile
+		group    errgroup.Group
+	)
 	projectID := s.Config.ProjectID
-
-	job, err := s.JobApi.GetJob(ctx, projectID, jobUID)
-	if err != nil {
+	group.Go(func() error {
+		var err error
+		job, err = s.JobApi.GetJob(ctx, projectID, jobUID)
+		return err
+	})
+	group.Go(func() error {
+		var err error
+		jobFiles, err = s.JobApi.ListFiles(ctx, projectID, jobUID)
+		return err
+	})
+	if err := group.Wait(); err != nil {
 		if errors.Is(err, sdkjob.ErrNotFound) {
 			return nil, nil, fmt.Errorf("job %q not found in project %q", jobUID, projectID)
 		}
 		return nil, nil, fmt.Errorf("unable to fetch job %q in project %q: %w", jobUID, projectID, err)
-	}
-
-	jobFiles, err := s.JobApi.ListFiles(ctx, projectID, jobUID)
-	if err != nil {
-		if errors.Is(err, sdkjob.ErrNotFound) {
-			return nil, nil, fmt.Errorf("job %q not found in project %q", jobUID, projectID)
-		}
-		return nil, nil, fmt.Errorf("unable to list files for job %q in project %q: %w", jobUID, projectID, err)
-	}
-
-	if len(jobFiles) == 0 {
-		rlog.Errorf("job %q has no files; nothing to download", jobUID)
-		return nil, job.TargetLocaleIDs, nil
 	}
 
 	files := make([]sdkfile.File, 0, len(jobFiles))

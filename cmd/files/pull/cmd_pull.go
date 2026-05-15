@@ -98,7 +98,7 @@ Available options:
     Download every file × target-locale pair from a Smartling job.
     Combines with the <uri> positional argument: when both are set, the
     URI is treated as a glob filter applied to the job's file list.
-    Combines with --locale (filtered by the job's target locales).
+    Combines with --locale: the requested locales are intersected with the job's target locales.
     When --format is not set, defaults to <jobUid>/<locale>/<fileUri>.
 
   --resume

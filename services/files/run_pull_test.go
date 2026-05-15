@@ -82,9 +82,14 @@ func TestEnumerateJobFiles_HappyPath(t *testing.T) {
 func TestEnumerateJobFiles_NotFound(t *testing.T) {
 	s, mockJob := newServiceWithJobAPI(t, "proj-1")
 
+	// GetJob and ListFiles run in parallel; for a missing job the underlying
+	// API returns 404 for both, which the SDK maps to ErrNotFound.
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "missing").
 		Return(sdkjob.GetJobResponse{}, sdkjob.ErrNotFound)
+	mockJob.EXPECT().
+		ListFiles(context.Background(), "proj-1", "missing").
+		Return(nil, sdkjob.ErrNotFound)
 
 	_, _, err := s.enumerateJobFiles(context.Background(), "missing")
 	if err == nil {
@@ -109,12 +114,42 @@ func TestEnumerateJobFiles_EmptyFiles(t *testing.T) {
 		ListFiles(context.Background(), "proj-1", "job-1").
 		Return(nil, nil)
 
-	files, _, err := s.enumerateJobFiles(context.Background(), "job-1")
+	// enumerateJobFiles itself does not error on empty results — the
+	// centralized check in RunPull catches that case. See
+	// TestRunPull_JobWithNoFiles_ReturnsError for the end-to-end behavior.
+	files, locales, err := s.enumerateJobFiles(context.Background(), "job-1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if files != nil {
-		t.Errorf("files = %v, want nil for empty job", files)
+	if len(files) != 0 {
+		t.Errorf("expected empty files slice, got %v", files)
+	}
+	if !reflect.DeepEqual(locales, []string{"fr-FR"}) {
+		t.Errorf("locales = %v, want [fr-FR]", locales)
+	}
+}
+
+func TestRunPull_JobWithNoFiles_ReturnsError(t *testing.T) {
+	mockJob := jobmocks.NewMockJob(t)
+	mockJob.EXPECT().
+		GetJob(context.Background(), "proj-1", "job-empty-files").
+		Return(sdkjob.GetJobResponse{
+			TranslationJobUID: "job-empty-files",
+			TargetLocaleIDs:   []string{"fr-FR"},
+		}, nil)
+	mockJob.EXPECT().
+		ListFiles(context.Background(), "proj-1", "job-empty-files").
+		Return(nil, nil)
+
+	s := service{
+		APIClient: nil,
+		JobApi:    mockJob,
+		Config:    config.Config{ProjectID: "proj-1"},
+	}
+
+	err := s.RunPull(context.Background(), PullParams{JobUID: "job-empty-files"})
+	if err == nil {
+		t.Fatal("expected error for job with no files, got nil")
 	}
 }
 
@@ -249,7 +284,7 @@ func TestRunPull_JobUIDPlusURI_FiltersJobFiles(t *testing.T) {
 	}
 }
 
-func TestRunPull_JobWithNoLocales_ShortCircuits(t *testing.T) {
+func TestRunPull_JobWithNoLocales_ReturnsError(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "job-empty").
@@ -268,8 +303,42 @@ func TestRunPull_JobWithNoLocales_ShortCircuits(t *testing.T) {
 	}
 
 	err := s.RunPull(context.Background(), PullParams{JobUID: "job-empty"})
-	if err != nil {
-		t.Fatalf("RunPull with empty target locales should short-circuit cleanly, got: %v", err)
+	if err == nil {
+		t.Fatal("expected error for job with no target locales, got nil")
+	}
+	if !strings.Contains(err.Error(), "job-empty") {
+		t.Errorf("error %q missing job UID context", err)
+	}
+}
+
+func TestRunPull_JobUIDPlusURIWithNoMatch_ReturnsError(t *testing.T) {
+	mockJob := jobmocks.NewMockJob(t)
+	mockJob.EXPECT().
+		GetJob(context.Background(), "proj-1", "job-1").
+		Return(sdkjob.GetJobResponse{
+			TranslationJobUID: "job-1",
+			TargetLocaleIDs:   []string{"fr-FR"},
+		}, nil)
+	mockJob.EXPECT().
+		ListFiles(context.Background(), "proj-1", "job-1").
+		Return([]sdkjob.JobFile{
+			{FileURI: "a.json"},
+			{FileURI: "b.xml"},
+		}, nil)
+
+	s := service{
+		APIClient: nil,
+		JobApi:    mockJob,
+		Config:    config.Config{ProjectID: "proj-1"},
+	}
+
+	err := s.RunPull(context.Background(), PullParams{
+		JobUID: "job-1",
+		URI:    "**.no_such_extension",
+		DryRun: true,
+	})
+	if err == nil {
+		t.Fatal("expected error when URI glob filters out every job file, got nil")
 	}
 }
 
@@ -366,10 +435,10 @@ func TestFilterLocales(t *testing.T) {
 			want:        []string{"fr-FR", "DE-de"},
 		},
 		{
-			name:        "no overlap returns empty",
+			name:        "no overlap returns nil",
 			jobLocales:  []string{"fr-FR"},
 			userLocales: []string{"ja-JP"},
-			want:        []string{},
+			want:        nil,
 		},
 		{
 			name:        "user locale not in job is filtered out",
