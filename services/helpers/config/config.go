@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
@@ -10,6 +11,35 @@ import (
 	"github.com/goccy/go-yaml"
 	"github.com/reconquest/hierr-go"
 )
+
+// Source identifies where a configuration value was resolved from.
+type Source string
+
+// Source values, ordered by precedence (lowest first).
+const (
+	SourceDefault Source = "default"
+	SourceConfig  Source = "config"
+	SourceEnv     Source = "env"
+	SourceFlag    Source = "flag"
+)
+
+// Sources records the origin of each configuration value that supports
+// flag/env/file precedence. It is populated by BuildConfigFromFlags and is
+// intentionally not serialized to YAML.
+type Sources struct {
+	UserID    Source
+	AccountID Source
+	ProjectID Source
+}
+
+func (s Sources) String() string {
+	return fmt.Sprintf(
+		"project=%s  account=%s  user=%s",
+		s.ProjectID,
+		s.AccountID,
+		s.UserID,
+	)
+}
 
 // FileConfig is the configuration from file.
 type FileConfig struct {
@@ -35,6 +65,8 @@ type Config struct {
 	Proxy string `yaml:"proxy,omitzero"`
 
 	Path string `yaml:"-"`
+
+	Sources Sources `yaml:"-"`
 }
 
 // GetFileConfig returns the FileConfig for the given path.

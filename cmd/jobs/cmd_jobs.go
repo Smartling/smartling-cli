@@ -2,8 +2,12 @@ package jobs
 
 import (
 	"fmt"
+	"os"
 	"slices"
 	"strings"
+
+	"github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
@@ -50,9 +54,14 @@ Available options:
   smartling-cli jobs progress aabbccdd --output json
 
 `,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(c *cobra.Command, args []string) error {
+			ctx := c.Context()
 			if !slices.Contains(allowedOutputs, outputFormat) {
 				return fmt.Errorf("invalid output: %s (allowed: %s)", outputFormat, joinedAllowedOutputs)
+			}
+			if err := cmd.ShowConfigBanner(ctx); err != nil {
+				rlog.Error(err)
+				os.Exit(1)
 			}
 			return nil
 		},

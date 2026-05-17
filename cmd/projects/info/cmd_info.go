@@ -4,6 +4,7 @@ import (
 	"os"
 
 	projectscmd "github.com/Smartling/smartling-cli/cmd/projects"
+	output "github.com/Smartling/smartling-cli/output/projects"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
@@ -35,9 +36,13 @@ Available options:` + help.AuthenticationOptions,
 				rlog.Errorf("failed to get project service: %s", err)
 				os.Exit(1)
 			}
-			err = s.RunInfo(ctx)
+			infoOutput, err := s.RunInfo(ctx)
 			if err != nil {
 				rlog.Errorf("failed to run info: %s", err)
+				os.Exit(1)
+			}
+			if err := output.RenderTable(infoOutput); err != nil {
+				rlog.Errorf("failed to render info output: %s", err)
 				os.Exit(1)
 			}
 		},

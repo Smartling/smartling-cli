@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"os"
 	"strings"
 
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +20,7 @@ var (
 	insecure           bool
 	proxy              string
 	verbose            int
+	showConfig         bool
 
 	isInit     bool
 	isFiles    bool
@@ -34,6 +37,7 @@ func NewRootCmd() *cobra.Command {
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
 		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+			ctx := cmd.Context()
 			configureLoggerVerbose()
 
 			path := cmd.CommandPath()
@@ -41,6 +45,10 @@ func NewRootCmd() *cobra.Command {
 			isFiles = strings.HasPrefix(path, "smartling-cli files")
 			isProjects = strings.HasPrefix(path, "smartling-cli projects")
 			isList = strings.HasPrefix(path, "smartling-cli list")
+			if err := ShowConfigBanner(ctx); err != nil {
+				rlog.Error(err)
+				os.Exit(1)
+			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
@@ -74,6 +82,9 @@ executed for at most <number> of threads.`)
 	rootCmd.PersistentFlags().StringVar(&smartlingURL, "smartling-url", "", `Specify base Smartling URL, merely for testing
 purposes.`)
 	rootCmd.PersistentFlags().CountVarP(&verbose, "verbose", "v", "Verbose logging")
+	rootCmd.PersistentFlags().BoolVar(&showConfig, "show-config", false,
+		`Print the resolved account, project, user, and config file path
+to stderr before the command runs.`)
 
 	return rootCmd
 }

@@ -2,8 +2,12 @@ package mt
 
 import (
 	"fmt"
+	"os"
 	"slices"
 	"strings"
+
+	"github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
@@ -35,12 +39,17 @@ func NewMTCmd() *cobra.Command {
 		Use:   "mt",
 		Short: "File Machine Translations",
 		Long:  `Machine Translations offers a simple way to upload files and execute actions on them without any complex setup required`,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(c *cobra.Command, args []string) error {
+			ctx := c.Context()
 			if !slices.Contains(allowedOutputs, outputFormat) {
 				return fmt.Errorf("invalid output: %s (allowed: %s)", outputFormat, joinedAllowedOutputs)
 			}
 			if !slices.Contains(allowedOutputModes, outputMode) {
 				return fmt.Errorf("invalid output-mode: %s (allowed: %s)", outputMode, joinedAllowedOutputModes)
+			}
+			if err := cmd.ShowConfigBanner(ctx); err != nil {
+				rlog.Error(err)
+				os.Exit(1)
 			}
 			return nil
 		},
