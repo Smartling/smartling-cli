@@ -11,6 +11,7 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// Extended is local config joined with API-fetched project facts.
 type Extended struct {
 	ProjectID  string
 	Name       string
@@ -22,6 +23,7 @@ type Extended struct {
 	Sources    string
 }
 
+// FetchExtendedConfig fetches project details and merges with local config.
 func FetchExtendedConfig(ctx context.Context, config config.Config,
 	projectFetcher func(ctx context.Context, projectID string) (*sdk.ProjectDetails, error),
 ) (Extended, error) {
@@ -42,6 +44,7 @@ func FetchExtendedConfig(ctx context.Context, config config.Config,
 	return infoOutput, nil
 }
 
+// toExtended flattens project details + local config into Extended.
 func toExtended(project sdk.ProjectDetails, cfg config.Config) Extended {
 	return Extended{
 		ProjectID:  project.ProjectID,
@@ -55,6 +58,7 @@ func toExtended(project sdk.ProjectDetails, cfg config.Config) Extended {
 	}
 }
 
+// getStatus returns "archived" or "active".
 func getStatus(details sdk.ProjectDetails) string {
 	if details.Archived {
 		return "archived"

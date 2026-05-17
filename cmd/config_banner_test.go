@@ -35,8 +35,12 @@ func TestConfirmContinue(t *testing.T) {
 		{"no", "no\n", false},
 		{"empty line", "\n", false},
 		{"eof", "", false},
-		{"whitespace before y", "  y\n", true},
+		{"whitespace around y", "  y  \n", true},
+		{"whitespace around yes", "  yes  \n", true},
 		{"unrelated text", "foo\n", false},
+		{"y-prefixed word yeti", "yeti\n", false},
+		{"y-prefixed word yikes", "yikes\n", false},
+		{"yy", "yy\n", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -2,12 +2,10 @@ package mt
 
 import (
 	"fmt"
-	"os"
 	"slices"
 	"strings"
 
 	"github.com/Smartling/smartling-cli/cmd"
-	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
@@ -47,11 +45,7 @@ func NewMTCmd() *cobra.Command {
 			if !slices.Contains(allowedOutputModes, outputMode) {
 				return fmt.Errorf("invalid output-mode: %s (allowed: %s)", outputMode, joinedAllowedOutputModes)
 			}
-			if err := cmd.ShowConfigBanner(ctx); err != nil {
-				rlog.Error(err)
-				os.Exit(1)
-			}
-			return nil
+			return cmd.ShowConfigBanner(ctx)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {

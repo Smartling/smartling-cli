@@ -63,12 +63,8 @@ func confirmContinue(r io.Reader) bool {
 	if !scanner.Scan() {
 		return false
 	}
-	answer := strings.TrimSpace(scanner.Text())
-	if answer == "" {
-		return false
-	}
-	switch strings.ToLower(answer)[0] {
-	case 'y':
+	switch strings.ToLower(strings.TrimSpace(scanner.Text())) {
+	case "y", "yes":
 		return true
 	default:
 		return false

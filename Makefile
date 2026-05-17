@@ -95,7 +95,7 @@ mockery:
 
 .PHONY: test_unit
 test_unit:
-	go test ./cmd/...
+	go test ./cmd/... ./services/... ./output/...
 
 # add binary and config to tests/cmd/bin/ before run test integration
 .PHONY: test_integration

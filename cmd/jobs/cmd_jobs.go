@@ -2,12 +2,10 @@ package jobs
 
 import (
 	"fmt"
-	"os"
 	"slices"
 	"strings"
 
 	"github.com/Smartling/smartling-cli/cmd"
-	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
@@ -59,11 +57,7 @@ Available options:
 			if !slices.Contains(allowedOutputs, outputFormat) {
 				return fmt.Errorf("invalid output: %s (allowed: %s)", outputFormat, joinedAllowedOutputs)
 			}
-			if err := cmd.ShowConfigBanner(ctx); err != nil {
-				rlog.Error(err)
-				os.Exit(1)
-			}
-			return nil
+			return cmd.ShowConfigBanner(ctx)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
