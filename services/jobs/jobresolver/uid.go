@@ -23,6 +23,9 @@ func GetJobUID(ctx context.Context, api jobapi.Job, projectUID, jobUIDOrName str
 		jb, err := api.GetJob(ctx, projectUID, jobUIDOrName)
 		switch {
 		case err == nil:
+			if strings.TrimSpace(jb.TranslationJobUID) == "" {
+				return "", jobapi.ErrNotFound
+			}
 			return jb.TranslationJobUID, nil
 		case errors.Is(err, jobapi.ErrNotFound):
 			// 12-char input wasn't a UID — could still be a job name, fall through
