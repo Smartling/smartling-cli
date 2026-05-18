@@ -10,14 +10,11 @@ import (
 	jobapi "github.com/Smartling/api-sdk-go/api/job"
 )
 
-var (
-	ErrEmptyJob   = fmt.Errorf("job UID or name must be specified")
-	jobUIDPattern = regexp.MustCompile(`^[a-z0-9]{12}$`)
-)
+var jobUIDPattern = regexp.MustCompile(`^[a-z0-9]{12}$`)
 
 func GetJobUID(ctx context.Context, api jobapi.Job, projectUID, jobUIDOrName string) (string, error) {
 	if jobUIDOrName == "" {
-		return "", ErrEmptyJob
+		return "", jobapi.ErrNotFound
 	}
 	if jobUIDPattern.MatchString(jobUIDOrName) {
 		jb, err := api.GetJob(ctx, projectUID, jobUIDOrName)

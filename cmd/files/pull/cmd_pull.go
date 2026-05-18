@@ -114,6 +114,8 @@ Available options:
   --dry-run
     Print the file × locale matrix that would be downloaded, then exit 0.
     Does not call GetFileStatus, so --progress filtering is not applied.
+    Without --job, locale list comes from --locale flags only; omitting --locale
+    produces no output.
 ` + help.AuthenticationOptions,
 		Example: `
 # Pull translated files
