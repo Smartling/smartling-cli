@@ -17,6 +17,7 @@ import (
 	globfiles "github.com/Smartling/smartling-cli/services/helpers/glob_files"
 	"github.com/Smartling/smartling-cli/services/helpers/reader"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
+	"github.com/Smartling/smartling-cli/services/jobs/jobresolver"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	sdkjob "github.com/Smartling/api-sdk-go/api/job"
@@ -31,25 +32,27 @@ const jobFilesPageSize = 500
 
 // PullParams is the parameters for the RunPull method.
 type PullParams struct {
-	URI       string
-	JobUID    string
-	All       bool
-	Format    string
-	Directory string
-	Source    bool
-	Locales   []string
-	Resume    bool
-	DryRun    bool
-	Progress  string
-	Retrieve  string
-	Threads   uint32
+	URI          string
+	JobUIDOrName string
+	ProjectUID   string
+	All          bool
+	Format       string
+	Directory    string
+	Source       bool
+	Locales      []string
+	Resume       bool
+	DryRun       bool
+	Progress     string
+	Retrieve     string
+	Threads      uint32
+	jobUID       string
 }
 
 func (p *PullParams) setDefaultFormatIfEmpty() {
 	if p.Format != "" {
 		return
 	}
-	if p.JobUID != "" {
+	if p.JobUIDOrName != "" {
 		p.Format = format.DefaultFilePullJobFormat
 		return
 	}
@@ -57,8 +60,8 @@ func (p *PullParams) setDefaultFormatIfEmpty() {
 }
 
 func (p *PullParams) validate() error {
-	if p.URI == "" && p.JobUID == "" && !p.All {
-		return fmt.Errorf("either uri or --job-uid or --all is required")
+	if p.URI == "" && p.JobUIDOrName == "" && !p.All {
+		return fmt.Errorf("either uri or --job or --all is required")
 	}
 	if p.All && p.URI != "" {
 		return clierror.ErrIncompatibleParams("all", []string{"uri"})
@@ -78,9 +81,16 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 		files      []sdkfile.File
 		jobLocales []string
 	)
+	if params.JobUIDOrName != "" {
+		params.jobUID, err = jobresolver.GetJobUID(ctx, s.JobApi, params.ProjectUID, params.JobUIDOrName)
+		if err != nil {
+			return fmt.Errorf("resolve job UID: %w", err)
+		}
+	}
+
 	switch {
-	case params.JobUID != "":
-		files, jobLocales, err = s.enumerateJobFiles(ctx, params.JobUID)
+	case params.jobUID != "":
+		files, jobLocales, err = s.enumerateJobFiles(ctx, params.jobUID)
 	case params.URI == "-":
 		files, err = reader.ReadFilesFromStdin()
 	default:
@@ -93,26 +103,26 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 		return fmt.Errorf("no files found matching the provided parameters")
 	}
 
-	// When --job-uid is combined with a URI glob, filter the job's file list
+	// When --job is combined with a URI glob, filter the job's file list
 	// down to URIs that match the pattern.
-	if params.JobUID != "" && params.URI != "" && params.URI != "-" {
+	if params.jobUID != "" && params.URI != "" && params.URI != "-" {
 		filtered, err := filterFilesByGlob(files, params.URI)
 		if err != nil {
 			return err
 		}
 		if len(filtered) == 0 {
-			return fmt.Errorf("job %q has no files matching uri pattern %q", params.JobUID, params.URI)
+			return fmt.Errorf("job %q has no files matching uri pattern %q", params.jobUID, params.URI)
 		}
 		files = filtered
 	}
 
-	if params.JobUID != "" {
+	if params.jobUID != "" {
 		if len(jobLocales) == 0 {
-			return fmt.Errorf("job %q has no target locales; nothing to download", params.JobUID)
+			return fmt.Errorf("job %q has no target locales; nothing to download", params.jobUID)
 		}
 		params.Locales = filterLocales(jobLocales, params.Locales)
 		if len(params.Locales) == 0 {
-			return fmt.Errorf("job %q has no target locales matching the requested --locale filters", params.JobUID)
+			return fmt.Errorf("job %q has no target locales matching the requested --locale filters", params.jobUID)
 		}
 	}
 
@@ -180,7 +190,7 @@ func (s service) renderPullPath(file sdkfile.File, locale string, params PullPar
 		map[string]any{
 			"FileURI": file.FileURI,
 			"Locale":  locale,
-			"JobUID":  params.JobUID,
+			"JobUID":  params.jobUID,
 		},
 	)
 }

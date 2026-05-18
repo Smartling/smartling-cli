@@ -9,6 +9,6 @@ const (
 	DefaultFileStatusFormat = `{{name .FileURI}}{{with .Locale}}_{{.}}{{end}}{{ext .FileURI}}`
 	// DefaultFilePullFormat is the default format for file pull.
 	DefaultFilePullFormat = `{{name .FileURI}}{{with .Locale}}_{{.}}{{end}}{{ext .FileURI}}`
-	// DefaultFilePullJobFormat is the default format for `files pull --job-uid`.
+	// DefaultFilePullJobFormat is the default format for `files pull --job`.
 	DefaultFilePullJobFormat = `{{.JobUID}}/{{.Locale}}/{{.FileURI}}`
 )

@@ -18,18 +18,18 @@ import (
 const threadsFlag = "threads"
 
 var (
-	uri        string
-	jobUID     string
-	all        bool
-	source     bool
-	resume     bool
-	dryRun     bool
-	progress   string
-	retrieve   string
-	directory  string
-	formatPath string
-	locales    []string
-	threads    uint32
+	uri         string
+	jobIDOrName string
+	all         bool
+	source      bool
+	resume      bool
+	dryRun      bool
+	progress    string
+	retrieve    string
+	directory   string
+	formatPath  string
+	locales     []string
+	threads     uint32
 )
 
 // NewPullCmd creates a new command to pull files.
@@ -69,7 +69,7 @@ Following variables are available:
 
   > .FileURI — full file URI in Smartling system;
   > .Locale — locale ID for translated file and empty for source file;
-  > .JobUID — translation job UID, when --job-uid is set (otherwise empty);
+  > .JobUID — translation job UID, when --job is set (otherwise empty);
 
 
 Available options:
@@ -100,7 +100,7 @@ Available options:
                characters transformed;
     > contextMatchingInstrumented — to use with Chrome Context Capture;
 
-  --job-uid <jobUid>
+  --job <job UID or job name>
     Download every file × target-locale pair from a Smartling job.
     Combines with the <uri> positional argument: when both are set, the
     URI is treated as a glob filter applied to the job's file list.
@@ -130,15 +130,15 @@ Available options:
 
 # Pull every file × target locale in a translation job
 
-  smartling-cli --threads 20 files pull --job-uid <jobUid>
+  smartling-cli --threads 20 files pull --job <job UID or name>
 
 # Pull only .txt files from a job (URI glob filters the job file list)
 
-  smartling-cli files pull "**.txt" --job-uid <jobUid>
+  smartling-cli files pull "**.txt" --job <job UID or name>
 
 # Preview what a job pull would download
 
-  smartling-cli files pull --job-uid <jobUid> --dry-run
+  smartling-cli files pull --job <job UID or name> --dry-run
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx := cmd.Context()
@@ -153,8 +153,9 @@ Available options:
 			}
 
 			var threadsCfg *string
-			if cnf, cnfErr := rootcmd.Config(); cnfErr == nil && cnf.Threads > 0 {
-				s := strconv.FormatUint(uint64(cnf.Threads), 10)
+			config, cnfErr := rootcmd.Config()
+			if cnfErr == nil && config.Threads > 0 {
+				s := strconv.FormatUint(uint64(config.Threads), 10)
 				threadsCfg = new(s)
 			}
 			threadsParam := resolve.FallbackString(cmd.Flags().Lookup(threadsFlag), resolve.StringParam{
@@ -168,18 +169,19 @@ Available options:
 			}
 
 			params := files.PullParams{
-				URI:       uri,
-				JobUID:    jobUID,
-				All:       all,
-				Format:    formatPath,
-				Directory: directory,
-				Source:    source,
-				Locales:   locales,
-				Progress:  progress,
-				Retrieve:  retrieve,
-				Resume:    resume,
-				DryRun:    dryRun,
-				Threads:   uint32(threadsParamI),
+				URI:          uri,
+				JobUIDOrName: jobIDOrName,
+				ProjectUID:   config.ProjectID,
+				All:          all,
+				Format:       formatPath,
+				Directory:    directory,
+				Source:       source,
+				Locales:      locales,
+				Progress:     progress,
+				Retrieve:     retrieve,
+				Resume:       resume,
+				DryRun:       dryRun,
+				Threads:      uint32(threadsParamI),
 			}
 			err = s.RunPull(ctx, params)
 			if err != nil {
@@ -190,7 +192,7 @@ Available options:
 	}
 
 	pullCmd.Flags().BoolVar(&all, "all", false, `Download all files. Required if no file pattern is specified.`)
-	pullCmd.Flags().StringVar(&jobUID, "job-uid", "", "Filter downloads to files belonging to the specified job UID")
+	pullCmd.Flags().StringVar(&jobIDOrName, "job", "", "Filter downloads to files belonging to the specified job UID or job name")
 	pullCmd.Flags().BoolVar(&source, "source", false, `Pulls source file as well.`)
 	pullCmd.Flags().StringVar(&progress, "progress", "", `Pulls only translations that are at least specified percent of work complete.`)
 	pullCmd.Flags().StringVar(&retrieve, "retrieve", "", `Retrieval type: pending, published, pseudo or contextMatchingInstrumented.`)

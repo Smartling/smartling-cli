@@ -150,7 +150,7 @@ func TestRunPull_JobWithNoFiles_ReturnsError(t *testing.T) {
 		Config:    config.Config{ProjectID: "proj-1"},
 	}
 
-	err := s.RunPull(context.Background(), PullParams{JobUID: "job-empty-files"})
+	err := s.RunPull(context.Background(), PullParams{JobUIDOrName: "job-empty-files"})
 	if err == nil {
 		t.Fatal("expected error for job with no files, got nil")
 	}
@@ -199,8 +199,8 @@ func TestRunPull_DryRun_DoesNotCallAPIClient(t *testing.T) {
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
-		JobUID: "job-1",
-		DryRun: true,
+		JobUIDOrName: "job-1",
+		DryRun:       true,
 	})
 	if err != nil {
 		t.Fatalf("RunPull dry-run returned error: %v", err)
@@ -228,9 +228,9 @@ func TestRunPull_EmptyLocaleIntersection_Errors(t *testing.T) {
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
-		JobUID:  "job-1",
-		Locales: []string{"ja-JP"},
-		DryRun:  true,
+		JobUIDOrName: "job-1",
+		Locales:      []string{"ja-JP"},
+		DryRun:       true,
 	})
 	if err == nil {
 		t.Fatal("expected error from empty locale intersection")
@@ -271,9 +271,9 @@ func TestRunPull_JobUIDPlusURI_FiltersJobFiles(t *testing.T) {
 	os.Stdout = w
 
 	err := s.RunPull(context.Background(), PullParams{
-		JobUID: "job-1",
-		URI:    "**.json",
-		DryRun: true,
+		JobUIDOrName: "job-1",
+		URI:          "**.json",
+		DryRun:       true,
 	})
 
 	w.Close()
@@ -315,7 +315,7 @@ func TestRunPull_JobWithNoLocales_ReturnsError(t *testing.T) {
 		Config:    config.Config{ProjectID: "proj-1"},
 	}
 
-	err := s.RunPull(context.Background(), PullParams{JobUID: "job-empty"})
+	err := s.RunPull(context.Background(), PullParams{JobUIDOrName: "job-empty"})
 	if err == nil {
 		t.Fatal("expected error for job with no target locales, got nil")
 	}
@@ -349,9 +349,9 @@ func TestRunPull_JobUIDPlusURIWithNoMatch_ReturnsError(t *testing.T) {
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
-		JobUID: "job-1",
-		URI:    "**.no_such_extension",
-		DryRun: true,
+		JobUIDOrName: "job-1",
+		URI:          "**.no_such_extension",
+		DryRun:       true,
 	})
 	if err == nil {
 		t.Fatal("expected error when URI glob filters out every job file, got nil")
@@ -403,9 +403,9 @@ func TestRunPull_Resume_SkipsExistingFiles(t *testing.T) {
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
-		JobUID:    "job-1",
-		Directory: tmpDir,
-		Resume:    true,
+		JobUIDOrName: "job-1",
+		Directory:    tmpDir,
+		Resume:       true,
 	})
 	if err != nil {
 		t.Fatalf("RunPull error: %v", err)
@@ -499,8 +499,8 @@ func TestPullParams_validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "job-uid alone is accepted",
-			params:  PullParams{JobUID: "jobUid-1"},
+			name:    "job UID alone is accepted",
+			params:  PullParams{JobUIDOrName: "jobUid-1"},
 			wantErr: false,
 		},
 		{
@@ -510,12 +510,12 @@ func TestPullParams_validate(t *testing.T) {
 		},
 		{
 			name:    "uri + job-uid is accepted (uri filters job files)",
-			params:  PullParams{URI: "**/*.json", JobUID: "jobUid-1"},
+			params:  PullParams{URI: "**/*.json", JobUIDOrName: "jobUid-1"},
 			wantErr: false,
 		},
 		{
 			name:    "all + job-uid is accepted (job-uid wins)",
-			params:  PullParams{All: true, JobUID: "jobUid-1"},
+			params:  PullParams{All: true, JobUIDOrName: "jobUid-1"},
 			wantErr: false,
 		},
 	}
@@ -536,7 +536,7 @@ func TestPullParams_setDefaultFormatIfEmpty(t *testing.T) {
 	}{
 		{
 			name:       "empty format with job-uid picks job format",
-			params:     PullParams{JobUID: "job-1"},
+			params:     PullParams{JobUIDOrName: "job-1"},
 			wantFormat: format.DefaultFilePullJobFormat,
 		},
 		{
@@ -551,7 +551,7 @@ func TestPullParams_setDefaultFormatIfEmpty(t *testing.T) {
 		},
 		{
 			name:       "user-provided format wins over job-uid default",
-			params:     PullParams{JobUID: "job-1", Format: "{{.FileURI}}.custom"},
+			params:     PullParams{JobUIDOrName: "job-1", Format: "{{.FileURI}}.custom"},
 			wantFormat: "{{.FileURI}}.custom",
 		},
 		{
@@ -561,7 +561,7 @@ func TestPullParams_setDefaultFormatIfEmpty(t *testing.T) {
 		},
 		{
 			name:       "uri + job-uid still picks job format when no explicit format",
-			params:     PullParams{URI: "**.json", JobUID: "job-1"},
+			params:     PullParams{URI: "**.json", JobUIDOrName: "job-1"},
 			wantFormat: format.DefaultFilePullJobFormat,
 		},
 	}
