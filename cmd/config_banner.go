@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	output "github.com/Smartling/smartling-cli/output/projects"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	projectconfig "github.com/Smartling/smartling-cli/services/projects/config"
 
 	"golang.org/x/term"
@@ -17,25 +18,28 @@ import (
 
 // ShowConfigBanner prints the --show-config banner to stdout when the
 // flag is set, and — only on an interactive terminal — prompts the operator
-// with "Continue? [y/N]:" before letting the command proceed. On a "no"
-// answer the process exits with status 1; on any other path (non-TTY, no
-// flag, init command, config resolution failure) the function returns
-// silently and the command runs normally.
+// with "Continue? [y/N]:" before letting the command proceed.
 func ShowConfigBanner(ctx context.Context) error {
 	if !showConfig || isInit {
 		return nil
 	}
-	cfg, err := Config()
+	config, err := Config()
 	if err != nil {
 		return fmt.Errorf("failed to read config: %w", err)
 	}
+	var extendedConfig projectconfig.Extended
+	extendedConfig.InjectConfig(config)
 	client, err := Client(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to create API client: %w", err)
-	}
-	extendedConfig, err := projectconfig.FetchExtendedConfig(ctx, cfg, client.GetProjectDetails)
-	if err != nil {
-		return err
+		rlog.Errorf("failed to create API client: %s", err)
+	} else if config.ProjectID != "" {
+		projectDetails, err := client.GetProjectDetails(ctx, config.ProjectID)
+		if err != nil {
+			rlog.Errorf("failed to fetch project details: %s", err)
+		}
+		if projectDetails != nil {
+			extendedConfig.InjectProject(*projectDetails)
+		}
 	}
 	if !showConfigAndMaybePrompt(extendedConfig, os.Stdout, os.Stderr, os.Stdin, stdinIsTerminal()) {
 		return errors.New("operation aborted by user")

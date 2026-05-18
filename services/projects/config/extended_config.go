@@ -23,6 +23,22 @@ type Extended struct {
 	Sources    string
 }
 
+func (e *Extended) InjectConfig(cfg config.Config) {
+	e.AccountUID = cfg.AccountID
+	e.UserID = cfg.UserID
+	e.ProjectID = cfg.ProjectID
+	e.ConfigFile = cfg.Path
+	e.Sources = cfg.Sources.String()
+}
+
+func (e *Extended) InjectProject(project sdk.ProjectDetails) {
+	e.ProjectID = project.ProjectID
+	e.AccountUID = project.AccountUID
+	e.Name = project.ProjectName
+	e.Locale = project.SourceLocaleID + ": " + project.SourceLocaleDescription
+	e.Status = getStatus(project)
+}
+
 // FetchExtendedConfig fetches project details and merges with local config.
 func FetchExtendedConfig(ctx context.Context, config config.Config,
 	projectFetcher func(ctx context.Context, projectID string) (*sdk.ProjectDetails, error),
@@ -46,16 +62,10 @@ func FetchExtendedConfig(ctx context.Context, config config.Config,
 
 // toExtended flattens project details + local config into Extended.
 func toExtended(project sdk.ProjectDetails, cfg config.Config) Extended {
-	return Extended{
-		ProjectID:  project.ProjectID,
-		AccountUID: project.AccountUID,
-		Name:       project.ProjectName,
-		Locale:     project.SourceLocaleID + ": " + project.SourceLocaleDescription,
-		Status:     getStatus(project),
-		UserID:     cfg.UserID,
-		ConfigFile: cfg.Path,
-		Sources:    cfg.Sources.String(),
-	}
+	var res Extended
+	res.InjectConfig(cfg)
+	res.InjectProject(project)
+	return res
 }
 
 // getStatus returns "archived" or "active".
