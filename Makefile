@@ -1,6 +1,9 @@
 MAINTAINER = Alex Koval <akoval@smartling.com>
 DESCRIPTION = CLI for Smartling Platform
 
+LDFLAGS ?= -s -w
+GO_BUILD_FLAGS ?= -mod=mod -trimpath -ldflags="$(LDFLAGS)"
+
 .PHONY: all
 all: clean get build
 	@
@@ -66,7 +69,7 @@ _pkg-init:
 		$(shell git rev-list --count HEAD).$(shell git rev-parse --short HEAD))
 
 %:
-	GOOS=$(basename $@) go build -mod=mod -o bin/smartling.$@
+	CGO_ENABLED=0 GOOS=$(basename $@) go build $(GO_BUILD_FLAGS) -o bin/smartling.$@
 
 .PHONY: docs
 docs:
