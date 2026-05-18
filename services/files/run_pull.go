@@ -26,6 +26,9 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// jobFilesPageSize is the per-request page size.
+const jobFilesPageSize = 500
+
 // PullParams is the parameters for the RunPull method.
 type PullParams struct {
 	URI       string
@@ -282,7 +285,7 @@ func hasLocaleInList(locale string, locales []string) bool {
 }
 
 // enumerateJobFiles resolves the file × target-locale matrix for a job by
-// calling the Jobs API.
+// calling the Jobs API, paging through the file listing as needed.
 func (s service) enumerateJobFiles(ctx context.Context, jobUID string) ([]sdkfile.File, []string, error) {
 	var (
 		job      sdkjob.GetJobResponse
@@ -297,7 +300,7 @@ func (s service) enumerateJobFiles(ctx context.Context, jobUID string) ([]sdkfil
 	})
 	group.Go(func() error {
 		var err error
-		jobFiles, err = s.JobApi.ListFiles(ctx, projectID, jobUID)
+		jobFiles, err = listAllJobFiles(ctx, s.JobApi, projectID, jobUID)
 		return err
 	})
 	if err := group.Wait(); err != nil {
@@ -312,6 +315,27 @@ func (s service) enumerateJobFiles(ctx context.Context, jobUID string) ([]sdkfil
 		files = append(files, sdkfile.File{FileURI: jf.FileURI})
 	}
 	return files, job.TargetLocaleIDs, nil
+}
+
+// listAllJobFiles walks every page of the Jobs API file listing and returns the aggregated list.
+func listAllJobFiles(ctx context.Context, api sdkjob.Job, projectID, jobUID string) ([]sdkjob.JobFile, error) {
+	var res []sdkjob.JobFile
+	var offset uint32
+	for {
+		page, err := api.ListFiles(ctx, projectID, jobUID, jobFilesPageSize, offset)
+		if err != nil {
+			return nil, err
+		}
+		if len(page.Items) == 0 {
+			break
+		}
+		res = append(res, page.Items...)
+		offset += uint32(len(page.Items))
+		if offset >= uint32(page.TotalCount) {
+			break
+		}
+	}
+	return res, nil
 }
 
 // filterFilesByGlob keeps only files whose FileURI matches the provided glob

@@ -111,27 +111,25 @@ func (_c *MockJob_GetJob_Call) RunAndReturn(run func(ctx context.Context, projec
 }
 
 // ListFiles provides a mock function for the type MockJob
-func (_mock *MockJob) ListFiles(ctx context.Context, projectID string, jobUID string) ([]job.JobFile, error) {
-	ret := _mock.Called(ctx, projectID, jobUID)
+func (_mock *MockJob) ListFiles(ctx context.Context, projectID string, jobUID string, limit uint32, offset uint32) (job.ListJobFilesResponse, error) {
+	ret := _mock.Called(ctx, projectID, jobUID, limit, offset)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListFiles")
 	}
 
-	var r0 []job.JobFile
+	var r0 job.ListJobFilesResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) ([]job.JobFile, error)); ok {
-		return returnFunc(ctx, projectID, jobUID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, uint32, uint32) (job.ListJobFilesResponse, error)); ok {
+		return returnFunc(ctx, projectID, jobUID, limit, offset)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) []job.JobFile); ok {
-		r0 = returnFunc(ctx, projectID, jobUID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, uint32, uint32) job.ListJobFilesResponse); ok {
+		r0 = returnFunc(ctx, projectID, jobUID, limit, offset)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]job.JobFile)
-		}
+		r0 = ret.Get(0).(job.ListJobFilesResponse)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = returnFunc(ctx, projectID, jobUID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, uint32, uint32) error); ok {
+		r1 = returnFunc(ctx, projectID, jobUID, limit, offset)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -147,11 +145,13 @@ type MockJob_ListFiles_Call struct {
 //   - ctx context.Context
 //   - projectID string
 //   - jobUID string
-func (_e *MockJob_Expecter) ListFiles(ctx interface{}, projectID interface{}, jobUID interface{}) *MockJob_ListFiles_Call {
-	return &MockJob_ListFiles_Call{Call: _e.mock.On("ListFiles", ctx, projectID, jobUID)}
+//   - limit uint32
+//   - offset uint32
+func (_e *MockJob_Expecter) ListFiles(ctx interface{}, projectID interface{}, jobUID interface{}, limit interface{}, offset interface{}) *MockJob_ListFiles_Call {
+	return &MockJob_ListFiles_Call{Call: _e.mock.On("ListFiles", ctx, projectID, jobUID, limit, offset)}
 }
 
-func (_c *MockJob_ListFiles_Call) Run(run func(ctx context.Context, projectID string, jobUID string)) *MockJob_ListFiles_Call {
+func (_c *MockJob_ListFiles_Call) Run(run func(ctx context.Context, projectID string, jobUID string, limit uint32, offset uint32)) *MockJob_ListFiles_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -165,21 +165,31 @@ func (_c *MockJob_ListFiles_Call) Run(run func(ctx context.Context, projectID st
 		if args[2] != nil {
 			arg2 = args[2].(string)
 		}
+		var arg3 uint32
+		if args[3] != nil {
+			arg3 = args[3].(uint32)
+		}
+		var arg4 uint32
+		if args[4] != nil {
+			arg4 = args[4].(uint32)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
+			arg4,
 		)
 	})
 	return _c
 }
 
-func (_c *MockJob_ListFiles_Call) Return(jobFiles []job.JobFile, err error) *MockJob_ListFiles_Call {
-	_c.Call.Return(jobFiles, err)
+func (_c *MockJob_ListFiles_Call) Return(listJobFilesResponse job.ListJobFilesResponse, err error) *MockJob_ListFiles_Call {
+	_c.Call.Return(listJobFilesResponse, err)
 	return _c
 }
 
-func (_c *MockJob_ListFiles_Call) RunAndReturn(run func(ctx context.Context, projectID string, jobUID string) ([]job.JobFile, error)) *MockJob_ListFiles_Call {
+func (_c *MockJob_ListFiles_Call) RunAndReturn(run func(ctx context.Context, projectID string, jobUID string, limit uint32, offset uint32) (job.ListJobFilesResponse, error)) *MockJob_ListFiles_Call {
 	_c.Call.Return(run)
 	return _c
 }
