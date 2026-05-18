@@ -38,14 +38,16 @@ func NewMTCmd() *cobra.Command {
 		Short: "File Machine Translations",
 		Long:  `Machine Translations offers a simple way to upload files and execute actions on them without any complex setup required`,
 		PersistentPreRunE: func(c *cobra.Command, args []string) error {
-			ctx := c.Context()
+			if err := cmd.RunRootPersistentPreRun(c); err != nil {
+				return err
+			}
 			if !slices.Contains(allowedOutputs, outputFormat) {
 				return fmt.Errorf("invalid output: %s (allowed: %s)", outputFormat, joinedAllowedOutputs)
 			}
 			if !slices.Contains(allowedOutputModes, outputMode) {
 				return fmt.Errorf("invalid output-mode: %s (allowed: %s)", outputMode, joinedAllowedOutputModes)
 			}
-			return cmd.ShowConfigBanner(ctx)
+			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {

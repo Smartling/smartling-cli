@@ -53,11 +53,13 @@ Available options:
 
 `,
 		PersistentPreRunE: func(c *cobra.Command, args []string) error {
-			ctx := c.Context()
+			if err := cmd.RunRootPersistentPreRun(c); err != nil {
+				return err
+			}
 			if !slices.Contains(allowedOutputs, outputFormat) {
 				return fmt.Errorf("invalid output: %s (allowed: %s)", outputFormat, joinedAllowedOutputs)
 			}
-			return cmd.ShowConfigBanner(ctx)
+			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
