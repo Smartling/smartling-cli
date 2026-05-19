@@ -37,8 +37,7 @@ builds:
       - -s -w
       - -X github.com/Smartling/smartling-cli/cmd/helpers/build.CommitID={{ .FullCommit }}
       - -X github.com/Smartling/smartling-cli/cmd/helpers/build.Date={{ .Date }}
-      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.GoVersion={{ .Env.SMARTLING_CLI_GOVERSION }}
-      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.Platform={{ .Env.SMARTLING_CLI_PLATFORM }}
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.BuiltBy=GoReleaser
 
 archives:
   - formats: [binary]

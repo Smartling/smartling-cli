@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"runtime"
 )
 
 // These variables will be set via ldflags at build time.
@@ -12,12 +13,10 @@ var (
 	CommitID = ""
 	// Date is date of binary built
 	Date = ""
-	// BuiltBy is into about builder
-	BuiltBy = "GoReleaser"
-	// GoVersion is Go version
-	GoVersion = ""
-	// Platform is platform
-	Platform = ""
+	// BuiltBy identifies the build pipeline (e.g. "GoReleaser", "make").
+	// Defaults to "unknown" so binaries built without ldflag injection
+	// don't mislabel themselves.
+	BuiltBy = "unknown"
 )
 
 // String returns the version information as a formatted string.
@@ -36,7 +35,7 @@ Platform:      %s
 		CommitID,
 		Date,
 		BuiltBy,
-		GoVersion,
-		Platform,
+		runtime.Version(),
+		runtime.GOOS+"/"+runtime.GOARCH,
 	)
 }

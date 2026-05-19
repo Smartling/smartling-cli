@@ -11,7 +11,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh "docker pull goreleaser/goreleaser:v2.15.4"
-                sh "docker run -t --rm -v ${WORKSPACE}:/go/src/cli -w /go/src/cli goreleaser/goreleaser:v2.15.4 make build_releaser"
+                sh "docker run -t --rm -v ${WORKSPACE}:/go/src/cli -w /go/src/cli goreleaser/goreleaser:v2.15.4 make build"
             }
         }
 
@@ -33,7 +33,7 @@ pipeline {
             }
             steps {
                 sh '''
-                  aws-profile connectors-staging aws s3 cp ${WORKSPACE}/bin s3://smartling-connectors-releases/cli/ --acl public-read --exclude "*" --include "smartling-cli*" --recursive
+                  aws-profile connectors-staging aws s3 cp ${WORKSPACE}/bin s3://smartling-connectors-releases/cli/ --acl public-read --exclude "*" --include "smartling-cli_*" --exclude "*/*" --recursive
                 '''
             }
         }

@@ -1,21 +1,13 @@
 MAINTAINER = Alex Koval <akoval@smartling.com>
 DESCRIPTION = CLI for Smartling Platform
 
-LDFLAGS ?= -s -w
-GO_BUILD_FLAGS ?= -mod=mod -trimpath -ldflags="$(LDFLAGS)"
-
-build_releaser:
-	export SMARTLING_CLI_PLATFORM=$$(go env GOOS)/$$(go env GOARCH); \
-	export SMARTLING_CLI_GOVERSION=$$(go version | awk '{print $$3}'); \
-	goreleaser release --clean --skip=publish --snapshot
-
 .PHONY: all
 all: clean get build
 	@
 
 .PHONY: build
-build: darwin windows.exe linux
-	@
+build:
+	goreleaser release --clean --skip=publish --snapshot
 
 .PHONY: get
 get:
@@ -32,8 +24,15 @@ _CONTROL = echo >> $(_PKG)/DEBIAN/control
 
 _LINUX_AMD64_BIN = $(shell ls bin/*linux_amd64*/smartling-cli 2>/dev/null | head -1)
 
+_REQUIRE_LINUX_BIN = \
+	test -n "$(_LINUX_AMD64_BIN)" || { \
+		echo "ERROR: linux_amd64 binary not found under bin/. Run 'make build' first." >&2; \
+		exit 1; \
+	}
+
 .PHONY: deb
 deb: _pkg-init
+	@$(_REQUIRE_LINUX_BIN)
 	mkdir -p $(_PKG)/usr/bin
 	cp $(_LINUX_AMD64_BIN) $(_PKG)/usr/bin/smartling
 	mkdir -p $(_PKG)/DEBIAN
@@ -52,6 +51,7 @@ _SPEC = echo >> $(_PKG)/smartling.spec
 
 .PHONY: rpm
 rpm: _pkg-init
+	@$(_REQUIRE_LINUX_BIN)
 	$(_SPEC) "Name: smartling"
 	$(_SPEC) "Version: $(VERSION)"
 	$(_SPEC) "Release: 1%{?dist}"
@@ -74,9 +74,6 @@ _pkg-init:
 	mkdir -p $(_PKG)
 	$(eval VERSION ?= \
 		$(shell git rev-list --count HEAD).$(shell git rev-parse --short HEAD))
-
-%:
-	CGO_ENABLED=0 GOOS=$(basename $@) go build $(GO_BUILD_FLAGS) -o bin/smartling.$@
 
 .PHONY: docs
 docs:
