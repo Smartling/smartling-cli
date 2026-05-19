@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"os/exec"
 	"strings"
 	"testing"
@@ -54,5 +55,42 @@ func TestProjectInfo_verbose(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestProjectInfo_ShowConfig(t *testing.T) {
+	// `go test` runs without a TTY, so --show-config prints the banner to
+	// stdout and proceeds without prompting.
+	cmd := exec.Command("./../../bin/smartling-cli", "projects", "info", "--show-config")
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		t.Fatalf("error: %v\nstderr:\n%s\nstdout:\n%s", err, stderr.String(), stdout.String())
+	}
+
+	out := stdout.String()
+	for _, want := range []string{
+		"> Smartling CLI configuration:",
+		">   Config file:",
+		">   User ID:",
+		">   Account ID:",
+		">   Project ID:",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("stdout missing banner line %q\nfull stdout:\n%s", want, out)
+		}
+	}
+
+	if strings.Contains(stderr.String(), "Continue?") {
+		t.Errorf("non-TTY run must not prompt:\n%s", stderr.String())
+	}
+
+	for _, want := range []string{"ID", "ACCOUNT", "NAME", "LOCALE", "STATUS", "USER", "CONFIG", "SOURCES"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("stdout missing expected info row label %q\nfull stdout:\n%s", want, out)
+		}
 	}
 }

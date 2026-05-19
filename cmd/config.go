@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	sdk "github.com/Smartling/api-sdk-go"
+	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/kovetskiy/lorg"
 )
 
@@ -36,7 +39,6 @@ func Config() (config.Config, error) {
 		Secret:     secret,
 		Account:    account,
 		Project:    project,
-		Threads:    threads,
 		IsInit:     isInit,
 		IsFiles:    isFiles,
 		IsProjects: isProjects,
@@ -46,16 +48,19 @@ func Config() (config.Config, error) {
 	if err != nil {
 		return config.Config{}, err
 	}
+	if err := api.AccountUID(cnf.AccountID).Validate(); err != nil {
+		return config.Config{}, err
+	}
 	return cnf, nil
 }
 
 // Client creates a new Smartling API client based on the configuration and CLI params.
-func Client() (sdk.HttpAPIClient, error) {
+func Client(ctx context.Context) (sdk.HttpAPIClient, error) {
 	cnf, err := Config()
 	if err != nil {
 		return sdk.HttpAPIClient{}, err
 	}
-	client, err := client.CreateClient(CLIClientConfig(), cnf, uint8(verbose))
+	client, err := client.CreateClient(ctx, CLIClientConfig(), cnf, uint8(verbose))
 	if err != nil {
 		return sdk.HttpAPIClient{}, err
 	}

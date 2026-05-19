@@ -23,14 +23,14 @@ func TestFilesRename(t *testing.T) {
 	}{
 		{
 			name:              "Files rename",
-			args:              append(subCommands, "website_menu.txt", "website_top_menu.txt"),
+			args:              append(subCommands, "/texts/website_menu.txt", "/texts/website_top_menu.txt"),
 			expectedOutputs:   []string{},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
 			name:              "Files revers rename",
-			args:              append(subCommands, "website_top_menu.txt", "website_menu.txt"),
+			args:              append(subCommands, "/texts/website_top_menu.txt", "/texts/website_menu.txt"),
 			expectedOutputs:   []string{},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
@@ -40,7 +40,7 @@ func TestFilesRename(t *testing.T) {
 			args:              append(subCommands, "|||.txt", "___.txt"),
 			expectedOutputs:   []string{"ERROR", "failed to rename file"},
 			unexpectedOutputs: []string{"DEBUG"},
-			wantErr:           false,
+			wantErr:           true,
 		},
 	}
 
@@ -49,8 +49,11 @@ func TestFilesRename(t *testing.T) {
 			testCmd := exec.Command("./smartling-cli", tt.args...)
 			testCmd.Dir = absDir
 			out, err := testCmd.CombinedOutput()
-			if err != nil {
+			if !tt.wantErr && err != nil {
 				t.Fatalf("error: %v, output: %s", err, string(out))
+			}
+			if tt.wantErr && err == nil {
+				t.Fatal("expected error")
 			}
 			if len(tt.expectedOutputs) > 0 {
 				for _, expectedOutput := range tt.expectedOutputs {

@@ -1,6 +1,7 @@
 package projects
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -21,7 +22,7 @@ type LocalesParams struct {
 }
 
 // RunLocales retrieves and outputs the locales.
-func (s service) RunLocales(params LocalesParams) error {
+func (s service) RunLocales(ctx context.Context, params LocalesParams) error {
 	formatType := params.Format
 	if formatType == "" {
 		formatType = format.DefaultProjectsLocalesFormat
@@ -32,7 +33,7 @@ func (s service) RunLocales(params LocalesParams) error {
 		return err
 	}
 
-	details, err := s.Client.GetProjectDetails(s.Config.ProjectID)
+	details, err := s.Client.GetProjectDetails(ctx, s.Config.ProjectID)
 	if err != nil {
 		if _, ok := err.(sdkerror.NotFoundError); ok {
 			return clierror.ProjectNotFoundError{}
@@ -49,19 +50,25 @@ func (s service) RunLocales(params LocalesParams) error {
 
 	if params.Source {
 		if params.Short {
-			fmt.Fprintf(tableWriter, "%s\n", details.SourceLocaleID)
+			if _, err := fmt.Fprintf(tableWriter, "%s\n", details.SourceLocaleID); err != nil {
+				return err
+			}
 		} else {
-			fmt.Fprintf(
+			if _, err := fmt.Fprintf(
 				tableWriter,
 				"%s\t%s\n",
 				details.SourceLocaleID,
 				details.SourceLocaleDescription,
-			)
+			); err != nil {
+				return err
+			}
 		}
 	} else {
 		for _, locale := range details.TargetLocales {
 			if params.Short {
-				fmt.Fprintf(tableWriter, "%s\n", locale.LocaleID)
+				if _, err := fmt.Fprintf(tableWriter, "%s\n", locale.LocaleID); err != nil {
+					return err
+				}
 			} else {
 				row, err := format.Execute(locale)
 				if err != nil {

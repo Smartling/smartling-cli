@@ -1,12 +1,15 @@
 package files
 
 import (
+	"context"
 	"os"
 
 	"github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/services/files"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
+	batchapi "github.com/Smartling/api-sdk-go/api/batches"
+	jobapi "github.com/Smartling/api-sdk-go/api/job"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +20,12 @@ func NewFilesCmd() *cobra.Command {
 		Aliases: []string{"f"},
 		Short:   "Used to access various files sub-commands.",
 		Long:    `Used to access various files sub-commands.`,
+		Example: `
+# Check file status across locales
+
+  smartling-cli files status
+
+`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
 				if err := cmd.Help(); err != nil {
@@ -33,7 +42,7 @@ func NewFilesCmd() *cobra.Command {
 
 // SrvInitializer defines files service initializer
 type SrvInitializer interface {
-	InitFilesSrv() (files.Service, error)
+	InitFilesSrv(ctx context.Context) (files.Service, error)
 }
 
 // NewSrvInitializer returns new SrvInitializer implementation
@@ -44,8 +53,8 @@ func NewSrvInitializer() SrvInitializer {
 type srvInitializer struct{}
 
 // InitFilesSrv initializes `files` service with the client and configuration.
-func (i srvInitializer) InitFilesSrv() (files.Service, error) {
-	client, err := cmd.Client()
+func (i srvInitializer) InitFilesSrv(ctx context.Context) (files.Service, error) {
+	client, err := cmd.Client(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +66,8 @@ func (i srvInitializer) InitFilesSrv() (files.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	srv := files.NewService(&client, cnf, fileConfig)
-
+	batchApi := batchapi.NewBatch(client.Client)
+	jobApi := jobapi.NewJob(client.Client)
+	srv := files.NewService(&client, batchApi, jobApi, cnf, fileConfig)
 	return srv, nil
 }

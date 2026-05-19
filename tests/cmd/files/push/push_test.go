@@ -33,42 +33,56 @@ func TestFilesPush(t *testing.T) {
 		{
 			name:              "Simplest one-file upload",
 			args:              append(subCommands, filename),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			expectedOutputs:   []string{filename, "(PLAIN_TEXT)", "successfully", "202"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
 			name:              "One-file upload with URI",
 			args:              append(subCommands, filename, "/texts/"+filename),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			expectedOutputs:   []string{filename, "(PLAIN_TEXT)", "202"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
-			name:              "Override file type",
-			args:              append(subCommands, filename, "--type", "plaintext"),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			name:              "One-file upload without Job with URI",
+			args:              append(subCommands, "--nojob", filename, "/texts/"+filename),
+			expectedOutputs:   []string{filename, "(plaintext)", "overwritten"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
+			wantErr:           false,
+		},
+		{
+			name:              "Incorrect param combination",
+			args:              append(subCommands, "--nojob", "--job", "test validation of param combination", filename, "/texts/"+filename),
+			expectedOutputs:   []string{"parameter nojob is incompatible with: job", "job", "nojob", "Error"},
+			unexpectedOutputs: []string{"overwritten"},
+			wantErr:           true,
+		},
+		{
+			name:              "Override file type",
+			args:              append(subCommands, filename, "--type", "PLAIN_TEXT"),
+			expectedOutputs:   []string{filename, "(PLAIN_TEXT)", "successfully", "202"},
+			unexpectedOutputs: []string{"DEBUG", "ERROR", "error", "errors"},
 			wantErr:           false,
 		},
 		{
 			name:              "Upload files by mask",
 			args:              append(subCommands, "../../cmd/bin/**.txt"),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			expectedOutputs:   []string{filename, "(PLAIN_TEXT)", "successfully", "202"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
 			name:              "Branching versioning",
 			args:              append(subCommands, "../../cmd/bin/**.txt", "-b", "testing"),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			expectedOutputs:   []string{filename, "(PLAIN_TEXT)", "successfully", "202"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
 			name:              "Branching @auto",
 			args:              append(subCommands, "../../cmd/bin/**.txt", "-b", "@auto"),
-			expectedOutputs:   []string{filename, "(plaintext)", "strings", "words"},
+			expectedOutputs:   []string{filename, "(PLAIN_TEXT)", "successfully", "202"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
@@ -79,7 +93,7 @@ func TestFilesPush(t *testing.T) {
 			testCmd := exec.Command("./smartling-cli", tt.args...)
 			testCmd.Dir = absDir
 			out, err := testCmd.CombinedOutput()
-			if err != nil {
+			if !tt.wantErr && err != nil {
 				t.Fatalf("error: %v, output: %s", err, string(out))
 			}
 			if len(tt.expectedOutputs) > 0 {
@@ -129,7 +143,7 @@ func TestFilesPushWithDirective(t *testing.T) {
 				"--directive", directiveValue,
 			),
 			command:           `./smartling-cli  files push custom.json `,
-			expectedOutputs:   []string{filename, "(json)", "strings", "words"},
+			expectedOutputs:   []string{filename, "(JSON)", "successfully", "202"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},

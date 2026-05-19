@@ -6,7 +6,8 @@ import (
 	"time"
 
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
-	output "github.com/Smartling/smartling-cli/output/mt"
+	"github.com/Smartling/smartling-cli/output"
+	mtoutput "github.com/Smartling/smartling-cli/output/mt"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/mt"
@@ -17,9 +18,10 @@ import (
 func run(ctx context.Context,
 	initializer mtcmd.SrvInitializer,
 	params srv.DetectParams,
-	outputParams output.OutputParams) error {
+	outputParams output.Params,
+) error {
 	rlog.Debugf("running detect with params: %v", params)
-	mtSrv, err := initializer.InitMTSrv()
+	mtSrv, err := initializer.InitMTSrv(ctx)
 	if err != nil {
 		return clierror.UIError{
 			Operation:   "init",
@@ -35,8 +37,8 @@ func run(ctx context.Context,
 			Description: "unable to get input files",
 		}
 	}
-	var dataProvider output.DetectDataProvider
-	render := output.InitRender(outputParams, dataProvider, files)
+	var dataProvider mtoutput.DetectDataProvider
+	render := mtoutput.InitRender(outputParams, dataProvider, files, 1)
 	renderRun := make(chan struct{})
 	var runGroup errgroup.Group
 	runGroup.Go(func() error {

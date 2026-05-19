@@ -5,7 +5,10 @@
 package projectsmocks
 
 import (
+	"context"
+
 	"github.com/Smartling/smartling-cli/services/projects"
+	projectconfig "github.com/Smartling/smartling-cli/services/projects/config"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -14,7 +17,8 @@ import (
 func NewMockService(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *MockService {
+},
+) *MockService {
 	mock := &MockService{}
 	mock.Mock.Test(t)
 
@@ -37,20 +41,29 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 }
 
 // RunInfo provides a mock function for the type MockService
-func (_mock *MockService) RunInfo() error {
-	ret := _mock.Called()
+func (_mock *MockService) RunInfo(ctx context.Context) (projectconfig.Extended, error) {
+	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunInfo")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func() error); ok {
-		r0 = returnFunc()
-	} else {
-		r0 = ret.Error(0)
+	var r0 projectconfig.Extended
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (projectconfig.Extended, error)); ok {
+		return returnFunc(ctx)
 	}
-	return r0
+	if returnFunc, ok := ret.Get(0).(func(context.Context) projectconfig.Extended); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Get(0).(projectconfig.Extended)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // MockService_RunInfo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RunInfo'
@@ -59,38 +72,45 @@ type MockService_RunInfo_Call struct {
 }
 
 // RunInfo is a helper method to define mock.On call
-func (_e *MockService_Expecter) RunInfo() *MockService_RunInfo_Call {
-	return &MockService_RunInfo_Call{Call: _e.mock.On("RunInfo")}
+//   - ctx context.Context
+func (_e *MockService_Expecter) RunInfo(ctx interface{}) *MockService_RunInfo_Call {
+	return &MockService_RunInfo_Call{Call: _e.mock.On("RunInfo", ctx)}
 }
 
-func (_c *MockService_RunInfo_Call) Run(run func()) *MockService_RunInfo_Call {
+func (_c *MockService_RunInfo_Call) Run(run func(ctx context.Context)) *MockService_RunInfo_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
 	})
 	return _c
 }
 
-func (_c *MockService_RunInfo_Call) Return(err error) *MockService_RunInfo_Call {
-	_c.Call.Return(err)
+func (_c *MockService_RunInfo_Call) Return(extendedConfig projectconfig.Extended, err error) *MockService_RunInfo_Call {
+	_c.Call.Return(extendedConfig, err)
 	return _c
 }
 
-func (_c *MockService_RunInfo_Call) RunAndReturn(run func() error) *MockService_RunInfo_Call {
+func (_c *MockService_RunInfo_Call) RunAndReturn(run func(ctx context.Context) (projectconfig.Extended, error)) *MockService_RunInfo_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RunList provides a mock function for the type MockService
-func (_mock *MockService) RunList(short bool) error {
-	ret := _mock.Called(short)
+func (_mock *MockService) RunList(ctx context.Context, short bool) error {
+	ret := _mock.Called(ctx, short)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunList")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(bool) error); ok {
-		r0 = returnFunc(short)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, bool) error); ok {
+		r0 = returnFunc(ctx, short)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -103,19 +123,25 @@ type MockService_RunList_Call struct {
 }
 
 // RunList is a helper method to define mock.On call
+//   - ctx context.Context
 //   - short bool
-func (_e *MockService_Expecter) RunList(short interface{}) *MockService_RunList_Call {
-	return &MockService_RunList_Call{Call: _e.mock.On("RunList", short)}
+func (_e *MockService_Expecter) RunList(ctx interface{}, short interface{}) *MockService_RunList_Call {
+	return &MockService_RunList_Call{Call: _e.mock.On("RunList", ctx, short)}
 }
 
-func (_c *MockService_RunList_Call) Run(run func(short bool)) *MockService_RunList_Call {
+func (_c *MockService_RunList_Call) Run(run func(ctx context.Context, short bool)) *MockService_RunList_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 bool
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(bool)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 bool
+		if args[1] != nil {
+			arg1 = args[1].(bool)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -126,22 +152,22 @@ func (_c *MockService_RunList_Call) Return(err error) *MockService_RunList_Call 
 	return _c
 }
 
-func (_c *MockService_RunList_Call) RunAndReturn(run func(short bool) error) *MockService_RunList_Call {
+func (_c *MockService_RunList_Call) RunAndReturn(run func(ctx context.Context, short bool) error) *MockService_RunList_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RunLocales provides a mock function for the type MockService
-func (_mock *MockService) RunLocales(params projects.LocalesParams) error {
-	ret := _mock.Called(params)
+func (_mock *MockService) RunLocales(ctx context.Context, params projects.LocalesParams) error {
+	ret := _mock.Called(ctx, params)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunLocales")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(projects.LocalesParams) error); ok {
-		r0 = returnFunc(params)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, projects.LocalesParams) error); ok {
+		r0 = returnFunc(ctx, params)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -154,19 +180,25 @@ type MockService_RunLocales_Call struct {
 }
 
 // RunLocales is a helper method to define mock.On call
+//   - ctx context.Context
 //   - params projects.LocalesParams
-func (_e *MockService_Expecter) RunLocales(params interface{}) *MockService_RunLocales_Call {
-	return &MockService_RunLocales_Call{Call: _e.mock.On("RunLocales", params)}
+func (_e *MockService_Expecter) RunLocales(ctx interface{}, params interface{}) *MockService_RunLocales_Call {
+	return &MockService_RunLocales_Call{Call: _e.mock.On("RunLocales", ctx, params)}
 }
 
-func (_c *MockService_RunLocales_Call) Run(run func(params projects.LocalesParams)) *MockService_RunLocales_Call {
+func (_c *MockService_RunLocales_Call) Run(run func(ctx context.Context, params projects.LocalesParams)) *MockService_RunLocales_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 projects.LocalesParams
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(projects.LocalesParams)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 projects.LocalesParams
+		if args[1] != nil {
+			arg1 = args[1].(projects.LocalesParams)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -177,7 +209,7 @@ func (_c *MockService_RunLocales_Call) Return(err error) *MockService_RunLocales
 	return _c
 }
 
-func (_c *MockService_RunLocales_Call) RunAndReturn(run func(params projects.LocalesParams) error) *MockService_RunLocales_Call {
+func (_c *MockService_RunLocales_Call) RunAndReturn(run func(ctx context.Context, params projects.LocalesParams) error) *MockService_RunLocales_Call {
 	_c.Call.Return(run)
 	return _c
 }

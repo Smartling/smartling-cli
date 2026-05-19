@@ -50,7 +50,7 @@ Following variables are available:
   > .FileURI — full file URI in Smartling system;
   > .Locale — locale ID for translated file and empty for source file;
 
-<uri> ` + help.GlobPattern + `
+` + "`<uri>` " + help.GlobPattern + ` 
 
 
 Available options:
@@ -63,13 +63,14 @@ Available options:
   --format <format>
     Specify format for listing file names.
 ` + help.AuthenticationOptions,
-		Run: func(_ *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx := cmd.Context()
 			var uri string
 			if len(args) > 0 {
 				uri = args[0]
 			}
 
-			s, err := initializer.InitFilesSrv()
+			s, err := initializer.InitFilesSrv(ctx)
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				os.Exit(1)
@@ -80,7 +81,7 @@ Available options:
 				Directory: directory,
 				Format:    formatType,
 			}
-			err = s.RunStatus(p)
+			err = s.RunStatus(ctx, p)
 			if err != nil {
 				rlog.Errorf("failed to run status: %s", err)
 				os.Exit(1)

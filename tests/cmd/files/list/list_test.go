@@ -30,14 +30,14 @@ func TestFilesList(t *testing.T) {
 		},
 		{
 			name:              "List files by mask",
-			args:              append(subCommands, "*.txt", "--short"),
+			args:              append(subCommands, "**.txt", "--short"),
 			expectedOutputs:   []string{"website_menu.txt"},
 			unexpectedOutputs: []string{"plainText", "DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
 			name:              "Custom output format",
-			args:              append(subCommands, "*.txt", "--format", "{{.FileType}}\\t||\\t{{.FileURI}};\\n"),
+			args:              append(subCommands, "**.txt", "--format", "{{.FileType}}\\t||\\t{{.FileURI}};\\n"),
 			expectedOutputs:   []string{"plainText", "website_menu.txt", "||"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,

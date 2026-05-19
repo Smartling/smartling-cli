@@ -24,13 +24,13 @@ func TestNewImportCmd(t *testing.T) {
 		PostTranslation: false,
 		Overwrite:       true,
 	}
-	filesSrv.On("RunImport", params).Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunImport was called with %d args", len(args)))
-		fmt.Fprintln(buf, fmt.Sprintf("params: %v", args[0]))
+	filesSrv.On("RunImport", mock.Anything, params).Run(func(args mock.Arguments) {
+		fmt.Fprintf(buf, "RunImport was called with %d args\n", len(args))
+		fmt.Fprintf(buf, "params: %v\n", args[1])
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("InitFilesSrv").Return(filesSrv, nil)
+	initializer.On("InitFilesSrv", mock.Anything).Return(filesSrv, nil)
 
 	cmd := NewImportCmd(initializer)
 
@@ -50,7 +50,7 @@ func TestNewImportCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := fmt.Sprintf(`RunImport was called with 1 args
+	expected := fmt.Sprintf(`RunImport was called with 2 args
 params: %v
 `, params)
 

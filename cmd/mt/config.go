@@ -12,24 +12,24 @@ import (
 // FileConfig defines MT file config
 type FileConfig struct {
 	MT struct {
-		DefaultSourceLocale  *string           `yaml:"default_source_locale,omitempty"`
-		DefaultTargetLocales []string          `yaml:"default_target_locales,omitempty"`
-		InputDirectory       *string           `yaml:"input_directory,omitempty"`
-		OutputDirectory      *string           `yaml:"output_directory,omitempty"`
-		FileFormat           *string           `yaml:"file_format,omitempty"`
-		Directives           map[string]string `yaml:"directives,omitempty"`
-		PollInterval         *int              `yaml:"poll_interval,omitempty"`
-		Timeout              *int              `yaml:"timeout,omitempty"`
-	} `yaml:"mt,omitempty"`
+		DefaultSourceLocale  *string           `yaml:"default_source_locale,omitzero"`
+		DefaultTargetLocales []string          `yaml:"default_target_locales,omitzero"`
+		InputDirectory       *string           `yaml:"input_directory,omitzero"`
+		OutputDirectory      *string           `yaml:"output_directory,omitzero"`
+		FileFormat           *string           `yaml:"file_format,omitzero"`
+		Directives           map[string]string `yaml:"directives,omitzero"`
+		PollInterval         *int              `yaml:"poll_interval,omitzero"`
+		Timeout              *int              `yaml:"timeout,omitzero"`
+	} `yaml:"mt,omitzero"`
 	Files map[string]FileConfigMT `yaml:"files"`
 }
 
 // FileConfigMT defines file config
 type FileConfigMT struct {
 	MT struct {
-		Type       string            `yaml:"type,omitempty"`
-		Directives map[string]string `yaml:"directives,omitempty,flow"`
-	} `yaml:"mt,omitempty"`
+		Type       string            `yaml:"type,omitzero"`
+		Directives map[string]string `yaml:"directives,omitzero,flow"`
+	} `yaml:"mt,omitzero"`
 }
 
 // BindFileConfig binds file config
@@ -37,6 +37,9 @@ func BindFileConfig(cmd *cobra.Command) (FileConfig, error) {
 	dir := resolveConfigDirectory(cmd)
 	filename := resolveConfigFile(cmd)
 	path, err := config.GetPath(dir, filename, false)
+	if err != nil {
+		return FileConfig{}, err
+	}
 	var config FileConfig
 	data, err := os.ReadFile(path)
 	if err != nil && os.IsNotExist(err) {

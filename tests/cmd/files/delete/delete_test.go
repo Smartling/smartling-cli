@@ -23,14 +23,14 @@ func TestFilesDelete(t *testing.T) {
 	}{
 		{
 			name:              "Files delete",
-			args:              append(subCommands, "website_menu.txt"),
+			args:              append(subCommands, "/texts/website_menu.txt"),
 			expectedOutputs:   []string{"website_menu.txt deleted"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
 			name:              "Delete files by mask",
-			args:              append(subCommands, "*.txt"),
+			args:              append(subCommands, "**.txt"),
 			expectedOutputs:   []string{".txt deleted"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,

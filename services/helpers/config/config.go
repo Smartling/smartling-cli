@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
@@ -11,15 +12,44 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
+// Source identifies where a configuration value was resolved from.
+type Source string
+
+// Source values, ordered by precedence (lowest first).
+const (
+	SourceDefault Source = "default"
+	SourceConfig  Source = "config"
+	SourceEnv     Source = "env"
+	SourceFlag    Source = "flag"
+)
+
+// Sources records the origin of each configuration value that supports
+// flag/env/file precedence. It is populated by BuildConfigFromFlags and is
+// intentionally not serialized to YAML.
+type Sources struct {
+	UserID    Source
+	AccountID Source
+	ProjectID Source
+}
+
+func (s Sources) String() string {
+	return fmt.Sprintf(
+		"project=%s  account=%s  user=%s",
+		s.ProjectID,
+		s.AccountID,
+		s.UserID,
+	)
+}
+
 // FileConfig is the configuration from file.
 type FileConfig struct {
 	Pull struct {
-		Format string `yaml:"format,omitempty"`
-	} `yaml:"pull,omitempty"`
+		Format string `yaml:"format,omitzero"`
+	} `yaml:"pull,omitzero"`
 	Push struct {
-		Type       string            `yaml:"type,omitempty"`
-		Directives map[string]string `yaml:"directives,omitempty,flow"`
-	} `yaml:"push,omitempty"`
+		Type       string            `yaml:"type,omitzero"`
+		Directives map[string]string `yaml:"directives,omitzero,flow"`
+	} `yaml:"push,omitzero"`
 }
 
 // Config is the configuration for the Smartling CLI.
@@ -27,14 +57,16 @@ type Config struct {
 	UserID    string `yaml:"user_id"`
 	Secret    string `yaml:"secret"`
 	AccountID string `yaml:"account_id"`
-	ProjectID string `yaml:"project_id,omitempty"`
-	Threads   uint32 `yaml:"threads"`
+	ProjectID string `yaml:"project_id,omitzero"`
+	Threads   uint32 `yaml:"threads,omitzero"`
 
 	Files map[string]FileConfig `yaml:"files"`
 
-	Proxy string `yaml:"proxy,omitempty"`
+	Proxy string `yaml:"proxy,omitzero"`
 
 	Path string `yaml:"-"`
+
+	Sources Sources `yaml:"-"`
 }
 
 // GetFileConfig returns the FileConfig for the given path.

@@ -1,6 +1,8 @@
 package mt
 
 import (
+	"context"
+
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 
@@ -9,7 +11,7 @@ import (
 
 // SrvInitializer defines files service initializer
 type SrvInitializer interface {
-	InitMTSrv() (srv.Service, error)
+	InitMTSrv(ctx context.Context) (srv.Service, error)
 }
 
 // NewSrvInitializer returns new SrvInitializer implementation
@@ -20,8 +22,8 @@ func NewSrvInitializer() SrvInitializer {
 type srvInitializer struct{}
 
 // InitMTSrv initializes `mt` service with the client and configuration.
-func (i srvInitializer) InitMTSrv() (srv.Service, error) {
-	client, err := rootcmd.Client()
+func (i srvInitializer) InitMTSrv(ctx context.Context) (srv.Service, error) {
+	client, err := rootcmd.Client(ctx)
 	if err != nil {
 		return nil, err
 	}

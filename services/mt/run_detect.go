@@ -9,7 +9,6 @@ import (
 	"time"
 
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
-	"github.com/Smartling/smartling-cli/services/helpers/pointer"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
@@ -32,7 +31,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			return nil, err
 		}
 
-		fileType, found := api.FileTypeByExt[filepath.Ext(file)]
+		fileType, found := api.TypeByExt[filepath.Ext(file)]
 		if !found {
 			rlog.Debugf("unknown file type: %s", file)
 		}
@@ -42,39 +41,49 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 		}
 		update := DetectUpdates{ID: uint32(fileID)}
 		rlog.Debugf("start upload")
-		uploadFileResponse, err := s.uploader.UploadFile(p.AccountUID, filepath.Base(file), request)
+		uploadFileResponse, err := s.uploader.UploadFile(ctx, p.AccountUID, filepath.Base(file), request)
 		if err != nil {
+			return nil, err
+		}
+		if err := uploadFileResponse.FileUID.Validate(); err != nil {
 			return nil, err
 		}
 		rlog.Debugf("finish upload")
 
-		update.Upload = pointer.NewP(true)
+		update.Upload = new(true)
 		updates <- update
 
 		rlog.Debugf("detect language")
-		detectFileLanguageResponse, err := s.translationControl.DetectFileLanguage(p.AccountUID, uploadFileResponse.FileUID)
+		detectFileLanguageResponse, err := s.translationControl.DetectFileLanguage(ctx, p.AccountUID, uploadFileResponse.FileUID)
 		if err != nil {
 			return nil, err
 		}
 
-		update.Detect = pointer.NewP("start")
+		update.Detect = new("start")
 		updates <- update
 
-		var processed bool
+		started := time.Now()
+		var (
+			processed        bool
+			detectedLanguage string
+		)
 		for !processed {
+			if time.Since(started) > pollingDuration {
+				return nil, errors.New("timeout exceeded for polling detection progress of LanguageDetectionUID: " + detectFileLanguageResponse.LanguageDetectionUID)
+			}
 			rlog.Debugf("check detection progress")
-			detectionProgressResponse, err := s.translationControl.DetectionProgress(p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
+			detectionProgressResponse, err := s.translationControl.DetectionProgress(ctx, p.AccountUID, uploadFileResponse.FileUID, detectFileLanguageResponse.LanguageDetectionUID)
 			if err != nil {
 				return nil, err
 			}
 
-			update.Detect = pointer.NewP(detectionProgressResponse.State)
+			update.Detect = new(detectionProgressResponse.State)
 			updates <- update
 
 			rlog.Debugf("progress state: %s", detectionProgressResponse.State)
 			switch strings.ToUpper(detectionProgressResponse.State) {
 			case api.QueuedTranslatedState, api.ProcessingTranslatedState:
-				time.Sleep(pollingIntervalSeconds)
+				time.Sleep(pollingInterval)
 				continue
 			case api.FailedTranslatedState, api.CanceledTranslatedState, api.CompletedTranslatedState:
 				processed = true
@@ -86,7 +95,8 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 			}
 
 			if len(detectionProgressResponse.DetectedSourceLanguages) > 0 {
-				update.Language = pointer.NewP(detectionProgressResponse.DetectedSourceLanguages[0].LanguageID)
+				detectedLanguage = detectionProgressResponse.DetectedSourceLanguages[0].LanguageID
+				update.Language = new(detectedLanguage)
 			}
 
 			updates <- update
@@ -94,7 +104,7 @@ func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, 
 
 		res = append(res, DetectOutput{
 			File:       string(uploadFileResponse.FileUID),
-			Language:   detectFileLanguageResponse.Code,
+			Language:   detectedLanguage,
 			Confidence: "",
 		})
 	}

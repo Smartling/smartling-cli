@@ -46,8 +46,15 @@ Available options:
   --format
     Use specific output format instead of default.
 ` + help.AuthenticationOptions,
-		Run: func(_ *cobra.Command, _ []string) {
-			s, err := initializer.InitProjectsSrv()
+		Example: `
+# List all target locales
+
+  smartling-cli projects locales
+
+`,
+		Run: func(cmd *cobra.Command, _ []string) {
+			ctx := cmd.Context()
+			s, err := initializer.InitProjectsSrv(ctx)
 			if err != nil {
 				rlog.Errorf("failed to get project service: %s", err)
 				os.Exit(1)
@@ -58,7 +65,7 @@ Available options:
 				Short:  short,
 				Source: source,
 			}
-			err = s.RunLocales(params)
+			err = s.RunLocales(ctx, params)
 			if err != nil {
 				rlog.Errorf("failed to run locales: %s", err)
 				os.Exit(1)

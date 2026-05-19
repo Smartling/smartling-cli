@@ -35,13 +35,34 @@ func TestFilesPull(t *testing.T) {
 			args:              append(subCommands, "**test.xemel", "--source"),
 			expectedOutputs:   []string{"ERROR", "failed to run pull", "no files found on the remote server"},
 			unexpectedOutputs: []string{"DEBUG"},
-			wantErr:           false,
+			wantErr:           true,
 		},
 		{
 			name:              "Download translated files files",
-			args:              append(subCommands, "*.txt", "-l", "uk-UA"),
+			args:              append(subCommands, "**/*.txt", "-l", "uk-UA"),
 			expectedOutputs:   []string{"downloaded", "txt"},
 			unexpectedOutputs: []string{"ERROR", "DEBUG"},
+			wantErr:           false,
+		},
+		{
+			name:              "Download all translated files with --all",
+			args:              append(subCommands, "--all"),
+			expectedOutputs:   []string{"downloaded"},
+			unexpectedOutputs: []string{"ERROR"},
+			wantErr:           false,
+		},
+		{
+			name:              "Download translated files files without --all",
+			args:              append(subCommands),
+			expectedOutputs:   []string{"ERROR"},
+			unexpectedOutputs: []string{"downloaded"},
+			wantErr:           true,
+		},
+		{
+			name:              "Download all translated files files with `**`",
+			args:              append(subCommands, "**"),
+			expectedOutputs:   []string{"downloaded"},
+			unexpectedOutputs: []string{"ERROR"},
 			wantErr:           false,
 		},
 	}
@@ -51,8 +72,11 @@ func TestFilesPull(t *testing.T) {
 			testCmd := exec.Command("./smartling-cli", tt.args...)
 			testCmd.Dir = absDir
 			out, err := testCmd.CombinedOutput()
-			if err != nil {
+			if !tt.wantErr && err != nil {
 				t.Fatalf("error: %v, output: %s", err, string(out))
+			}
+			if tt.wantErr && err == nil {
+				t.Fatal("expected error")
 			}
 			if len(tt.expectedOutputs) > 0 {
 				for _, expectedOutput := range tt.expectedOutputs {

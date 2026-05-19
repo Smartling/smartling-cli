@@ -21,13 +21,17 @@ func TestNewStatusCmd(t *testing.T) {
 		Directory: "text",
 		Format:    "txt",
 	}
-	filesSrv.On("RunStatus", params).Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunStatus was called with %d args", len(args)))
-		fmt.Fprintln(buf, fmt.Sprintf("params: %v", args[0]))
+	filesSrv.On("RunStatus", mock.Anything, params).Run(func(args mock.Arguments) {
+		if _, err := fmt.Fprintf(buf, "RunStatus was called with %d args\n", len(args)); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := fmt.Fprintf(buf, "params: %v\n", args[1]); err != nil {
+			t.Fatal(err)
+		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("InitFilesSrv").Return(filesSrv, nil)
+	initializer.On("InitFilesSrv", mock.Anything).Return(filesSrv, nil)
 
 	cmd := NewStatusCmd(initializer)
 
@@ -45,7 +49,7 @@ func TestNewStatusCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := fmt.Sprintf(`RunStatus was called with 1 args
+	expected := fmt.Sprintf(`RunStatus was called with 2 args
 params: %v
 `, params)
 

@@ -42,7 +42,7 @@ Following variables are available:
   > .LastUploaded — timestamp when file was last uploaded;
   > .HasInstructions — true/false if file has translation instructions;
 
-<uri> ` + help.GlobPattern + `
+` + "`<uri>` " + help.GlobPattern + `
 
 
 Available options:
@@ -55,19 +55,26 @@ Available options:
   --format <format>
     Override default listing format.
 ` + help.AuthenticationOptions,
-		Run: func(_ *cobra.Command, args []string) {
+		Example: `
+# List project files
+
+  smartling-cli files list
+
+`,
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx := cmd.Context()
 			var uri string
 			if len(args) > 0 {
 				uri = args[0]
 			}
 
-			s, err := initializer.InitFilesSrv()
+			s, err := initializer.InitFilesSrv(ctx)
 			if err != nil {
 				rlog.Errorf("failed to get files service: %s", err)
 				os.Exit(1)
 			}
 
-			err = s.RunList(formatType, short, uri)
+			err = s.RunList(ctx, formatType, short, uri)
 			if err != nil {
 				rlog.Errorf("failed to run list: %s", err)
 				os.Exit(1)

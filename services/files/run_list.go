@@ -1,6 +1,7 @@
 package files
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -13,7 +14,7 @@ import (
 )
 
 // RunList retrieves and outputs a list of files.
-func (s service) RunList(formatType string, short bool, uri string) error {
+func (s service) RunList(ctx context.Context, formatType string, short bool, uri string) error {
 	if formatType == "" {
 		formatType = format.DefaultFilesListFormat
 	}
@@ -23,7 +24,7 @@ func (s service) RunList(formatType string, short bool, uri string) error {
 		return err
 	}
 
-	files, err := globfiles.Remote(s.APIClient.ListAllFiles, s.Config.ProjectID, uri)
+	files, err := globfiles.Remote(ctx, s.APIClient.ListAllFiles, s.Config.ProjectID, uri)
 	if err != nil {
 		return err
 	}
@@ -32,7 +33,9 @@ func (s service) RunList(formatType string, short bool, uri string) error {
 
 	for _, file := range files {
 		if short {
-			fmt.Fprintf(tableWriter, "%s\n", file.FileURI)
+			if _, err := fmt.Fprintf(tableWriter, "%s\n", file.FileURI); err != nil {
+				return err
+			}
 		} else {
 			row, err := format.Execute(file)
 			if err != nil {

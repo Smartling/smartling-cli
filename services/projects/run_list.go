@@ -1,6 +1,7 @@
 package projects
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -12,8 +13,8 @@ import (
 )
 
 // RunList lists all projects.
-func (s service) RunList(short bool) error {
-	projects, err := s.Client.ListProjects(s.Config.AccountID, smfile.ProjectsListRequest{})
+func (s service) RunList(ctx context.Context, short bool) error {
+	projects, err := s.Client.ListProjects(ctx, s.Config.AccountID, smfile.ProjectsListRequest{})
 	if err != nil {
 		return clierror.NewError(
 			hierr.Errorf(err, "unable to list projects"),
@@ -25,15 +26,19 @@ func (s service) RunList(short bool) error {
 
 	for _, project := range projects.Items {
 		if short {
-			fmt.Fprintln(tableWriter, project.ProjectID)
+			if _, err := fmt.Fprint(tableWriter, project.ProjectID); err != nil {
+				return err
+			}
 		} else {
-			fmt.Fprintf(
+			if _, err := fmt.Fprintf(
 				tableWriter,
 				"%s\t%s\t%s\n",
 				project.ProjectID,
 				project.ProjectName,
 				project.SourceLocaleID,
-			)
+			); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -23,7 +23,6 @@ type Params struct {
 	Secret     string
 	Account    string
 	Project    string
-	Threads    uint32
 	IsInit     bool
 	IsFiles    bool
 	IsProjects bool
@@ -33,9 +32,10 @@ type Params struct {
 // BuildConfigFromFlags returns a Config object based on the provided parameters,
 // and an error if any.
 func BuildConfigFromFlags(params Params) (Config, error) {
-	var err error
-
 	path, err := GetPath(params.Directory, params.File, params.IsInit)
+	if err != nil {
+		return Config{}, err
+	}
 
 	config, err := LoadConfigFromFile(path)
 	if err != nil {
@@ -45,8 +45,26 @@ func BuildConfigFromFlags(params Params) (Config, error) {
 		)
 	}
 
+	config.Sources = Sources{
+		UserID:    SourceDefault,
+		AccountID: SourceDefault,
+		ProjectID: SourceDefault,
+	}
+	if config.UserID != "" {
+		config.Sources.UserID = SourceConfig
+	}
+	if config.AccountID != "" {
+		config.Sources.AccountID = SourceConfig
+	}
+	if config.ProjectID != "" {
+		config.Sources.ProjectID = SourceConfig
+	}
+
 	if config.UserID == "" {
-		config.UserID = os.Getenv("SMARTLING_USER_ID")
+		if v := os.Getenv("SMARTLING_USER_ID"); v != "" {
+			config.UserID = v
+			config.Sources.UserID = SourceEnv
+		}
 	}
 
 	if config.Secret == "" {
@@ -54,11 +72,15 @@ func BuildConfigFromFlags(params Params) (Config, error) {
 	}
 
 	if config.ProjectID == "" {
-		config.ProjectID = os.Getenv("SMARTLING_PROJECT_ID")
+		if v := os.Getenv("SMARTLING_PROJECT_ID"); v != "" {
+			config.ProjectID = v
+			config.Sources.ProjectID = SourceEnv
+		}
 	}
 
 	if params.User != "" {
 		config.UserID = params.User
+		config.Sources.UserID = SourceFlag
 	}
 
 	if params.Secret != "" {
@@ -67,10 +89,12 @@ func BuildConfigFromFlags(params Params) (Config, error) {
 
 	if params.Account != "" {
 		config.AccountID = params.Account
+		config.Sources.AccountID = SourceFlag
 	}
 
 	if params.Project != "" {
 		config.ProjectID = params.Project
+		config.Sources.ProjectID = SourceFlag
 	}
 
 	if !params.IsInit {
@@ -111,10 +135,6 @@ func BuildConfigFromFlags(params Params) (Config, error) {
 				KeyName:    "project_id",
 			}
 		}
-	}
-
-	if config.Threads == 0 {
-		config.Threads = params.Threads
 	}
 
 	return config, nil

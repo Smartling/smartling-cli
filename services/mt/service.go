@@ -7,7 +7,10 @@ import (
 	api "github.com/Smartling/api-sdk-go/api/mt"
 )
 
-var pollingIntervalSeconds = time.Second
+var (
+	pollingInterval = time.Second
+	pollingDuration = 5 * time.Minute
+)
 
 // Service defines behavior for interacting with Smartling MT.
 type Service interface {
@@ -18,7 +21,8 @@ type Service interface {
 
 // NewService creates a new implementation of the Service
 func NewService(downloader api.Downloader, fileTranslator api.FileTranslator,
-	uploader api.Uploader, translationControl api.TranslationControl) Service {
+	uploader api.Uploader, translationControl api.TranslationControl,
+) Service {
 	return service{
 		downloader:         downloader,
 		fileTranslator:     fileTranslator,

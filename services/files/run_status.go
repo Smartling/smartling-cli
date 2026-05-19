@@ -1,6 +1,7 @@
 package files
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -22,31 +23,31 @@ type StatusParams struct {
 }
 
 // RunStatus retrieves and outputs the status of files in the Smartling project.
-func (s service) RunStatus(params StatusParams) error {
+func (s service) RunStatus(ctx context.Context, params StatusParams) error {
 	defaultFormat := params.Format
 	if defaultFormat == "" {
 		defaultFormat = format.DefaultFileStatusFormat
 	}
 
 	projectID := s.Config.ProjectID
-	info, err := s.APIClient.GetProjectDetails(projectID)
+	info, err := s.APIClient.GetProjectDetails(ctx, projectID)
 	if err != nil {
 		return err
 	}
 
-	files, err := globfiles.Remote(s.APIClient.ListAllFiles, projectID, params.URI)
+	files, err := globfiles.Remote(ctx, s.APIClient.ListAllFiles, projectID, params.URI)
 	if err != nil {
 		return err
 	}
 
-	var tableWriter = table.NewTableWriter(os.Stdout)
+	tableWriter := table.NewTableWriter(os.Stdout)
 
-	var progress = progress.Progress{
+	progress := progress.Progress{
 		Total: len(files),
 	}
 
 	for _, file := range files {
-		status, err := s.APIClient.GetFileStatus(projectID, file.FileURI)
+		status, err := s.APIClient.GetFileStatus(ctx, projectID, file.FileURI)
 		if err != nil {
 			return err
 		}
@@ -72,7 +73,7 @@ func (s service) RunStatus(params StatusParams) error {
 				file,
 				defaultFormat,
 				format.UsePullFormat,
-				map[string]interface{}{
+				map[string]any{
 					"FileURI": file.FileURI,
 					"Locale":  translation.LocaleID,
 				},
@@ -110,14 +111,16 @@ func (s service) RunStatus(params StatusParams) error {
 				state = "missing"
 			}
 
-			writeFileStatus(tableWriter, map[string]string{
+			if err := writeFileStatus(tableWriter, map[string]string{
 				"Path":     path,
 				"Locale":   locale,
 				"State":    state,
 				"Progress": progress,
 				"Strings":  fmt.Sprint(translation.CompletedStringCount),
 				"Words":    fmt.Sprint(translation.CompletedWordCount),
-			})
+			}); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -129,8 +132,8 @@ func (s service) RunStatus(params StatusParams) error {
 	return nil
 }
 
-func writeFileStatus(table *tabwriter.Writer, row map[string]string) {
-	fmt.Fprintf(
+func writeFileStatus(table *tabwriter.Writer, row map[string]string) error {
+	if _, err := fmt.Fprintf(
 		table,
 		"%s\t%s\t%s\t%s\t%s\t%s\n",
 		row["Path"],
@@ -139,7 +142,10 @@ func writeFileStatus(table *tabwriter.Writer, row map[string]string) {
 		row["Progress"],
 		row["Strings"],
 		row["Words"],
-	)
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
 func isFileExists(path string) bool {

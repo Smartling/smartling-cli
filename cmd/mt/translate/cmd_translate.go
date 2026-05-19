@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	mtcmd "github.com/Smartling/smartling-cli/cmd/mt"
 	output "github.com/Smartling/smartling-cli/output/mt"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
@@ -39,6 +40,16 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 		Use:   "translate <file|pattern>",
 		Short: "Translate files using Smartling's File Machine Translation API.",
 		Long:  `Translate files using Smartling's File Machine Translation API.`,
+		Example: `
+# Translate with automatic language detection
+
+  smartling-cli mt translate document.txt --target-locale es-ES
+
+# Translate with explicit source language
+
+  smartling-cli mt translate document.txt --source-locale en --target-locale fr-FR
+
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			if len(args) != 1 {
@@ -59,7 +70,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 				}
 			}
 
-			outputParams, err := mtcmd.ResolveOutputParams(cmd, fileConfig.MT.FileFormat)
+			outputParams, err := resolve.OutputParams(cmd, fileConfig.MT.FileFormat)
 			if err != nil {
 				return err
 			}
@@ -79,7 +90,7 @@ func NewTranslateCmd(initializer mtcmd.SrvInitializer) *cobra.Command {
 	translateCmd.Flags().StringVar(&sourceLocale, sourceLocaleFlag, "", "Explicitly specify source language")
 	translateCmd.Flags().StringArrayVarP(&targetLocales, targetLocaleFlag, "l", nil, `Target language(s). Can be specified multiple times.
 Example: Specifying two target locales
-smartling-cli mt translate --target-locale fr --target-locale es-ES`)
+  smartling-cli mt translate --target-locale fr --target-locale es-ES`)
 	translateCmd.Flags().StringVar(&overrideFileType, overrideFileTypeFlag, "", `Override the automatically detected file type. 
 A complete list of supported types can be found in the API documentation:
 https://api-reference.smartling.com/#tag/File-Machine-Translations-(MT)/operation/fileUpload`)
@@ -89,6 +100,7 @@ https://api-reference.smartling.com/#tag/File-Machine-Translations-(MT)/operatio
 Default: `+output.DefaultTranslateTemplate+`
 {{.File}} - Original file path
 {{.Locale}} - Target locale
+{{.TranslatedFile}} - Translated file
 {{name .File}} - File name without extension
 {{ext .File}} - File extension
 {{dir .Directory}} - Directory path`)

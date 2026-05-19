@@ -1,20 +1,26 @@
 MAINTAINER = Alex Koval <akoval@smartling.com>
 DESCRIPTION = CLI for Smartling Platform
 
+LDFLAGS ?= -s -w
+GO_BUILD_FLAGS ?= -mod=mod -trimpath -ldflags="$(LDFLAGS)"
+
 build_releaser:
 	export SMARTLING_CLI_PLATFORM=$$(go env GOOS)/$$(go env GOARCH); \
 	export SMARTLING_CLI_GOVERSION=$$(go version | awk '{print $$3}'); \
 	goreleaser release --clean --skip=publish --snapshot
-
+.PHONY: all
 all: clean get build
 	@
 
+.PHONY: build
 build: darwin windows.exe linux
 	@
 
+.PHONY: get
 get:
-	go get
+	go mod download
 
+.PHONY: clean
 clean:
 	rm -rf bin pkg
 	mkdir bin
@@ -23,6 +29,7 @@ _PKG = pkg/build
 
 _CONTROL = echo >> $(_PKG)/DEBIAN/control
 
+.PHONY: deb
 deb: _pkg-init
 	mkdir -p $(_PKG)/usr/bin
 	cp bin/smartling.linux $(_PKG)/usr/bin/smartling
@@ -40,6 +47,7 @@ deb: _pkg-init
 
 _SPEC = echo >> $(_PKG)/smartling.spec
 
+.PHONY: rpm
 rpm: _pkg-init
 	$(_SPEC) "Name: smartling"
 	$(_SPEC) "Version: $(VERSION)"
@@ -57,6 +65,7 @@ rpm: _pkg-init
 	cp $(_PKG)/*/*.rpm pkg/
 	rm -rf $(_PKG)
 
+.PHONY: _pkg-init
 _pkg-init:
 	rm -rf $(_PKG)
 	mkdir -p $(_PKG)
@@ -64,33 +73,48 @@ _pkg-init:
 		$(shell git rev-list --count HEAD).$(shell git rev-parse --short HEAD))
 
 %:
-	GOOS=$(basename $@) go build -o bin/smartling.$@
+	CGO_ENABLED=0 GOOS=$(basename $@) go build $(GO_BUILD_FLAGS) -o bin/smartling.$@
 
+.PHONY: docs
+docs:
+	go run ./main.go docs
+
+.PHONY: tidy
 tidy:
 	go mod tidy
 
+.PHONY: _linter
 _linter:
 	go install github.com/mgechev/revive@v1.10.0
 
+.PHONY: lint
 lint:
+	golangci-lint run ./... && \
 	revive -config .revive.toml ./...
 
+.PHONY: _mockery-install
 _mockery-install:
 	go install github.com/vektra/mockery/v3@v3.3.4
 
+.PHONY: mockery
 mockery:
 	mockery --config .mockery.yml
 
+.PHONY: test_unit
 test_unit:
-	go test ./cmd/...
+	go test ./cmd/... ./services/... ./output/...
 
 # add binary and config to tests/cmd/bin/ before run test integration
+.PHONY: test_integration
 test_integration:
 	go test ./tests/cmd/files/push/...
 	go test ./tests/cmd/files/pull/...
+	go test ./tests/cmd/jobs/progress/...
 	go test ./tests/cmd/files/list/...
 	go test ./tests/cmd/files/status/...
 	go test ./tests/cmd/files/rename/...
 	go test ./tests/cmd/files/delete/...
 	go test ./tests/cmd/projects/...
 	go test ./tests/cmd/init/...
+	go test ./tests/cmd/mt/detect/...
+	go test ./tests/cmd/mt/translate/...

@@ -4,17 +4,16 @@ import (
 	"os"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
-	"github.com/Smartling/smartling-cli/services/init"
+	initialize "github.com/Smartling/smartling-cli/services/init"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/spf13/cobra"
 )
 
-var (
-	dryRun bool
-)
+var dryRun bool
 
 // NewInitCmd creates a new command to initialize the Smartling CLI.
 func NewInitCmd(srvInitializer SrvInitializer) *cobra.Command {
@@ -36,7 +35,7 @@ config values prior dialog:
   smartling-cli init --user=your_user_id
 
 Also, --dry-run option can be used to just look at resulting config without
-overwritting anything:
+overwriting anything:
 
   smartling-cli init --dry-run
 
@@ -57,13 +56,25 @@ Default config values can be passed via following options:` +
 			help.AuthenticationOptions + `
   -p --project <project>
     Specify default project.`,
-		Run: func(_ *cobra.Command, _ []string) {
+		Example: `
+# Create a configuration file with your Smartling API credentials:
+# This creates a smartling.yml file in your current directory with your project settings.
+# Note: Running init again will overwrite the existing configuration file.
+
+  smartling-cli init
+
+# Dry run of init command without overwriting the existing configuration file.
+
+  smartling-cli init --dry-run
+
+`,
+		Run: func(cmd *cobra.Command, _ []string) {
 			s, err := srvInitializer.InitSrv()
 			if err != nil {
 				rlog.Errorf("failed to get init service: %s", err)
 				os.Exit(1)
 			}
-			err = s.RunInit(dryRun)
+			err = s.RunInit(cmd.Context(), dryRun)
 			if err != nil {
 				rlog.Errorf("failed to run init: %s", err)
 				os.Exit(1)
@@ -93,7 +104,7 @@ func (s srvInitializer) InitSrv() (initialize.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	smClient := sdk.NewHttpAPIClient(cnf.UserID, cnf.Secret)
+	smClient := sdk.NewHttpAPIClient(client.NewHTTPClient(), cnf.UserID, cnf.Secret)
 	srv := initialize.NewService(smClient, cnf)
 	return srv, nil
 }

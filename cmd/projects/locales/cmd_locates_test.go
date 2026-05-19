@@ -21,13 +21,17 @@ func TestNewLocaLesCmd(t *testing.T) {
 		Short:  true,
 		Source: false,
 	}
-	projectsSrv.On("RunLocales", params).Run(func(args mock.Arguments) {
-		fmt.Fprintln(buf, fmt.Sprintf("RunLocales was called with %d args", len(args)))
-		fmt.Fprintln(buf, fmt.Sprintf("params: %v", args[0]))
+	projectsSrv.On("RunLocales", mock.Anything, params).Run(func(args mock.Arguments) {
+		if _, err := fmt.Fprintf(buf, "RunLocales was called with %d args\n", len(args)); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := fmt.Fprintf(buf, "params: %v\n", args[1]); err != nil {
+			t.Fatal(err)
+		}
 	}).Return(nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
-	initializer.On("InitProjectsSrv").Return(projectsSrv, nil)
+	initializer.On("InitProjectsSrv", mock.Anything).Return(projectsSrv, nil)
 
 	cmd := NewLocalesCmd(initializer)
 
@@ -44,7 +48,7 @@ func TestNewLocaLesCmd(t *testing.T) {
 	}
 
 	output := buf.String()
-	expected := fmt.Sprintf(`RunLocales was called with 1 args
+	expected := fmt.Sprintf(`RunLocales was called with 2 args
 params: %v
 `, params)
 

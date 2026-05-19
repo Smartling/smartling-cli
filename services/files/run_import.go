@@ -1,6 +1,7 @@
 package files
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -22,7 +23,7 @@ type ImportParams struct {
 }
 
 // RunImport imports a file into the Smartling project with the specified parameters.
-func (s service) RunImport(params ImportParams) error {
+func (s service) RunImport(ctx context.Context, params ImportParams) error {
 	contents, err := os.ReadFile(params.File)
 	if err != nil {
 		return clierror.NewError(
@@ -64,7 +65,7 @@ func (s service) RunImport(params ImportParams) error {
 		}
 	}
 
-	result, err := s.APIClient.Import(s.Config.ProjectID, params.Locale, request)
+	result, err := s.APIClient.Import(ctx, s.Config.ProjectID, params.Locale, request)
 	if err != nil {
 		return hierr.Errorf(
 			err,

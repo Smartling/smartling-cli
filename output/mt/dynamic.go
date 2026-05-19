@@ -11,17 +11,16 @@ import (
 
 // Dynamic defines dynamic output mode
 type Dynamic struct {
-	model        Model
-	program      *tea.Program
-	dataProvider TableDataProvider
+	model   Model
+	program *tea.Program
 }
 
 // Init inits Dynamic
-func (d *Dynamic) Init(dataProvider TableDataProvider, files []string, outputFormat, outputTemplate string) {
+func (d *Dynamic) Init(dataProvider TableDataProvider, files []string, targetLocalesQnt uint8, outputFormat, outputTemplate string) {
 	d.model.Headers = dataProvider.Headers()
 	d.model.RowByHeader = dataProvider.RowByHeaderName()
 
-	rows := dataProvider.ToTableRows(files)
+	rows := dataProvider.ToTableRows(files, targetLocalesQnt)
 
 	d.model.Data = rows
 

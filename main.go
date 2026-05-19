@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Smartling/smartling-cli/cmd"
 	"github.com/Smartling/smartling-cli/cmd/build"
+	"github.com/Smartling/smartling-cli/cmd/docs"
 	"github.com/Smartling/smartling-cli/cmd/files"
 	deletecmd "github.com/Smartling/smartling-cli/cmd/files/delete"
 	importcmd "github.com/Smartling/smartling-cli/cmd/files/import"
@@ -12,6 +13,8 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/files/rename"
 	"github.com/Smartling/smartling-cli/cmd/files/status"
 	initialize "github.com/Smartling/smartling-cli/cmd/init"
+	"github.com/Smartling/smartling-cli/cmd/jobs"
+	"github.com/Smartling/smartling-cli/cmd/jobs/progress"
 	"github.com/Smartling/smartling-cli/cmd/mt"
 	"github.com/Smartling/smartling-cli/cmd/mt/detect"
 	"github.com/Smartling/smartling-cli/cmd/mt/translate"
@@ -26,6 +29,9 @@ func main() {
 	cmd.ConfigureLogger()
 
 	rootCmd := cmd.NewRootCmd()
+
+	docsCmd := docs.NewDocsCmd()
+	rootCmd.AddCommand(docsCmd)
 
 	buildCmd := build.NewBuildCmd()
 	rootCmd.AddCommand(buildCmd)
@@ -57,6 +63,11 @@ func main() {
 	mtInitializer := mt.NewSrvInitializer()
 	mtCmd.AddCommand(detect.NewDetectCmd(mtInitializer))
 	mtCmd.AddCommand(translate.NewTranslateCmd(mtInitializer))
+
+	jobsCmd := jobs.NewJobsCmd()
+	rootCmd.AddCommand(jobsCmd)
+	jobInitializer := jobs.NewSrvInitializer()
+	jobsCmd.AddCommand(progress.NewProgressCmd(jobInitializer))
 
 	if err := rootCmd.Execute(); err != nil {
 		output.RenderAndExitIfErr(err)

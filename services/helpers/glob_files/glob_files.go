@@ -1,6 +1,7 @@
 package globfiles
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,6 +18,7 @@ import (
 
 // Remote searches for files matching a specified glob pattern on the remote server.
 func Remote(
+	ctx context.Context,
 	listAllFilesFn ListFilesFn,
 	project string,
 	uri string,
@@ -36,7 +38,7 @@ func Remote(
 
 	request := sdkfile.FilesListRequest{}
 
-	files, err := listAllFilesFn(project, request)
+	files, err := listAllFilesFn(ctx, project, request)
 	if err != nil {
 		if _, ok := err.(sdkerror.NotFoundError); ok {
 			return nil, clierror.ProjectNotFoundError{}
@@ -134,7 +136,6 @@ func LocallyFunc(
 			return nil
 		},
 	)
-
 	if err != nil {
 		return nil, hierr.Errorf(
 			err,
@@ -197,7 +198,6 @@ func LocallyFn(
 			return nil
 		},
 	)
-
 	if err != nil {
 		return nil, hierr.Errorf(
 			err,
@@ -213,4 +213,4 @@ func LocallyFn(
 var GlobFilesLocally = LocallyFn
 
 // ListFilesFn is function to list files
-type ListFilesFn func(projectID string, request sdkfile.FilesListRequest) ([]sdkfile.File, error)
+type ListFilesFn func(ctx context.Context, projectID string, request sdkfile.FilesListRequest) ([]sdkfile.File, error)

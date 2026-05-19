@@ -2,6 +2,7 @@
 /smartling.yml
 /bin
 /pkg
+/sdk
 /*.deb
 .tags
 .tags1

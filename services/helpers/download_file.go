@@ -1,6 +1,8 @@
 package helpers
 
 import (
+	"context"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -12,6 +14,7 @@ import (
 
 // DownloadFile downloads a file.
 func DownloadFile(
+	ctx context.Context,
 	client sdk.APIClient,
 	project string,
 	file sdkfile.File,
@@ -20,12 +23,12 @@ func DownloadFile(
 	retrievalType sdk.RetrievalType,
 ) error {
 	var (
-		reader io.Reader
+		reader io.ReadCloser
 		err    error
 	)
 
 	if locale == "" {
-		reader, err = client.DownloadFile(project, file.FileURI)
+		reader, err = client.DownloadFile(ctx, project, file.FileURI)
 		if err != nil {
 			return hierr.Errorf(
 				err,
@@ -39,7 +42,7 @@ func DownloadFile(
 		request.FileURI = file.FileURI
 		request.Type = retrievalType
 
-		reader, err = client.DownloadTranslation(project, locale, request)
+		reader, err = client.DownloadTranslation(ctx, project, locale, request)
 		if err != nil {
 			return hierr.Errorf(
 				err,
@@ -50,8 +53,13 @@ func DownloadFile(
 			)
 		}
 	}
+	defer func() {
+		if err := reader.Close(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+	}()
 
-	err = os.MkdirAll(filepath.Dir(path), 0755)
+	err = os.MkdirAll(filepath.Dir(path), 0o755)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -69,7 +77,11 @@ func DownloadFile(
 		)
 	}
 
-	defer writer.Close()
+	defer func() {
+		if err := writer.Close(); err != nil {
+			fmt.Printf("unable to close output file: %s\n", err)
+		}
+	}()
 
 	_, err = io.Copy(writer, reader)
 	if err != nil {

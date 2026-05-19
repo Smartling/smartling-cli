@@ -33,7 +33,7 @@ type DetectUpdateRow struct {
 // RenderDetectUpdates applies detect updates to the given table model row
 func RenderDetectUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.DetectUpdates) {
 	rows := t.Rows()
-	if val.ID < 0 || val.ID >= uint32(len(rows)) {
+	if val.ID >= uint32(len(rows)) {
 		rlog.Debugf("row out of range: %d > %d", val.ID, len(rows))
 		return
 	}
@@ -60,10 +60,12 @@ func RenderDetectUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.Det
 	t.SetRows(updatedRows)
 }
 
-func toDetectTableRows(files []string) []table.Row {
-	res := make([]table.Row, len(files))
+func toDetectTableRows(files []string, targetLocalesQnt uint8) []table.Row {
+	res := make([]table.Row, len(files)*int(targetLocalesQnt))
 	for i, v := range files {
-		res[i] = toDetectTableRow(v)
+		for j := uint8(0); j < targetLocalesQnt; j++ {
+			res[int(targetLocalesQnt)*i+int(j)] = toDetectTableRow(v)
+		}
 	}
 	return res
 }
@@ -85,9 +87,7 @@ func toDetectTableRow(file string) table.Row {
 }
 
 // DetectDataProvider defines data provider for detect flow
-type DetectDataProvider struct {
-	data []table.Row
-}
+type DetectDataProvider struct{}
 
 // Headers returns headers
 func (t DetectDataProvider) Headers() []table.Column {
@@ -112,6 +112,6 @@ func (t DetectDataProvider) RowByHeaderName() RowByHeaderName {
 }
 
 // ToTableRows converts slice with files to slice with table rows
-func (t DetectDataProvider) ToTableRows(files []string) []table.Row {
-	return toDetectTableRows(files)
+func (t DetectDataProvider) ToTableRows(files []string, targetLocalesQnt uint8) []table.Row {
+	return toDetectTableRows(files, targetLocalesQnt)
 }

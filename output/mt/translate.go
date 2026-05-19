@@ -12,7 +12,7 @@ import (
 
 const (
 	// DefaultTranslateTemplate is the default template used for rendering translated files.
-	DefaultTranslateTemplate = "{{.File}}\t{{.Locale}}" + "\n"
+	DefaultTranslateTemplate = "{{.File}}\t{{.Locale}}\t{{.TranslatedFile}}" + "\n"
 )
 
 // TranslateCellCoords represents the column positions (if present) for each translation-related action.
@@ -35,7 +35,7 @@ type RowByHeaderName map[string]uint8
 // RenderTranslateUpdates applies translation updates to the given table model row
 func RenderTranslateUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.TranslateUpdates) {
 	rows := t.Rows()
-	if val.ID < 0 || val.ID >= uint32(len(rows)) {
+	if val.ID >= uint32(len(rows)) {
 		rlog.Debugf("row out of range: %d > %d", val.ID, len(rows))
 		return
 	}
@@ -54,6 +54,9 @@ func RenderTranslateUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.
 	if row, found := rowByHeader["translate"]; found && val.Translate != nil {
 		updatedRow[row] = *val.Translate
 	}
+	if row, found := rowByHeader["translated_file"]; found && val.TranslatedFile != nil {
+		updatedRow[row] = *val.TranslatedFile
+	}
 	if row, found := rowByHeader["download"]; found && val.Download != nil {
 		updatedRow[row] = done
 	}
@@ -65,10 +68,12 @@ func RenderTranslateUpdates(t *table.Model, rowByHeader RowByHeaderName, val mt.
 	t.SetRows(updatedRows)
 }
 
-func toTranslateTableRows(files []string) []table.Row {
-	res := make([]table.Row, len(files))
+func toTranslateTableRows(files []string, targetLocalesQnt uint8) []table.Row {
+	res := make([]table.Row, len(files)*int(targetLocalesQnt))
 	for i, v := range files {
-		res[i] = toTranslateTableRow(v)
+		for j := uint8(0); j < targetLocalesQnt; j++ {
+			res[int(targetLocalesQnt)*i+int(j)] = toTranslateTableRow(v)
+		}
 	}
 	return res
 }
@@ -87,13 +92,12 @@ func toTranslateTableRow(file string) table.Row {
 		"",
 		"",
 		"",
+		"",
 	}
 }
 
 // TranslateDataProvider defines data provider for translate flow
-type TranslateDataProvider struct {
-	data []table.Row
-}
+type TranslateDataProvider struct{}
 
 // Headers returns headers
 func (t TranslateDataProvider) Headers() []table.Column {
@@ -105,6 +109,7 @@ func (t TranslateDataProvider) Headers() []table.Column {
 		{Title: "Directory", Width: 10},
 		{Title: "Upload", Width: 10},
 		{Title: "Translate", Width: 10},
+		{Title: "TranslatedFile", Width: 10},
 		{Title: "Download", Width: 10},
 	}
 }
@@ -112,14 +117,15 @@ func (t TranslateDataProvider) Headers() []table.Column {
 // RowByHeaderName returns a mapping from header names by their column indices
 func (t TranslateDataProvider) RowByHeaderName() RowByHeaderName {
 	return RowByHeaderName{
-		"locale":    1,
-		"upload":    5,
-		"translate": 6,
-		"download":  7,
+		"locale":          1,
+		"upload":          5,
+		"translate":       6,
+		"translated_file": 7,
+		"download":        8,
 	}
 }
 
 // ToTableRows converts slice with files to slice with table rows
-func (t TranslateDataProvider) ToTableRows(files []string) []table.Row {
-	return toTranslateTableRows(files)
+func (t TranslateDataProvider) ToTableRows(files []string, targetLocalesQnt uint8) []table.Row {
+	return toTranslateTableRows(files, targetLocalesQnt)
 }

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"crypto/tls"
 	"net/http"
 	"net/url"
@@ -19,10 +20,9 @@ var version = "2.0"
 
 // CreateClient initializes a new Smartling API client with the provided configurations.
 // Returns the client, and an error if any.
-func CreateClient(clientConfig Config, config config.Config, verbose uint8) (sdk.HttpAPIClient, error) {
-	client := sdk.NewHttpAPIClient(config.UserID, config.Secret)
-
-	var transport http.Transport
+func CreateClient(ctx context.Context, clientConfig Config, config config.Config, verbose uint8) (sdk.HttpAPIClient, error) {
+	httpClient := NewHTTPClient()
+	transport := httpClient.Transport.(*http.Transport)
 
 	if clientConfig.Insecure {
 		transport.TLSClientConfig = &tls.Config{
@@ -51,11 +51,12 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (sdk
 		transport.Proxy = http.ProxyURL(proxy)
 	}
 
+	client := sdk.NewHttpAPIClient(httpClient, config.UserID, config.Secret)
+
 	if clientConfig.SmartlingURL != "" {
 		client.Client.BaseURL = clientConfig.SmartlingURL
 	}
 
-	client.Client.HTTP.Transport = &transport
 	client.Client.UserAgent = "smartling-cli/" + version
 
 	setLogger(client, rlog.Logger(), verbose)
@@ -64,7 +65,7 @@ func CreateClient(clientConfig Config, config config.Config, verbose uint8) (sdk
 		regexp.MustCompile(`"(?:access|refresh)Token": "([^"]+)"`),
 	)
 
-	err := client.Authenticate()
+	err := client.Authenticate(ctx)
 	if err != nil {
 		return sdk.HttpAPIClient{}, clierror.NewError(
 			err,

@@ -5,6 +5,8 @@
 package initializemocks
 
 import (
+	"context"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -36,16 +38,16 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 }
 
 // RunInit provides a mock function for the type MockService
-func (_mock *MockService) RunInit(dryRun bool) error {
-	ret := _mock.Called(dryRun)
+func (_mock *MockService) RunInit(ctx context.Context, dryRun bool) error {
+	ret := _mock.Called(ctx, dryRun)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunInit")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(bool) error); ok {
-		r0 = returnFunc(dryRun)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, bool) error); ok {
+		r0 = returnFunc(ctx, dryRun)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -58,19 +60,25 @@ type MockService_RunInit_Call struct {
 }
 
 // RunInit is a helper method to define mock.On call
+//   - ctx context.Context
 //   - dryRun bool
-func (_e *MockService_Expecter) RunInit(dryRun interface{}) *MockService_RunInit_Call {
-	return &MockService_RunInit_Call{Call: _e.mock.On("RunInit", dryRun)}
+func (_e *MockService_Expecter) RunInit(ctx interface{}, dryRun interface{}) *MockService_RunInit_Call {
+	return &MockService_RunInit_Call{Call: _e.mock.On("RunInit", ctx, dryRun)}
 }
 
-func (_c *MockService_RunInit_Call) Run(run func(dryRun bool)) *MockService_RunInit_Call {
+func (_c *MockService_RunInit_Call) Run(run func(ctx context.Context, dryRun bool)) *MockService_RunInit_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 bool
+		var arg0 context.Context
 		if args[0] != nil {
-			arg0 = args[0].(bool)
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 bool
+		if args[1] != nil {
+			arg1 = args[1].(bool)
 		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -81,7 +89,7 @@ func (_c *MockService_RunInit_Call) Return(err error) *MockService_RunInit_Call 
 	return _c
 }
 
-func (_c *MockService_RunInit_Call) RunAndReturn(run func(dryRun bool) error) *MockService_RunInit_Call {
+func (_c *MockService_RunInit_Call) RunAndReturn(run func(ctx context.Context, dryRun bool) error) *MockService_RunInit_Call {
 	_c.Call.Return(run)
 	return _c
 }

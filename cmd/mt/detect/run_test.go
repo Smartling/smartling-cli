@@ -1,12 +1,11 @@
 package detect
 
 import (
-	"context"
 	"errors"
 	"testing"
 
 	cmdmocks "github.com/Smartling/smartling-cli/cmd/mt/mocks"
-	output "github.com/Smartling/smartling-cli/output/mt"
+	"github.com/Smartling/smartling-cli/output"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	srv "github.com/Smartling/smartling-cli/services/mt"
 	srvmocks "github.com/Smartling/smartling-cli/services/mt/mocks"
@@ -16,7 +15,7 @@ import (
 )
 
 func TestRunGetFilesError(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	initializer := cmdmocks.NewMockSrvInitializer(t)
 	mtSrv := srvmocks.NewMockService(t)
 	filesErr := errors.New("files error")
@@ -26,10 +25,10 @@ func TestRunGetFilesError(t *testing.T) {
 		FileOrPattern:  "*.txt",
 	}
 
-	initializer.On("InitMTSrv").Return(mtSrv, nil)
+	initializer.On("InitMTSrv", mock.Anything).Return(mtSrv, nil)
 	mtSrv.On("GetFiles", params.InputDirectory, params.FileOrPattern).Return(nil, filesErr)
 
-	err := run(ctx, initializer, params, output.OutputParams{})
+	err := run(ctx, initializer, params, output.Params{})
 
 	assert.Error(t, err)
 	uiErr, ok := err.(clierror.UIError)
@@ -39,7 +38,7 @@ func TestRunGetFilesError(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	initializer := cmdmocks.NewMockSrvInitializer(t)
 	mtSrv := srvmocks.NewMockService(t)
 
@@ -49,14 +48,14 @@ func TestRun(t *testing.T) {
 	}
 	files := []string{"file1.txt", "file2.txt"}
 
-	initializer.On("InitMTSrv").Return(mtSrv, nil)
+	initializer.On("InitMTSrv", mock.Anything).Return(mtSrv, nil)
 	mtSrv.On("GetFiles", params.InputDirectory, params.FileOrPattern).
 		Return(files, nil)
 
 	mtSrv.On("RunDetect", mock.Anything, params, files, mock.Anything).
 		Return([]srv.DetectOutput{}, nil)
 
-	err := run(ctx, initializer, params, output.OutputParams{})
+	err := run(ctx, initializer, params, output.Params{})
 
 	assert.Nil(t, err)
 }

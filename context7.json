@@ -1,0 +1,27 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Smartling CLI",
+  "description": "Smartling CLI is a command-line interface for developers to interact with Smartling. Automate translation workflows, manage files, and leverage machine translation directly from your terminal.",
+  "branch": "master",
+  "excludeFolders": [
+    "./.claude",
+    "./cmd",
+    "./output",
+    "./services",
+    "./tests",
+    "./vendor"
+  ],
+  "excludeFiles": [
+    "CLAUDE.md",
+    "*.go",
+    "Installation.md",
+    "CHANGELOG.md",
+    "changelog.md",
+    "CHANGELOG.mdx",
+    "changelog.mdx",
+    "LICENSE.md",
+    "license.md",
+    "CODE_OF_CONDUCT.md",
+    "code_of_conduct.md"
+  ]
+}
