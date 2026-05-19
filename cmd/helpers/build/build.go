@@ -7,9 +7,7 @@ import (
 // These variables will be set via ldflags at build time.
 var (
 	// CliVersion is version information
-	CliVersion = "2.1"
-	// ReleaseTag is the git tag
-	ReleaseTag = ""
+	CliVersion = "3.2"
 	// CommitID is the git commit hash
 	CommitID = ""
 	// Date is date of binary built
@@ -28,7 +26,6 @@ func String() string {
 Smartling-cli is a library and CLI tool for managing Smartling projects.
 
 Version:       %s
-ReleaseTag:    %s
 GitCommit:     %s
 BuildDate:     %s
 BuiltBy:       %s
@@ -36,7 +33,6 @@ GoVersion:     %s
 Platform:      %s
 `,
 		CliVersion,
-		ReleaseTag,
 		CommitID,
 		Date,
 		BuiltBy,

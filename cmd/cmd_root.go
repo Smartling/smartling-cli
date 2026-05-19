@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/Smartling/smartling-cli/cmd/helpers/build"
 	"strings"
+
+	"github.com/Smartling/smartling-cli/cmd/helpers/build"
 
 	"github.com/spf13/cobra"
 )

@@ -8,6 +8,7 @@ build_releaser:
 	export SMARTLING_CLI_PLATFORM=$$(go env GOOS)/$$(go env GOARCH); \
 	export SMARTLING_CLI_GOVERSION=$$(go version | awk '{print $$3}'); \
 	goreleaser release --clean --skip=publish --snapshot
+
 .PHONY: all
 all: clean get build
 	@
@@ -29,10 +30,12 @@ _PKG = pkg/build
 
 _CONTROL = echo >> $(_PKG)/DEBIAN/control
 
+_LINUX_AMD64_BIN = $(shell ls bin/*linux_amd64*/smartling-cli 2>/dev/null | head -1)
+
 .PHONY: deb
 deb: _pkg-init
 	mkdir -p $(_PKG)/usr/bin
-	cp bin/smartling.linux $(_PKG)/usr/bin/smartling
+	cp $(_LINUX_AMD64_BIN) $(_PKG)/usr/bin/smartling
 	mkdir -p $(_PKG)/DEBIAN
 	$(_CONTROL) "Package: smartling"
 	$(_CONTROL) "Version: $(VERSION)"
@@ -57,7 +60,7 @@ rpm: _pkg-init
 	$(_SPEC) "%description"
 	$(_SPEC) "%install"
 	$(_SPEC) "mkdir -p %{buildroot}/%{_bindir}"
-	$(_SPEC) "cp $(PWD)/bin/smartling.linux %{buildroot}/%{_bindir}/smartling"
+	$(_SPEC) "cp $(PWD)/$(_LINUX_AMD64_BIN) %{buildroot}/%{_bindir}/smartling"
 	$(_SPEC) "%files"
 	$(_SPEC) "%{_bindir}/smartling"
 	$(_SPEC) "%define _rpmdir $(_PKG)"
