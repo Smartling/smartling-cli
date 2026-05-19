@@ -18,7 +18,7 @@ func NewDocsCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := doc.GenMarkdownTree(cmd.Root(), "./docs")
 			if err != nil {
-				return fmt.Errorf("failed to generate docs: %v", err)
+				return fmt.Errorf("failed to generate docs: %w", err)
 			}
 			rlog.Infof("markdown docs generated in ./docs/")
 			return nil

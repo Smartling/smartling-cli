@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	cmdmocks "github.com/Smartling/smartling-cli/cmd/projects/mocks"
+	projectconfig "github.com/Smartling/smartling-cli/services/projects/config"
 	srvmocks "github.com/Smartling/smartling-cli/services/projects/mocks"
 
 	"github.com/stretchr/testify/mock"
@@ -19,7 +20,7 @@ func TestNewInfoCmd(t *testing.T) {
 		if _, err := fmt.Fprintf(buf, "RunInfo was called with %d args\n", len(args)); err != nil {
 			t.Fatal(err)
 		}
-	}).Return(nil)
+	}).Return(projectconfig.Extended{}, nil)
 
 	initializer := cmdmocks.NewMockSrvInitializer(t)
 	initializer.On("InitProjectsSrv", mock.Anything).Return(projectsSrv, nil)
