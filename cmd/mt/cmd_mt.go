@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Smartling/smartling-cli/cmd"
+
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +37,10 @@ func NewMTCmd() *cobra.Command {
 		Use:   "mt",
 		Short: "File Machine Translations",
 		Long:  `Machine Translations offers a simple way to upload files and execute actions on them without any complex setup required`,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(c *cobra.Command, args []string) error {
+			if err := cmd.RunRootPersistentPreRun(c); err != nil {
+				return err
+			}
 			if !slices.Contains(allowedOutputs, outputFormat) {
 				return fmt.Errorf("invalid output: %s (allowed: %s)", outputFormat, joinedAllowedOutputs)
 			}

@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/Smartling/smartling-cli/services/projects"
+	projectconfig "github.com/Smartling/smartling-cli/services/projects/config"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -16,7 +17,8 @@ import (
 func NewMockService(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *MockService {
+},
+) *MockService {
 	mock := &MockService{}
 	mock.Mock.Test(t)
 
@@ -39,20 +41,29 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 }
 
 // RunInfo provides a mock function for the type MockService
-func (_mock *MockService) RunInfo(ctx context.Context) error {
+func (_mock *MockService) RunInfo(ctx context.Context) (projectconfig.Extended, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for RunInfo")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+	var r0 projectconfig.Extended
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (projectconfig.Extended, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) projectconfig.Extended); ok {
 		r0 = returnFunc(ctx)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(projectconfig.Extended)
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // MockService_RunInfo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RunInfo'
@@ -79,12 +90,12 @@ func (_c *MockService_RunInfo_Call) Run(run func(ctx context.Context)) *MockServ
 	return _c
 }
 
-func (_c *MockService_RunInfo_Call) Return(err error) *MockService_RunInfo_Call {
-	_c.Call.Return(err)
+func (_c *MockService_RunInfo_Call) Return(extendedConfig projectconfig.Extended, err error) *MockService_RunInfo_Call {
+	_c.Call.Return(extendedConfig, err)
 	return _c
 }
 
-func (_c *MockService_RunInfo_Call) RunAndReturn(run func(ctx context.Context) error) *MockService_RunInfo_Call {
+func (_c *MockService_RunInfo_Call) RunAndReturn(run func(ctx context.Context) (projectconfig.Extended, error)) *MockService_RunInfo_Call {
 	_c.Call.Return(run)
 	return _c
 }
