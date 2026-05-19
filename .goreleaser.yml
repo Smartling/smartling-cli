@@ -3,6 +3,9 @@ version: 2
 project_name: smartling-cli
 dist: bin
 
+env:
+  - CGO_ENABLED=0
+
 release:
   name_template: "Version {{.Version}}"
   disable: true
