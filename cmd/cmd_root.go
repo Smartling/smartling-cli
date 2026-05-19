@@ -14,7 +14,6 @@ var (
 	user               string
 	secret             string
 	operationDirectory string
-	threads            uint32
 	insecure           bool
 	proxy              string
 	verbose            int
@@ -31,7 +30,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "smartling-cli",
 		Short:   "Manage translation files using Smartling CLI.",
-		Version: "3.1",
+		Version: "3.2",
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
@@ -62,8 +61,6 @@ This option overrides config value "user_id".`)
 This option overrides config value "secret".`)
 	rootCmd.PersistentFlags().StringVar(&operationDirectory, "operation-directory", ".", `Sets directory to operate on, usually, to store or to
 read files.  Depends on command.`)
-	rootCmd.PersistentFlags().Uint32Var(&threads, "threads", 4, `If command can be executed concurrently, it will be
-executed for at most <number> of threads.`)
 	rootCmd.PersistentFlags().BoolVarP(&insecure, "insecure", "k", false, "Skip HTTPS certificate validation.")
 	rootCmd.PersistentFlags().StringVar(&proxy, "proxy", "", "Use specified URL as proxy server.")
 	rootCmd.PersistentFlags().StringVar(&smartlingURL, "smartling-url", "", `Specify base Smartling URL, merely for testing

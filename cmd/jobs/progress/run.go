@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	jobapi "github.com/Smartling/api-sdk-go/api/job"
 	jobscmd "github.com/Smartling/smartling-cli/cmd/jobs"
 	"github.com/Smartling/smartling-cli/output"
 	"github.com/Smartling/smartling-cli/output/jobs"
@@ -30,7 +31,7 @@ func run(ctx context.Context,
 
 	progressOutput, err := jobSrv.RunProgress(ctx, params)
 	if err != nil {
-		if errors.Is(err, srv.ErrJobNotFound) {
+		if errors.Is(err, jobapi.ErrNotFound) {
 			return clierror.UIError{
 				Operation:   "find job",
 				Err:         err,

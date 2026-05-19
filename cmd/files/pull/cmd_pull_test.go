@@ -9,9 +9,18 @@ import (
 	cmdmocks "github.com/Smartling/smartling-cli/cmd/files/mocks"
 	"github.com/Smartling/smartling-cli/services/files"
 	srvmocks "github.com/Smartling/smartling-cli/services/files/mocks"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/stretchr/testify/mock"
 )
+
+func TestMain(m *testing.M) {
+	// Production main() calls rlog.Init(); the Run handler in NewPullCmd
+	// reaches rootcmd.Config() which calls rlog.Debugf — without Init the
+	// global logger is nil and the test panics.
+	rlog.Init()
+	m.Run()
+}
 
 func TestNewPullCmd(t *testing.T) {
 	buf := new(bytes.Buffer)
@@ -24,6 +33,7 @@ func TestNewPullCmd(t *testing.T) {
 		Locales:   []string{"en-US", "fr-FR"},
 		Progress:  "20%",
 		Retrieve:  "none",
+		Threads:   20,
 	}
 	filesSrv.On("RunPull", mock.Anything, params).Run(func(args mock.Arguments) {
 		if _, err := fmt.Fprintf(buf, "RunPull was called with %d args\n", len(args)); err != nil {

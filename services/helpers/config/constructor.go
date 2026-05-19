@@ -23,7 +23,6 @@ type Params struct {
 	Secret     string
 	Account    string
 	Project    string
-	Threads    uint32
 	IsInit     bool
 	IsFiles    bool
 	IsProjects bool
@@ -136,10 +135,6 @@ func BuildConfigFromFlags(params Params) (Config, error) {
 				KeyName:    "project_id",
 			}
 		}
-	}
-
-	if config.Threads == 0 {
-		config.Threads = params.Threads
 	}
 
 	return config, nil
