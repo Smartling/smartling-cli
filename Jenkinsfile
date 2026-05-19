@@ -33,7 +33,7 @@ pipeline {
             }
             steps {
                 sh '''
-                  aws-profile connectors-staging aws s3 cp ${WORKSPACE}/bin s3://smartling-connectors-releases/cli/ --acl public-read --exclude "*" --include "smartling-cli_*" --exclude "*/*" --recursive
+                  aws-profile connectors-staging aws s3 cp ${WORKSPACE}/bin s3://smartling-connectors-releases/cli/ --acl public-read --exclude "*" --include "smartling-cli_*" --include "checksums.txt" --exclude "*/*" --recursive
                 '''
             }
         }
