@@ -5,37 +5,24 @@ See the [Wiki](https://github.com/Smartling/smartling-cli/wiki) page for this re
 # Development
 For developers interested in modifying the tool.
 
-## Building package
+## Building
+
+Local development build:
 
 ```
-make <target>
+go build ./...
 ```
 
-Where target is:
-
-* `deb` for building Debian packages:
-   ```
-   make deb
-   ```
-
-* `rpm` for building Fedora packages:
-   ```
-   make rpm
-   ```
-
-Specific settings can be set in built-time:
-
-*VERSION*:
+Full release build (cross-compiles all platforms and produces deb/rpm packages via [GoReleaser](https://goreleaser.com/) nfpms — requires `goreleaser` installed locally):
 
 ```
-make VERSION=<version-string> <target>
+make build
 ```
 
-*MAINTAINER*:
+Outputs land in `bin/`:
 
-```
-make MAINTAINER=<maintainer> <target>
-```
+- Per-platform binaries under `bin/smartling-cli_<os>_<arch>_<variant>/smartling-cli`
+- Linux packages: `bin/smartling_<version>_linux_amd64.deb`, `.rpm`, plus arm64 variants
+- `bin/checksums.txt`
 
-An executable named `smartling-cli` should become available in your
-`$GOPATH/bin`.
+Package metadata (maintainer, description, license) and cross-compile targets are configured in `.goreleaser.yml`.

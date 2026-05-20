@@ -8,7 +8,7 @@ import (
 // These variables will be set via ldflags at build time.
 var (
 	// CliVersion is version information
-	CliVersion = "3.2"
+	CliVersion = "3.3"
 	// CommitID is the git commit hash
 	CommitID = ""
 	// Date is date of binary built

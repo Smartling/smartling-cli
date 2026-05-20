@@ -1,5 +1,4 @@
-MAINTAINER = Alex Koval <akoval@smartling.com>
-DESCRIPTION = CLI for Smartling Platform
+VERSION := $(shell grep -E '^\s+CliVersion = ' cmd/helpers/build/build.go | sed -E 's/.*"([^"]+)".*/\1/')
 
 .PHONY: all
 all: clean get build
@@ -7,7 +6,8 @@ all: clean get build
 
 .PHONY: build
 build:
-	goreleaser release --clean --skip=publish --snapshot
+	@echo "Building version $(VERSION)"
+	GORELEASER_CURRENT_TAG=$(VERSION) goreleaser release --clean --skip=publish --snapshot
 
 .PHONY: get
 get:
@@ -15,65 +15,8 @@ get:
 
 .PHONY: clean
 clean:
-	rm -rf bin pkg
+	rm -rf bin
 	mkdir bin
-
-_PKG = pkg/build
-
-_CONTROL = echo >> $(_PKG)/DEBIAN/control
-
-_LINUX_AMD64_BIN = $(shell ls bin/*linux_amd64*/smartling-cli 2>/dev/null | head -1)
-
-_REQUIRE_LINUX_BIN = \
-	test -n "$(_LINUX_AMD64_BIN)" || { \
-		echo "ERROR: linux_amd64 binary not found under bin/. Run 'make build' first." >&2; \
-		exit 1; \
-	}
-
-.PHONY: deb
-deb: _pkg-init
-	@$(_REQUIRE_LINUX_BIN)
-	mkdir -p $(_PKG)/usr/bin
-	cp $(_LINUX_AMD64_BIN) $(_PKG)/usr/bin/smartling
-	mkdir -p $(_PKG)/DEBIAN
-	$(_CONTROL) "Package: smartling"
-	$(_CONTROL) "Version: $(VERSION)"
-	$(_CONTROL) "Architecture: all"
-	$(_CONTROL) "Section: unknown"
-	$(_CONTROL) "Priority: extra"
-	$(_CONTROL) "Maintainer: $(MAINTAINER)"
-	$(_CONTROL) "Homepage: https://github.com/Smartling/smartling-cli"
-	$(_CONTROL) "Description: $(DESCRIPTION)"
-	dpkg -b $(_PKG) pkg/smartling-$(VERSION)_all.deb
-	rm -rf $(_PKG)
-
-_SPEC = echo >> $(_PKG)/smartling.spec
-
-.PHONY: rpm
-rpm: _pkg-init
-	@$(_REQUIRE_LINUX_BIN)
-	$(_SPEC) "Name: smartling"
-	$(_SPEC) "Version: $(VERSION)"
-	$(_SPEC) "Release: 1%{?dist}"
-	$(_SPEC) "Summary: $(DESCRIPTION)"
-	$(_SPEC) "License: MIT"
-	$(_SPEC) "%description"
-	$(_SPEC) "%install"
-	$(_SPEC) "mkdir -p %{buildroot}/%{_bindir}"
-	$(_SPEC) "cp $(PWD)/$(_LINUX_AMD64_BIN) %{buildroot}/%{_bindir}/smartling"
-	$(_SPEC) "%files"
-	$(_SPEC) "%{_bindir}/smartling"
-	$(_SPEC) "%define _rpmdir $(_PKG)"
-	rpmbuild -bb $(_PKG)/smartling.spec
-	cp $(_PKG)/*/*.rpm pkg/
-	rm -rf $(_PKG)
-
-.PHONY: _pkg-init
-_pkg-init:
-	rm -rf $(_PKG)
-	mkdir -p $(_PKG)
-	$(eval VERSION ?= \
-		$(shell git rev-list --count HEAD).$(shell git rev-parse --short HEAD))
 
 .PHONY: docs
 docs:

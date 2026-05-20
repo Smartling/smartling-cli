@@ -29,17 +29,19 @@ The CLI uses dependency injection through service initializers, making it testab
 The project uses a Makefile-based build system that cross-compiles for multiple platforms:
 
 ```bash
-make all           # Clean, get dependencies, and build for all platforms
-make build         # Build for darwin, windows, linux (outputs to bin/ directory)
-go build          # Build for current platform only
+make all           # Clean, fetch deps, and run a full release build
+make build         # Cross-compile via GoReleaser (requires `goreleaser` installed)
+go build          # Build for current platform only (fast dev iteration)
 ```
 
-**Build outputs:**
-- `bin/smartling.darwin` - macOS binary
-- `bin/smartling.windows.exe` - Windows binary
-- `bin/smartling.linux` - Linux binary
+`make build` invokes GoReleaser configured via `.goreleaser.yml`. It cross-compiles for linux/darwin/windows × amd64/arm64 and, for linux, also produces `.deb` and `.rpm` packages via nfpms.
 
-**Build time:** Typically takes 10-30 seconds depending on whether dependencies need to be downloaded.
+**Build outputs (under `bin/`):**
+- Per-target binaries: `bin/smartling-cli_<os>_<arch>_<variant>/smartling-cli` (e.g. `bin/smartling-cli_linux_amd64_v1/smartling-cli`, `bin/smartling-cli_windows_amd64_v1/smartling-cli.exe`)
+- Linux packages: `bin/smartling_<version>_linux_amd64.deb`, `.rpm`, plus arm64 variants — install the binary at `/usr/bin/smartling-cli` with a `/usr/bin/smartling` symlink
+- `bin/checksums.txt` — SHA256 sums for verification
+
+**Build time:** Cross-compile typically 5-15 seconds; `go build` for one platform is under 5 seconds.
 
 ### Testing
 
@@ -78,10 +80,8 @@ make docs         # Generate command documentation
 ```
 
 ### Package Building
-```bash
-make deb VERSION=1.0.0    # Build Debian package
-make rpm VERSION=1.0.0    # Build RPM package
-```
+
+`.deb` and `.rpm` packages are produced automatically by `make build` via GoReleaser's nfpms integration — no separate make targets. Package metadata (name, maintainer, license, install paths) lives in the `nfpms` block of `.goreleaser.yml`.
 
 ## Configuration
 
