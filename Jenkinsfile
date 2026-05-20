@@ -11,7 +11,13 @@ pipeline {
         stage('Build') {
             steps {
                 sh "docker pull goreleaser/goreleaser:v2.15.4"
-                sh "docker run -t --rm -v ${WORKSPACE}:/go/src/cli -w /go/src/cli goreleaser/goreleaser:v2.15.4 make build"
+                sh """
+                  docker run -t --rm \\
+                    -v ${WORKSPACE}:/go/src/cli -w /go/src/cli \\
+                    --entrypoint sh \\
+                    goreleaser/goreleaser:v2.15.4 \\
+                    -c 'apk add --no-cache make && make build'
+                """
             }
         }
 

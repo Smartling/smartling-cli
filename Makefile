@@ -1,4 +1,7 @@
-VERSION := $(shell grep -E '^\s+CliVersion = ' cmd/helpers/build/build.go | sed -E 's/.*"([^"]+)".*/\1/')
+VERSION := $(shell grep -E '\bCliVersion\s*=\s*"' cmd/helpers/build/build.go | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+ifeq ($(VERSION),)
+$(error Could not extract CliVersion from cmd/helpers/build/build.go)
+endif
 
 .PHONY: all
 all: clean get build

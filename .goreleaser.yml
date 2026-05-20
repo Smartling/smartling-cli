@@ -6,12 +6,12 @@ dist: bin
 env:
   - CGO_ENABLED=0
 
+before:
+  hooks:
+    - sh -c 'test -n "$GORELEASER_CURRENT_TAG" || { echo "GORELEASER_CURRENT_TAG must be set; use make build"; exit 1; }'
+
 release:
-  name_template: "Version {{.Version}}"
   disable: true
-  github:
-    owner: Smartling
-    name: smartling-cli
 
 builds:
   -
@@ -41,7 +41,7 @@ snapshot:
 
 archives:
   - formats: [binary]
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    name_template: "{{ .ProjectName }}_latest_{{ .Os }}_{{ .Arch }}"
 
 nfpms:
   - id: smartling
