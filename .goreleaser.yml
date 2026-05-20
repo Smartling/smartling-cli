@@ -1,0 +1,67 @@
+version: 2
+
+project_name: smartling-cli
+dist: bin
+
+env:
+  - CGO_ENABLED=0
+
+before:
+  hooks:
+    - sh -c 'test -n "$GORELEASER_CURRENT_TAG" || { echo "GORELEASER_CURRENT_TAG must be set; use make build"; exit 1; }'
+
+release:
+  disable: true
+
+builds:
+  -
+    binary: smartling-cli
+
+    goos:
+      - linux
+      - darwin
+      - windows
+
+    goarch:
+      - amd64
+      - arm64
+
+    flags:
+      - -trimpath
+
+    ldflags:
+      - -s -w
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.CliVersion={{ .Tag }}
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.CommitID={{ .FullCommit }}
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.Date={{ .Date }}
+      - -X github.com/Smartling/smartling-cli/cmd/helpers/build.BuiltBy=GoReleaser
+
+snapshot:
+  version_template: "{{ .Tag }}"
+
+archives:
+  - formats: [binary]
+    name_template: "{{ .ProjectName }}_latest_{{ .Os }}_{{ .Arch }}"
+
+nfpms:
+  - id: smartling
+    package_name: smartling
+    file_name_template: "{{ .PackageName }}_latest_{{ .Os }}_{{ .Arch }}"
+    vendor: Smartling
+    homepage: https://github.com/Smartling/smartling-cli
+    maintainer: Alex Koval <akoval@smartling.com>
+    description: CLI for Smartling Platform
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+    section: unknown
+    priority: extra
+    contents:
+      - src: /usr/bin/smartling-cli
+        dst: /usr/bin/smartling
+        type: symlink
+
+checksum:
+  name_template: "checksums.txt"

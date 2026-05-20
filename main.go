@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Smartling/smartling-cli/cmd"
+	"github.com/Smartling/smartling-cli/cmd/build"
 	"github.com/Smartling/smartling-cli/cmd/docs"
 	"github.com/Smartling/smartling-cli/cmd/files"
 	deletecmd "github.com/Smartling/smartling-cli/cmd/files/delete"
@@ -31,6 +32,9 @@ func main() {
 
 	docsCmd := docs.NewDocsCmd()
 	rootCmd.AddCommand(docsCmd)
+
+	buildCmd := build.NewBuildCmd()
+	rootCmd.AddCommand(buildCmd)
 
 	initSrvInitializer := initialize.NewSrvInitializer()
 	initCmd := initialize.NewInitCmd(initSrvInitializer)

@@ -1,16 +1,16 @@
-MAINTAINER = Alex Koval <akoval@smartling.com>
-DESCRIPTION = CLI for Smartling Platform
-
-LDFLAGS ?= -s -w
-GO_BUILD_FLAGS ?= -mod=mod -trimpath -ldflags="$(LDFLAGS)"
+VERSION := $(shell grep -E '\bCliVersion\s*=\s*"' cmd/helpers/build/build.go | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+ifeq ($(VERSION),)
+$(error Could not extract CliVersion from cmd/helpers/build/build.go)
+endif
 
 .PHONY: all
 all: clean get build
 	@
 
 .PHONY: build
-build: darwin windows.exe linux
-	@
+build:
+	@echo "Building version $(VERSION)"
+	GORELEASER_CURRENT_TAG=$(VERSION) goreleaser release --clean --skip=publish --snapshot
 
 .PHONY: get
 get:
@@ -18,58 +18,8 @@ get:
 
 .PHONY: clean
 clean:
-	rm -rf bin pkg
+	rm -rf bin
 	mkdir bin
-
-_PKG = pkg/build
-
-_CONTROL = echo >> $(_PKG)/DEBIAN/control
-
-.PHONY: deb
-deb: _pkg-init
-	mkdir -p $(_PKG)/usr/bin
-	cp bin/smartling.linux $(_PKG)/usr/bin/smartling
-	mkdir -p $(_PKG)/DEBIAN
-	$(_CONTROL) "Package: smartling"
-	$(_CONTROL) "Version: $(VERSION)"
-	$(_CONTROL) "Architecture: all"
-	$(_CONTROL) "Section: unknown"
-	$(_CONTROL) "Priority: extra"
-	$(_CONTROL) "Maintainer: $(MAINTAINER)"
-	$(_CONTROL) "Homepage: https://github.com/Smartling/smartling-cli"
-	$(_CONTROL) "Description: $(DESCRIPTION)"
-	dpkg -b $(_PKG) pkg/smartling-$(VERSION)_all.deb
-	rm -rf $(_PKG)
-
-_SPEC = echo >> $(_PKG)/smartling.spec
-
-.PHONY: rpm
-rpm: _pkg-init
-	$(_SPEC) "Name: smartling"
-	$(_SPEC) "Version: $(VERSION)"
-	$(_SPEC) "Release: 1%{?dist}"
-	$(_SPEC) "Summary: $(DESCRIPTION)"
-	$(_SPEC) "License: MIT"
-	$(_SPEC) "%description"
-	$(_SPEC) "%install"
-	$(_SPEC) "mkdir -p %{buildroot}/%{_bindir}"
-	$(_SPEC) "cp $(PWD)/bin/smartling.linux %{buildroot}/%{_bindir}/smartling"
-	$(_SPEC) "%files"
-	$(_SPEC) "%{_bindir}/smartling"
-	$(_SPEC) "%define _rpmdir $(_PKG)"
-	rpmbuild -bb $(_PKG)/smartling.spec
-	cp $(_PKG)/*/*.rpm pkg/
-	rm -rf $(_PKG)
-
-.PHONY: _pkg-init
-_pkg-init:
-	rm -rf $(_PKG)
-	mkdir -p $(_PKG)
-	$(eval VERSION ?= \
-		$(shell git rev-list --count HEAD).$(shell git rev-parse --short HEAD))
-
-%:
-	CGO_ENABLED=0 GOOS=$(basename $@) go build $(GO_BUILD_FLAGS) -o bin/smartling.$@
 
 .PHONY: docs
 docs:

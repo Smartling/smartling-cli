@@ -3,6 +3,8 @@ package cmd
 import (
 	"strings"
 
+	"github.com/Smartling/smartling-cli/cmd/helpers/build"
+
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +32,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "smartling-cli",
 		Short:   "Manage translation files using Smartling CLI.",
-		Version: "3.2",
+		Version: build.CliVersion,
 		Long: `Manage translation files using Smartling CLI.
                 Complete documentation is available at https://www.smartling.com`,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
