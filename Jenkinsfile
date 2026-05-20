@@ -39,7 +39,15 @@ pipeline {
             }
             steps {
                 sh '''
-                  aws-profile connectors-staging aws s3 cp ${WORKSPACE}/bin s3://smartling-connectors-releases/cli/ --acl public-read --exclude "*" --include "smartling-cli*" --include "smartling_*.deb" --include "smartling_*.rpm" --include "checksums.txt" --recursive
+                  cd ${WORKSPACE}/bin
+                  for path in smartling-cli* smartling_*.deb smartling_*.rpm checksums.txt; do
+                    [ -e "$path" ] || continue
+                    if [ -d "$path" ]; then
+                      aws-profile connectors-staging aws s3 cp "$path" "s3://smartling-connectors-releases/cli/$path" --recursive --acl public-read
+                    else
+                      aws-profile connectors-staging aws s3 cp "$path" "s3://smartling-connectors-releases/cli/$path" --acl public-read
+                    fi
+                  done
                 '''
             }
         }
