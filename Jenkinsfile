@@ -13,7 +13,7 @@ pipeline {
                 sh "docker pull goreleaser/goreleaser:v2.15.4"
                 sh """
                   docker run -t --rm \\
-                    -v ${WORKSPACE}:/go/src/cli -w /go/src/cli \\
+                    -v "${WORKSPACE}:/go/src/cli" -w /go/src/cli \\
                     --entrypoint sh \\
                     goreleaser/goreleaser:v2.15.4 \\
                     -c 'apk add --no-cache make && make build'
@@ -39,7 +39,7 @@ pipeline {
             }
             steps {
                 sh '''
-                  cd ${WORKSPACE}/bin
+                  cd "${WORKSPACE}/bin"
                   for path in smartling-cli* smartling_*.deb smartling_*.rpm checksums.txt; do
                     [ -e "$path" ] || continue
                     if [ -d "$path" ]; then
