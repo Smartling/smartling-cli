@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/Smartling/smartling-cli/services/projects"
-	projectconfig "github.com/Smartling/smartling-cli/services/projects/config"
+	"github.com/Smartling/smartling-cli/services/projects/config"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -17,8 +17,7 @@ import (
 func NewMockService(t interface {
 	mock.TestingT
 	Cleanup(func())
-},
-) *MockService {
+}) *MockService {
 	mock := &MockService{}
 	mock.Mock.Test(t)
 
@@ -90,8 +89,8 @@ func (_c *MockService_RunInfo_Call) Run(run func(ctx context.Context)) *MockServ
 	return _c
 }
 
-func (_c *MockService_RunInfo_Call) Return(extendedConfig projectconfig.Extended, err error) *MockService_RunInfo_Call {
-	_c.Call.Return(extendedConfig, err)
+func (_c *MockService_RunInfo_Call) Return(extended projectconfig.Extended, err error) *MockService_RunInfo_Call {
+	_c.Call.Return(extended, err)
 	return _c
 }
 
