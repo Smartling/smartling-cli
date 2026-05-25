@@ -135,7 +135,7 @@ func TestEnumerateJobFiles_EmptyFiles(t *testing.T) {
 func TestRunPull_JobWithNoFiles_ReturnsError(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "", "job-empty-files").
+		SearchByName(context.Background(), "proj-1", "job-empty-files").
 		Return([]sdkjob.GetJobResponse{
 			{TranslationJobUID: "job-empty-files-uid", JobName: "job-empty-files", TargetLocaleIDs: []string{"fr-FR"}},
 		}, nil)
@@ -155,7 +155,7 @@ func TestRunPull_JobWithNoFiles_ReturnsError(t *testing.T) {
 		Config:    config.Config{ProjectID: "proj-1"},
 	}
 
-	err := s.RunPull(context.Background(), PullParams{JobUIDOrName: "job-empty-files"})
+	err := s.RunPull(context.Background(), PullParams{ProjectUID: "proj-1", JobUIDOrName: "job-empty-files"})
 	if err == nil {
 		t.Fatal("expected error for job with no files, got nil")
 	}
@@ -185,7 +185,7 @@ func TestRunPull_DryRun_DoesNotCallAPIClient(t *testing.T) {
 	// or DownloadFile in dry-run mode this test will nil-panic and fail.
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "", "job-1").
+		SearchByName(context.Background(), "proj-1", "job-1").
 		Return([]sdkjob.GetJobResponse{
 			{TranslationJobUID: "job-1", JobName: "job-1"},
 		}, nil)
@@ -209,6 +209,7 @@ func TestRunPull_DryRun_DoesNotCallAPIClient(t *testing.T) {
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
+		ProjectUID:   "proj-1",
 		JobUIDOrName: "job-1",
 		DryRun:       true,
 	})
@@ -220,7 +221,7 @@ func TestRunPull_DryRun_DoesNotCallAPIClient(t *testing.T) {
 func TestRunPull_EmptyLocaleIntersection_Errors(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "", "job-1").
+		SearchByName(context.Background(), "proj-1", "job-1").
 		Return([]sdkjob.GetJobResponse{
 			{TranslationJobUID: "job-1", JobName: "job-1"},
 		}, nil)
@@ -243,6 +244,7 @@ func TestRunPull_EmptyLocaleIntersection_Errors(t *testing.T) {
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
+		ProjectUID:   "proj-1",
 		JobUIDOrName: "job-1",
 		Locales:      []string{"ja-JP"},
 		DryRun:       true,
@@ -258,7 +260,7 @@ func TestRunPull_EmptyLocaleIntersection_Errors(t *testing.T) {
 func TestRunPull_JobUIDPlusURI_FiltersJobFiles(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "", "job-1").
+		SearchByName(context.Background(), "proj-1", "job-1").
 		Return([]sdkjob.GetJobResponse{
 			{TranslationJobUID: "job-1", JobName: "job-1"},
 		}, nil)
@@ -291,6 +293,7 @@ func TestRunPull_JobUIDPlusURI_FiltersJobFiles(t *testing.T) {
 	os.Stdout = w
 
 	err := s.RunPull(context.Background(), PullParams{
+		ProjectUID:   "proj-1",
 		JobUIDOrName: "job-1",
 		URI:          "**.json",
 		DryRun:       true,
@@ -317,7 +320,7 @@ func TestRunPull_JobUIDPlusURI_FiltersJobFiles(t *testing.T) {
 func TestRunPull_JobWithNoLocales_ReturnsError(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "", "job-empty").
+		SearchByName(context.Background(), "proj-1", "job-empty").
 		Return([]sdkjob.GetJobResponse{
 			{TranslationJobUID: "job-empty", JobName: "job-empty"},
 		}, nil)
@@ -340,7 +343,7 @@ func TestRunPull_JobWithNoLocales_ReturnsError(t *testing.T) {
 		Config:    config.Config{ProjectID: "proj-1"},
 	}
 
-	err := s.RunPull(context.Background(), PullParams{JobUIDOrName: "job-empty"})
+	err := s.RunPull(context.Background(), PullParams{ProjectUID: "proj-1", JobUIDOrName: "job-empty"})
 	if err == nil {
 		t.Fatal("expected error for job with no target locales, got nil")
 	}
@@ -352,7 +355,7 @@ func TestRunPull_JobWithNoLocales_ReturnsError(t *testing.T) {
 func TestRunPull_JobUIDPlusURIWithNoMatch_ReturnsError(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "", "job-1").
+		SearchByName(context.Background(), "proj-1", "job-1").
 		Return([]sdkjob.GetJobResponse{
 			{TranslationJobUID: "job-1", JobName: "job-1"},
 		}, nil)
@@ -379,6 +382,7 @@ func TestRunPull_JobUIDPlusURIWithNoMatch_ReturnsError(t *testing.T) {
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
+		ProjectUID:   "proj-1",
 		JobUIDOrName: "job-1",
 		URI:          "**.no_such_extension",
 		DryRun:       true,
@@ -404,7 +408,7 @@ func TestRunPull_Resume_SkipsExistingFiles(t *testing.T) {
 	}
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "", "job-1").
+		SearchByName(context.Background(), "proj-1", "job-1").
 		Return([]sdkjob.GetJobResponse{
 			{TranslationJobUID: "job-1", JobName: "job-1"},
 		}, nil)
@@ -438,6 +442,7 @@ func TestRunPull_Resume_SkipsExistingFiles(t *testing.T) {
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
+		ProjectUID:   "proj-1",
 		JobUIDOrName: "job-1",
 		Directory:    tmpDir,
 		Resume:       true,
