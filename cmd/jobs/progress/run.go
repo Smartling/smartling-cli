@@ -5,13 +5,14 @@ import (
 	"errors"
 	"fmt"
 
-	jobapi "github.com/Smartling/api-sdk-go/api/job"
 	jobscmd "github.com/Smartling/smartling-cli/cmd/jobs"
 	"github.com/Smartling/smartling-cli/output"
-	"github.com/Smartling/smartling-cli/output/jobs"
+	"github.com/Smartling/smartling-cli/output/static"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	srv "github.com/Smartling/smartling-cli/services/jobs"
+
+	jobapi "github.com/Smartling/api-sdk-go/api/job"
 )
 
 func run(ctx context.Context,
@@ -41,7 +42,7 @@ func run(ctx context.Context,
 		return err
 	}
 
-	outputFormat := jobs.GetOutputFormat(outputParams.Format)
+	outputFormat := static.GetOutputFormat[srv.ProgressOutput](outputParams.Format)
 	outputFormat.FormatAndRender(progressOutput)
 	return nil
 }

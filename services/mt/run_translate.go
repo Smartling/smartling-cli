@@ -17,6 +17,7 @@ import (
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
 	smfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
+	"github.com/Smartling/api-sdk-go/helpers/uid"
 )
 
 // TranslateParams is the parameters for the RunTranslate method.
@@ -28,7 +29,7 @@ type TranslateParams struct {
 	Directives       map[string]string
 	Progress         bool
 	OverrideFileType string
-	AccountUID       api.AccountUID
+	AccountUID       uid.AccountUID
 }
 
 func (s service) RunTranslate(ctx context.Context, params TranslateParams, files []string, updates chan any) ([]TranslateOutput, error) {

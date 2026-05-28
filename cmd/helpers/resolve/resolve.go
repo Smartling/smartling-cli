@@ -1,4 +1,4 @@
-package mt
+package resolve
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func resolveConfigDirectory(cmd *cobra.Command) string {
+func ConfigDirectory(cmd *cobra.Command) string {
 	flag := cmd.Root().PersistentFlags().Lookup("operation-directory")
 	if flag == nil {
 		return ""
@@ -23,7 +23,7 @@ func resolveConfigDirectory(cmd *cobra.Command) string {
 	return flag.DefValue
 }
 
-func resolveConfigFile(cmd *cobra.Command) string {
+func ConfigFile(cmd *cobra.Command) string {
 	flag := cmd.Root().PersistentFlags().Lookup("config")
 	if flag == nil {
 		return ""

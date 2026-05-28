@@ -3,6 +3,7 @@ package mt
 import (
 	"os"
 
+	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 
 	"github.com/goccy/go-yaml"
@@ -34,8 +35,8 @@ type FileConfigMT struct {
 
 // BindFileConfig binds file config
 func BindFileConfig(cmd *cobra.Command) (FileConfig, error) {
-	dir := resolveConfigDirectory(cmd)
-	filename := resolveConfigFile(cmd)
+	dir := resolve.ConfigDirectory(cmd)
+	filename := resolve.ConfigFile(cmd)
 	path, err := config.GetPath(dir, filename, false)
 	if err != nil {
 		return FileConfig{}, err

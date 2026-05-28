@@ -1,10 +1,15 @@
 package resolve
 
 import (
+	"fmt"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
-	sdk "github.com/Smartling/api-sdk-go/api/mt"
+	"github.com/Smartling/api-sdk-go/helpers/uid"
 	"github.com/Smartling/smartling-cli/services/helpers/env"
+	"github.com/spf13/cobra"
 
 	"github.com/spf13/pflag"
 )
@@ -67,7 +72,7 @@ func FallbackBool(flag *pflag.Flag, param BoolParam) bool {
 	return true
 }
 
-func FallbackAccount(flag *pflag.Flag, accountIDConfig string) (sdk.AccountUID, error) {
+func FallbackAccount(flag *pflag.Flag, accountIDConfig string) (uid.AccountUID, error) {
 	var config *string
 	if accountIDConfig != "" {
 		config = &accountIDConfig
@@ -76,9 +81,66 @@ func FallbackAccount(flag *pflag.Flag, accountIDConfig string) (sdk.AccountUID, 
 		FlagName: "account",
 		Config:   config,
 	})
-	accountUID := sdk.AccountUID(accountUIDParam)
+	accountUID := uid.AccountUID(accountUIDParam)
 	if err := accountUID.Validate(); err != nil {
 		return "", err
 	}
 	return accountUID, nil
+}
+
+// FallbackStringArray resolves a []string from flag → env (comma-separated) → config.
+func FallbackStringArray(cmd *cobra.Command, flagName string, configVal []string) []string {
+	flag := cmd.Flags().Lookup(flagName)
+	if flag != nil && flag.Changed {
+		vals, _ := cmd.Flags().GetStringArray(flagName)
+		return vals
+	}
+	envVarName := env.VarNameFromCLIFlagName(flagName)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
+		return strings.Split(val, ",")
+	}
+	if len(configVal) > 0 {
+		return configVal
+	}
+	return nil
+}
+
+// FallbackInt resolves an int from flag → env → config.
+func FallbackInt(cmd *cobra.Command, flagName string, configVal int) int {
+	flag := cmd.Flags().Lookup(flagName)
+	if flag != nil && flag.Changed {
+		v, _ := cmd.Flags().GetInt(flagName)
+		return v
+	}
+	envVarName := env.VarNameFromCLIFlagName(flagName)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
+		if i, err := strconv.Atoi(val); err == nil {
+			return i
+		}
+	}
+	return configVal
+}
+
+// FallbackDate resolves a time.Time from flag → env → config (all RFC3339 strings).
+func FallbackDate(cmd *cobra.Command, flagName string, configVal string) (time.Time, error) {
+	raw := ""
+	flag := cmd.Flags().Lookup(flagName)
+	if flag != nil && flag.Changed {
+		raw = flag.Value.String()
+	} else {
+		envVarName := env.VarNameFromCLIFlagName(flagName)
+		if val, isSet := os.LookupEnv(envVarName); isSet {
+			raw = val
+		} else {
+			raw = configVal
+		}
+	}
+	if raw == "" {
+		return time.Time{}, nil
+	}
+	t, err := time.Parse(time.RFC3339, raw)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid --%s (RFC3339): %w", flagName, err)
+	}
+	return t, nil
 }

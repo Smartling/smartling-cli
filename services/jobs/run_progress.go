@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	api "github.com/Smartling/api-sdk-go/api/mt"
 	"github.com/Smartling/smartling-cli/services/jobs/jobresolver"
+
+	"github.com/Smartling/api-sdk-go/helpers/uid"
 )
 
 var (
@@ -16,7 +17,7 @@ var (
 
 // ProgressParams is the parameters for the RunProgress method.
 type ProgressParams struct {
-	AccountUID   api.AccountUID
+	AccountUID   uid.AccountUID
 	ProjectUID   string
 	JobUIDOrName string
 }
@@ -65,4 +66,25 @@ type ProgressOutput struct {
 	TotalWordCount    uint32
 	PercentComplete   float64
 	JSON              []byte
+}
+
+// JSONBytes returns the raw JSON payload of the progress response.
+func (p ProgressOutput) JSONBytes() []byte { return p.JSON }
+
+// SimpleLines returns a human-readable summary of the progress.
+func (p ProgressOutput) SimpleLines() []string {
+	return []string{
+		fmt.Sprintf("Total word count:  %d", p.TotalWordCount),
+		fmt.Sprintf("Percent complete:  %v", p.PercentComplete),
+	}
+}
+
+// TableData returns the progress with one column per field and a single
+// row of values.
+func (p ProgressOutput) TableData() ([]string, [][]string) {
+	headers := []string{"TRANSLATION JOB UID", "TOTAL WORD COUNT", "PERCENT COMPLETE"}
+	rows := [][]string{
+		{p.TranslationJobUID, fmt.Sprintf("%d", p.TotalWordCount), fmt.Sprintf("%v", p.PercentComplete)},
+	}
+	return headers, rows
 }
