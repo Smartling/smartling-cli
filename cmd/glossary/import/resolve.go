@@ -1,6 +1,7 @@
 package glimport
 
 import (
+	"path/filepath"
 	"strings"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
@@ -14,7 +15,7 @@ import (
 )
 
 func resolveParams(cmd *cobra.Command, fileConfig glossarycmd.FileConfig, glossaryUIDOrName, inFile string) (srv.ImportParams, error) {
-	rlog.Debugf("resolving params")
+	rlog.Debugf("resolving import params")
 
 	cnf, err := rootcmd.Config()
 	if err != nil {
@@ -30,29 +31,38 @@ func resolveParams(cmd *cobra.Command, fileConfig glossarycmd.FileConfig, glossa
 		return srv.ImportParams{}, err
 	}
 
-	cfg := fileConfig.Glossary.Export
+	cfg := fileConfig.Glossary.Import
 
-	fileType := resolve.FallbackString(cmd.Flags().Lookup(fileTypeFlag), resolve.StringParam{FlagName: fileTypeFlag, Config: &cfg.FileType})
-	fileType = strings.ToLower(fileType)
-	tbxVersion := resolve.FallbackString(cmd.Flags().Lookup(tbxVersionFlag), resolve.StringParam{FlagName: tbxVersionFlag, Config: &cfg.TbxVersion})
-	tbxVersion = strings.ToLower(tbxVersion)
-	params := srv.ImportParams{
+	archiveMode := resolve.FallbackBool(cmd.Flags().Lookup(archiveModeFlag), resolve.BoolParam{FlagName: archiveModeFlag, Config: &cfg.ArchiveMode})
+	mediaType := resolve.FallbackString(cmd.Flags().Lookup(mediaTypeFlag), resolve.StringParam{FlagName: mediaTypeFlag, Config: &cfg.MediaType})
+	if mediaType == "" {
+		mediaType = mediaTypeFromPath(inFile)
+	}
+
+	return srv.ImportParams{
 		AccountUID:        accountUID,
 		GlossaryUIDOrName: glossaryUIDOrName,
-		ArchiveMode:       resolve.FallbackBool(cmd.Flags().Lookup(archiveModeFlag), resolve.BoolParam{FlagName: archiveModeFlag, Config: &cfg.ArchiveMode}),
+		ArchiveMode:       archiveMode,
 		ImportFile: srv.ImportFile{
-			Path:      "",
-			Name:      "",
-			MediaType: "",
+			Path:      inFile,
+			Name:      filepath.Base(inFile),
+			MediaType: mediaType,
 		},
-	}
+	}, nil
+}
 
-	if params.Filter.Created.Date, err = resolve.FallbackDate(cmd, createdDateFlag, cfg.Filter.Created.Date); err != nil {
-		return srv.ImportParams{}, err
+// mediaTypeFromPath returns a best-effort MIME type for a Smartling
+// glossary file based on its extension. Unknown extensions fall back to
+// "application/octet-stream".
+func mediaTypeFromPath(path string) string {
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".csv":
+		return "text/csv"
+	case ".xlsx":
+		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	case ".tbx", ".xml":
+		return "application/xml"
+	default:
+		return "application/octet-stream"
 	}
-	if params.Filter.LastModified.Date, err = resolve.FallbackDate(cmd, lastModifiedDateFlag, cfg.Filter.LastModified.Date); err != nil {
-		return srv.ImportParams{}, err
-	}
-
-	return params, nil
 }

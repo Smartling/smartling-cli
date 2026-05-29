@@ -15,7 +15,15 @@ type FileConfig struct {
 	Glossary struct {
 		Export ExportConfig `yaml:"export,omitzero"`
 		Create CreateConfig `yaml:"create,omitzero"`
+		Import ImportConfig `yaml:"import,omitzero"`
 	} `yaml:"glossary,omitzero"`
+}
+
+// ImportConfig mirrors the flags accepted by `glossary import`. Each field
+// maps to a flag on the command (and to a Smartling Glossary Import API field).
+type ImportConfig struct {
+	ArchiveMode bool   `yaml:"archive_mode,omitzero"`
+	MediaType   string `yaml:"media_type,omitzero"`
 }
 
 type ExportConfig struct {
