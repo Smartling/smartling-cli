@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"slices"
 	"strings"
 	"time"
 
 	"github.com/Smartling/smartling-cli/services/glossary/glossaryresolver"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/glossary"
 	smerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
@@ -41,16 +43,29 @@ func (s service) RunExport(ctx context.Context, params ExportParams) (ExportOutp
 	if err != nil {
 		return ExportOutput{}, fmt.Errorf("failed to get api export glossary: %w", err)
 	}
+	defer func() {
+		if err := resp.Data.Close(); err != nil {
+			rlog.Errorf("failed to close export response body: %v", err)
+		}
+	}()
 
 	outFile := params.OutFile
 	if outFile == "" {
 		outFile = resp.Filename
 	}
-	if err := os.WriteFile(outFile, resp.Data, 0o644); err != nil {
-		return ExportOutput{}, fmt.Errorf("failed to write export file %q: %w", outFile, err)
+	f, err := os.Create(outFile)
+	if err != nil {
+		return ExportOutput{}, fmt.Errorf("failed to create export file %q: %w", outFile, err)
+	}
+	written, copyErr := io.Copy(f, resp.Data)
+	if closeErr := f.Close(); closeErr != nil && copyErr == nil {
+		copyErr = closeErr
+	}
+	if copyErr != nil {
+		return ExportOutput{}, fmt.Errorf("failed to write export file %q: %w", outFile, copyErr)
 	}
 
-	return toExportOutput(glossaryUID, outFile, params.FileType, resp), nil
+	return toExportOutput(glossaryUID, outFile, params.FileType, resp, uint64(written)), nil
 }
 
 // ExportFilter mirrors the Smartling Glossary Export API `filter` object.
@@ -151,7 +166,7 @@ type ExportOutput struct {
 	GlossaryUID  string
 	OutFile      string
 	FileType     string
-	BytesWritten int
+	BytesWritten uint64
 	JSON         []byte
 }
 
@@ -223,12 +238,12 @@ func toApiExportGlossaryRequest(params ExportParams) api.ExportGlossaryRequest {
 	return req
 }
 
-func toExportOutput(glossaryUID, outFile, fileType string, resp api.ExportGlossaryResponse) ExportOutput {
+func toExportOutput(glossaryUID, outFile, fileType string, resp api.ExportGlossaryResponse, bytesWritten uint64) ExportOutput {
 	out := ExportOutput{
 		GlossaryUID:  glossaryUID,
 		OutFile:      outFile,
 		FileType:     fileType,
-		BytesWritten: len(resp.Data),
+		BytesWritten: bytesWritten,
 	}
 
 	summary := struct {
@@ -236,13 +251,13 @@ func toExportOutput(glossaryUID, outFile, fileType string, resp api.ExportGlossa
 		OutFile      string `json:"outFile"`
 		FileType     string `json:"fileType"`
 		ContentType  string `json:"contentType"`
-		BytesWritten int    `json:"bytesWritten"`
+		BytesWritten uint64 `json:"bytesWritten"`
 	}{
 		GlossaryUID:  glossaryUID,
 		OutFile:      outFile,
 		FileType:     fileType,
 		ContentType:  resp.ContentType,
-		BytesWritten: len(resp.Data),
+		BytesWritten: bytesWritten,
 	}
 	if b, err := json.Marshal(summary); err == nil {
 		out.JSON = b
