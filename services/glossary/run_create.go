@@ -37,6 +37,9 @@ func (p CreateParams) Validate() error {
 	if p.GlossaryName == "" {
 		return smerror.ErrEmptyParam("GlossaryName")
 	}
+	if len(p.LocaleIDs) == 0 {
+		return smerror.ErrEmptyParam("LocaleIDs")
+	}
 	for _, fallbackLocale := range p.FallbackLocales {
 		if fallbackLocale.FallbackLocaleID == "" {
 			return smerror.ErrEmptyParam("FallbackLocale.FallbackLocaleID")

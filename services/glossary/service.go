@@ -10,6 +10,7 @@ type Service interface {
 	RunImport(ctx context.Context, params ImportParams) (ImportOutput, error)
 	RunExport(ctx context.Context, params ExportParams) (ExportOutput, error)
 	RunCreate(ctx context.Context, params CreateParams) (CreateOutput, error)
+	RunList(ctx context.Context, params ListParams) (ListOutput, error)
 }
 
 func NewService(glossaryApi api.Glossary) Service {

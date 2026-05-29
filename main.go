@@ -16,6 +16,7 @@ import (
 	glcreate "github.com/Smartling/smartling-cli/cmd/glossary/create"
 	glexport "github.com/Smartling/smartling-cli/cmd/glossary/export"
 	glimport "github.com/Smartling/smartling-cli/cmd/glossary/import"
+	gllist "github.com/Smartling/smartling-cli/cmd/glossary/list"
 	initialize "github.com/Smartling/smartling-cli/cmd/init"
 	"github.com/Smartling/smartling-cli/cmd/jobs"
 	"github.com/Smartling/smartling-cli/cmd/jobs/progress"
@@ -79,9 +80,11 @@ func main() {
 	glossaryImport := glimport.NewImportCmd(glossarySrvInitializer)
 	glossaryExport := glexport.NewExportCmd(glossarySrvInitializer)
 	glossaryCreate := glcreate.NewCreateCmd(glossarySrvInitializer)
+	glossaryList := gllist.NewListCmd(glossarySrvInitializer)
 	glossaryCmd.AddCommand(glossaryImport)
 	glossaryCmd.AddCommand(glossaryExport)
 	glossaryCmd.AddCommand(glossaryCreate)
+	glossaryCmd.AddCommand(glossaryList)
 
 	if err := rootCmd.Execute(); err != nil {
 		output.RenderAndExitIfErr(err)
