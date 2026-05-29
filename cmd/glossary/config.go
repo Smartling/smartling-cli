@@ -14,6 +14,7 @@ import (
 type FileConfig struct {
 	Glossary struct {
 		Export ExportConfig `yaml:"export,omitzero"`
+		Create CreateConfig `yaml:"create,omitzero"`
 	} `yaml:"glossary,omitzero"`
 }
 
@@ -76,6 +77,16 @@ type SortingConfig struct {
 	Field     string `yaml:"field,omitzero"`
 	Direction string `yaml:"direction,omitzero"`
 	LocaleID  string `yaml:"locale_id,omitzero"`
+}
+
+// CreateConfig mirrors the flags accepted by `glossary create`. Each field
+// maps to a flag on the command (and to a Smartling Glossary Create API field).
+type CreateConfig struct {
+	VerificationMode bool     `yaml:"verification_mode,omitzero"`
+	LocaleIDs        []string `yaml:"locale_ids,omitzero"`
+	// FallbackLocales is a list of "<fallbackLocaleId>:<localeId>[,<localeId>...]"
+	// strings — same shape as the --fallback-locale CLI flag.
+	FallbackLocales []string `yaml:"fallback_locales,omitzero"`
 }
 
 // BindFileConfig binds glossary file config
