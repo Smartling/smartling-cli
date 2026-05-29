@@ -39,6 +39,11 @@ request's "glossaryName" field. All other API fields are exposed as flags.
 Fallback locales are repeatable and use the format
   --fallback-locale <fallbackLocaleId>:<localeId>[,<localeId>...]
 e.g. --fallback-locale es:es-MX,es-AR.`,
+		Example: `
+# Create a glossary named "CLI glossary" with two locales
+
+  smartling-cli glossary create "CLI glossary" --locale es-ES --locale fr-FR
+`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
