@@ -32,6 +32,23 @@ func NewImportCmd(initializer glossarycmd.SrvInitializer) *cobra.Command {
 The first argument is the glossary UID or name; the second is the local file
 to upload. The file extension is used to derive a media type unless
 --media-type is supplied explicitly.`,
+		Example: `
+# Import a CSV file into a glossary (media type derived from .csv extension)
+
+  smartling-cli glossary import "CLI glossary" ./terms.csv
+
+# Import a TBX file and archive entries that are missing from the file
+
+  smartling-cli glossary import "CLI glossary" ./terms.tbx --archive-mode
+
+# Import by glossary UID instead of name
+
+  smartling-cli glossary import 03e37fc4-842b-4cdb-b19d-79b13d6edbd2 ./terms.xlsx
+
+# Override the auto-derived media type
+
+  smartling-cli glossary import "CLI glossary" ./terms.dat --media-type text/csv
+`,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
@@ -56,7 +73,7 @@ to upload. The file extension is used to derive a media type unless
 	}
 
 	importCmd.Flags().BoolVar(&archiveMode, archiveModeFlag, false, "Archive entries that are missing from the imported file.")
-	importCmd.Flags().StringVar(&mediaType, mediaTypeFlag, "", "Override the media type of the uploaded file. By default it is derived from the file extension.")
+	importCmd.Flags().StringVar(&mediaType, mediaTypeFlag, "", `Override the media type. Must be one of "text/csv", "text/xml", or "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet". By default derived from the file extension.`)
 
 	return importCmd
 }

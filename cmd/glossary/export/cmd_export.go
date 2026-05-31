@@ -94,6 +94,29 @@ func NewExportCmd(initializer glossarycmd.SrvInitializer) *cobra.Command {
 		Use:   "export <glossaryUID|glossaryName> [outFile]",
 		Short: "Glossary export process",
 		Long:  `Export glossary entries into a file with the selected format.`,
+		Example: `
+# Export a glossary as CSV to the server-suggested filename
+
+  smartling-cli glossary export "CLI glossary" --file-type csv
+
+# Export to a specific output file
+
+  smartling-cli glossary export "CLI glossary" terms.csv --file-type csv
+
+# Export as TBX v3 (requires --tbx-version)
+
+  smartling-cli glossary export "CLI glossary" terms.tbx --file-type tbx --tbx-version v3
+
+# Export only a subset of locales
+
+  smartling-cli glossary export "CLI glossary" terms.xlsx --file-type xlsx --locale es-ES --locale fr-FR
+
+# Export entries matching a free-text filter, sorted by modified date
+
+  smartling-cli glossary export "CLI glossary" terms.csv --file-type csv \
+    --filter-query "checkout" \
+    --filter-sorting-field lastModified --filter-sorting-direction desc
+`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if strings.EqualFold(fileType, glossarysvc.TbxExportFileType) && tbxVersion == "" {
 				return fmt.Errorf("flag --%s is required when --%s is '%s'", tbxVersionFlag, fileTypeFlag, glossarysvc.TbxExportFileType)

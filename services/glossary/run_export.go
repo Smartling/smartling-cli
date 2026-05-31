@@ -20,6 +20,10 @@ import (
 
 const TbxExportFileType = "tbx"
 
+// defaultExportPageLimit is the page size we send when the caller didn't
+// supply --filter-paging-limit.
+const defaultExportPageLimit = 5000
+
 var (
 	// AllowedExportFileTypes is the set of file types values accepted by the
 	// Smartling Glossary Export API.
@@ -39,6 +43,16 @@ func (s service) RunExport(ctx context.Context, params ExportParams) (ExportOutp
 		return ExportOutput{}, fmt.Errorf("invalid export params: %w", err)
 	}
 
+	// localeIds is required by the export API; when the caller didn't pass any
+	// --locale flags, fall back to the glossary's full locale list.
+	if len(params.LocaleIDs) == 0 {
+		gl, err := s.glossaryApi.Get(ctx, string(params.AccountUID), glossaryUID)
+		if err != nil {
+			return ExportOutput{}, fmt.Errorf("get glossary %q to default locale list: %w", glossaryUID, err)
+		}
+		params.LocaleIDs = gl.LocaleIDs
+	}
+
 	resp, err := s.glossaryApi.Export(ctx, params.AccountUID, glossaryUID, toApiExportGlossaryRequest(params))
 	if err != nil {
 		return ExportOutput{}, fmt.Errorf("failed to get api export glossary: %w", err)
@@ -51,7 +65,7 @@ func (s service) RunExport(ctx context.Context, params ExportParams) (ExportOutp
 
 	outFile := params.OutFile
 	if outFile == "" {
-		outFile = resp.Filename
+		outFile = defaultExportFilename(params.FileType, glossaryUID)
 	}
 	f, err := os.Create(outFile)
 	if err != nil {
@@ -66,6 +80,32 @@ func (s service) RunExport(ctx context.Context, params ExportParams) (ExportOutp
 	}
 
 	return toExportOutput(glossaryUID, outFile, params.FileType, resp, uint64(written)), nil
+}
+
+// toAPITbxVersion maps the short CLI/config values ("v2", "v3") to the
+// long enum values the Smartling export API expects
+// (TBXcoreStructV02 / TBXcoreStructV03). Empty or already-long values pass
+// through unchanged so users can supply the canonical form too.
+func toAPITbxVersion(v string) string {
+	switch strings.ToLower(v) {
+	case "v2":
+		return "TBXcoreStructV02"
+	case "v3":
+		return "TBXcoreStructV03"
+	default:
+		return v
+	}
+}
+
+// defaultExportFilename builds the fallback output filename when neither
+// --out-file nor a server Content-Disposition is available. It uses the
+// resolved glossary UID and the requested file type as the extension.
+func defaultExportFilename(fileType, glossaryUID string) string {
+	ext := strings.ToLower(fileType)
+	if ext == "" {
+		return glossaryUID
+	}
+	return glossaryUID + "." + ext
 }
 
 // ExportFilter mirrors the Smartling Glossary Export API `filter` object.
@@ -195,8 +235,8 @@ func (e ExportOutput) TableData() ([]string, [][]string) {
 
 func toApiExportGlossaryRequest(params ExportParams) api.ExportGlossaryRequest {
 	req := api.ExportGlossaryRequest{
-		Format:        params.FileType,
-		TbxVersion:    params.TbxVersion,
+		Format:        strings.ToUpper(params.FileType),
+		TbxVersion:    toAPITbxVersion(params.TbxVersion),
 		FocusLocaleId: params.FocusLocaleID,
 		LocaleIds:     params.LocaleIDs,
 		SkipEntries:   params.SkipEntries,
@@ -211,29 +251,51 @@ func toApiExportGlossaryRequest(params ExportParams) api.ExportGlossaryRequest {
 	req.Filter.PresentTranslationLocaleId = f.PresentTranslationLocaleID
 	req.Filter.DntLocaleId = f.DntLocaleID
 	req.Filter.ReturnFallbackTranslations = f.ReturnFallbackTranslations
-	req.Filter.Labels.Type = f.LabelsType
 	req.Filter.DntTermSet = f.DntTermSet
 
-	req.Filter.Created.Level = f.Created.Level
-	req.Filter.Created.Type = f.Created.Type
-	req.Filter.Created.Date = f.Created.Date
+	if f.LabelsType != "" {
+		req.Filter.Labels = &api.ExportGlossaryLabelsFilter{Type: f.LabelsType}
+	}
+	if f.Created.Level != "" || f.Created.Type != "" {
+		req.Filter.Created = &api.ExportGlossaryDateFilter{
+			Level: f.Created.Level,
+			Type:  f.Created.Type,
+			Date:  f.Created.Date,
+		}
+	}
+	if f.LastModified.Level != "" || f.LastModified.Type != "" {
+		req.Filter.LastModified = &api.ExportGlossaryDateFilter{
+			Level: f.LastModified.Level,
+			Type:  f.LastModified.Type,
+			Date:  f.LastModified.Date,
+		}
+	}
+	if f.CreatedBy.Level != "" || len(f.CreatedBy.UserIDs) > 0 {
+		req.Filter.CreatedBy = &api.ExportGlossaryUserFilter{
+			Level:   f.CreatedBy.Level,
+			UserIds: f.CreatedBy.UserIDs,
+		}
+	}
+	if f.LastModifiedBy.Level != "" || len(f.LastModifiedBy.UserIDs) > 0 {
+		req.Filter.LastModifiedBy = &api.ExportGlossaryUserFilter{
+			Level:   f.LastModifiedBy.Level,
+			UserIds: f.LastModifiedBy.UserIDs,
+		}
+	}
+	if f.Sorting.Field != "" || f.Sorting.Direction != "" || f.Sorting.LocaleID != "" {
+		req.Filter.Sorting = &api.ExportGlossarySorting{
+			Field:     f.Sorting.Field,
+			Direction: f.Sorting.Direction,
+			LocaleId:  f.Sorting.LocaleID,
+		}
+	}
 
-	req.Filter.LastModified.Level = f.LastModified.Level
-	req.Filter.LastModified.Type = f.LastModified.Type
-	req.Filter.LastModified.Date = f.LastModified.Date
-
-	req.Filter.CreatedBy.Level = f.CreatedBy.Level
-	req.Filter.CreatedBy.UserIds = f.CreatedBy.UserIDs
-
-	req.Filter.LastModifiedBy.Level = f.LastModifiedBy.Level
-	req.Filter.LastModifiedBy.UserIds = f.LastModifiedBy.UserIDs
-
+	// limit=0 means "return 0 entries" on Smartling's pagination
 	req.Filter.Paging.Offset = f.Paging.Offset
 	req.Filter.Paging.Limit = f.Paging.Limit
-
-	req.Filter.Sorting.Field = f.Sorting.Field
-	req.Filter.Sorting.Direction = f.Sorting.Direction
-	req.Filter.Sorting.LocaleId = f.Sorting.LocaleID
+	if req.Filter.Paging.Limit == 0 {
+		req.Filter.Paging.Limit = defaultExportPageLimit
+	}
 
 	return req
 }

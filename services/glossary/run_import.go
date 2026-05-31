@@ -29,9 +29,7 @@ type ImportParams struct {
 	ImportFile        ImportFile
 }
 
-// Validate checks that ImportParams carry the fields required by the
-// Smartling Glossary Import API
-// (https://api-reference.smartling.com/#tag/Glossary-API/operation/importGlossary).
+// Validate enforces the fields required by the Smartling Glossary Import API.
 func (p ImportParams) Validate() error {
 	if err := p.AccountUID.Validate(); err != nil {
 		return err
@@ -52,8 +50,9 @@ func (p ImportParams) Validate() error {
 }
 
 type ImportFile struct {
-	Path      string
-	Name      string
+	Path string
+	Name string
+	// MediaType: "text/csv" | "text/xml" (TBX) | "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" — server derives format from this.
 	MediaType string
 }
 
@@ -78,9 +77,9 @@ func (p ImportOutput) SimpleLines() []string {
 		fmt.Sprintf("Import UID:    %s", p.ImportUID),
 		fmt.Sprintf("Import status: %s", p.ImportStatus),
 		fmt.Sprintf("Source file:   %s", p.SourceFile),
-		fmt.Sprintf("New entries:           %s", p.EntryChanges.NewEntries),
-		fmt.Sprintf("Existing entry updates: %s", p.EntryChanges.ExistingEntryUpdates),
-		fmt.Sprintf("Not matched entries:   %s", p.EntryChanges.NotMatchedEntries),
+		fmt.Sprintf("New entries:           %d", p.EntryChanges.NewEntries),
+		fmt.Sprintf("Existing entry updates: %d", p.EntryChanges.ExistingEntryUpdates),
+		fmt.Sprintf("Not matched entries:   %d", p.EntryChanges.NotMatchedEntries),
 		fmt.Sprintf("Entries to archive:    %d", p.EntryChanges.EntriesToArchive),
 	}
 	for _, w := range p.Warnings {
@@ -89,9 +88,7 @@ func (p ImportOutput) SimpleLines() []string {
 	return lines
 }
 
-// TableData returns the import summary with one column per field and a
-// single row of values. Warnings are omitted from the table view — use the
-// simple or JSON output format to see them.
+// TableData returns the import summary as a single-row table; warnings are in simple/JSON only.
 func (p ImportOutput) TableData() ([]string, [][]string) {
 	headers := []string{
 		"GLOSSARY UID", "IMPORT UID", "STATUS", "SOURCE FILE",
@@ -103,9 +100,9 @@ func (p ImportOutput) TableData() ([]string, [][]string) {
 			p.ImportUID,
 			p.ImportStatus,
 			p.SourceFile,
-			p.EntryChanges.NewEntries,
-			p.EntryChanges.ExistingEntryUpdates,
-			p.EntryChanges.NotMatchedEntries,
+			fmt.Sprintf("%d", p.EntryChanges.NewEntries),
+			fmt.Sprintf("%d", p.EntryChanges.ExistingEntryUpdates),
+			fmt.Sprintf("%d", p.EntryChanges.NotMatchedEntries),
 			fmt.Sprintf("%d", p.EntryChanges.EntriesToArchive),
 		},
 	}
@@ -120,6 +117,7 @@ func (s service) RunImport(ctx context.Context, params ImportParams) (ImportOutp
 	if err != nil {
 		return ImportOutput{}, fmt.Errorf("failed to get glossary UID: %w", err)
 	}
+
 	apiImportGlossaryRequest, err := toApiImportGlossaryRequest(params)
 	if err != nil {
 		return ImportOutput{}, fmt.Errorf("failed to build import glossary request: %w", err)
@@ -135,8 +133,8 @@ func (s service) RunImport(ctx context.Context, params ImportParams) (ImportOutp
 	if !importConfirmed {
 		return ImportOutput{}, errImportConfirmationFailed
 	}
-	var processed bool
-	for !processed {
+	finalResponse := importGlossaryResponse
+	for {
 		importStatusResponse, err := s.glossaryApi.ImportStatus(ctx, params.AccountUID, glossaryUID, importGlossaryResponse.ImportUID)
 		if err != nil {
 			return ImportOutput{}, fmt.Errorf("failed to get glossary import status: %w", err)
@@ -144,12 +142,13 @@ func (s service) RunImport(ctx context.Context, params ImportParams) (ImportOutp
 		if importStatusResponse.ImportStatus == glossary.FailedImportStatus {
 			return ImportOutput{}, errFailedImport
 		}
-		processed = importStatusResponse.ImportStatus == glossary.SuccessfulImportStatus
-		if !processed {
-			time.Sleep(pollingInterval)
+		if importStatusResponse.ImportStatus == glossary.SuccessfulImportStatus {
+			finalResponse.ImportStatus = importStatusResponse.ImportStatus
+			break
 		}
+		time.Sleep(pollingInterval)
 	}
-	return toImportOutput(glossaryUID, params.ImportFile.Path, importGlossaryResponse), nil
+	return toImportOutput(glossaryUID, params.ImportFile.Path, finalResponse), nil
 }
 
 func toApiImportGlossaryRequest(params ImportParams) (api.ImportGlossaryRequest, error) {
@@ -160,6 +159,7 @@ func toApiImportGlossaryRequest(params ImportParams) (api.ImportGlossaryRequest,
 	return api.ImportGlossaryRequest{
 		File:        data,
 		FileName:    params.ImportFile.Name,
+		MediaType:   params.ImportFile.MediaType,
 		ArchiveMode: params.ArchiveMode,
 	}, nil
 }

@@ -51,9 +51,7 @@ func resolveParams(cmd *cobra.Command, fileConfig glossarycmd.FileConfig, glossa
 	}, nil
 }
 
-// mediaTypeFromPath returns a best-effort MIME type for a Smartling
-// glossary file based on its extension. Unknown extensions fall back to
-// "application/octet-stream".
+// mediaTypeFromPath maps a file extension to the importFileMediaType enum; "" means unknown.
 func mediaTypeFromPath(path string) string {
 	switch strings.ToLower(filepath.Ext(path)) {
 	case ".csv":
@@ -61,8 +59,8 @@ func mediaTypeFromPath(path string) string {
 	case ".xlsx":
 		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 	case ".tbx", ".xml":
-		return "application/xml"
+		return "text/xml"
 	default:
-		return "application/octet-stream"
+		return ""
 	}
 }
