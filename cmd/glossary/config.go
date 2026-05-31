@@ -50,8 +50,6 @@ type ExportFilterConfig struct {
 	CreatedBy                  CreatedByConfig      `yaml:"created_by,omitzero"`
 	LastModified               LastModifiedConfig   `yaml:"last_modified,omitzero"`
 	LastModifiedBy             LastModifiedByConfig `yaml:"last_modified_by,omitzero"`
-	Paging                     PagingConfig         `yaml:"paging,omitzero"`
-	Sorting                    SortingConfig        `yaml:"sorting,omitzero"`
 }
 
 type CreatedConfig struct {
@@ -74,17 +72,6 @@ type LastModifiedConfig struct {
 type LastModifiedByConfig struct {
 	Level   string   `yaml:"level,omitzero"`
 	UserIDs []string `yaml:"user_ids,omitzero"`
-}
-
-type PagingConfig struct {
-	Offset int `yaml:"offset,omitzero"`
-	Limit  int `yaml:"limit,omitzero"`
-}
-
-type SortingConfig struct {
-	Field     string `yaml:"field,omitzero"`
-	Direction string `yaml:"direction,omitzero"`
-	LocaleID  string `yaml:"locale_id,omitzero"`
 }
 
 // CreateConfig mirrors the flags accepted by `glossary create`. Each field

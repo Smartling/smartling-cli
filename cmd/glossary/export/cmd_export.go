@@ -43,13 +43,6 @@ const (
 
 	filterLastModifiedByLevelFlag  = "filter-last-modified-by-level"
 	filterLastModifiedByUserIDFlag = "filter-last-modified-by-user-id"
-
-	filterPagingOffsetFlag = "filter-paging-offset"
-	filterPagingLimitFlag  = "filter-paging-limit"
-
-	filterSortingFieldFlag    = "filter-sorting-field"
-	filterSortingDirFlag      = "filter-sorting-direction"
-	filterSortingLocaleIDFlag = "filter-sorting-locale"
 )
 
 // NewExportCmd builds the `glossary export` command.
@@ -73,21 +66,16 @@ func NewExportCmd(initializer glossarycmd.SrvInitializer) *cobra.Command {
 		fLabelsType                 string
 		fDntTermSet                 bool
 
-		fCreatedLevel    string
-		fCreatedType     string
-		fCreatedDateStr  string
-		fLastModLevel    string
-		fLastModType     string
-		fLastModDateStr  string
-		fCreatedByLevel  string
-		fCreatedByUsers  []string
-		fLastModByLevel  string
-		fLastModByUsers  []string
-		fPagingOffset    int
-		fPagingLimit     int
-		fSortingField    string
-		fSortingDir      string
-		fSortingLocaleID string
+		fCreatedLevel   string
+		fCreatedType    string
+		fCreatedDateStr string
+		fLastModLevel   string
+		fLastModType    string
+		fLastModDateStr string
+		fCreatedByLevel string
+		fCreatedByUsers []string
+		fLastModByLevel string
+		fLastModByUsers []string
 	)
 
 	exportCmd := &cobra.Command{
@@ -111,11 +99,9 @@ func NewExportCmd(initializer glossarycmd.SrvInitializer) *cobra.Command {
 
   smartling-cli glossary export "CLI glossary" terms.xlsx --file-type xlsx --locale es-ES --locale fr-FR
 
-# Export entries matching a free-text filter, sorted by modified date
+# Export entries matching a free-text filter
 
-  smartling-cli glossary export "CLI glossary" terms.csv --file-type csv \
-    --filter-query "checkout" \
-    --filter-sorting-field lastModified --filter-sorting-direction desc
+  smartling-cli glossary export "CLI glossary" terms.csv --file-type csv --filter-query "checkout"
 `,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if strings.EqualFold(fileType, glossarysvc.TbxExportFileType) && tbxVersion == "" {
@@ -184,13 +170,6 @@ func NewExportCmd(initializer glossarycmd.SrvInitializer) *cobra.Command {
 	f.StringArrayVar(&fCreatedByUsers, filterCreatedByUserIDFlag, nil, "Filter: createdBy.userIds entry (repeatable).")
 	f.StringVar(&fLastModByLevel, filterLastModifiedByLevelFlag, "", "Filter: lastModifiedBy.level.")
 	f.StringArrayVar(&fLastModByUsers, filterLastModifiedByUserIDFlag, nil, "Filter: lastModifiedBy.userIds entry (repeatable).")
-
-	f.IntVar(&fPagingOffset, filterPagingOffsetFlag, 0, "Filter: paging.offset.")
-	f.IntVar(&fPagingLimit, filterPagingLimitFlag, 0, "Filter: paging.limit.")
-
-	f.StringVar(&fSortingField, filterSortingFieldFlag, "", "Filter: sorting.field.")
-	f.StringVar(&fSortingDir, filterSortingDirFlag, "", "Filter: sorting.direction (asc|desc).")
-	f.StringVar(&fSortingLocaleID, filterSortingLocaleIDFlag, "", "Filter: sorting.localeId.")
 
 	if err := exportCmd.MarkFlagRequired(fileTypeFlag); err != nil {
 		panic(err)

@@ -109,6 +109,8 @@ func defaultExportFilename(fileType, glossaryUID string) string {
 }
 
 // ExportFilter mirrors the Smartling Glossary Export API `filter` object.
+// Paging and sorting are intentionally omitted: the /entries/download endpoint
+// ignores them (it streams the full filtered result in a fixed order).
 type ExportFilter struct {
 	Query                      string
 	LocaleID                   []string
@@ -120,23 +122,10 @@ type ExportFilter struct {
 	ReturnFallbackTranslations bool
 	LabelsType                 string
 	DntTermSet                 bool
-	Paging                     Paging
 	LastModifiedBy             LastModifiedBy
 	LastModified               LastModified
 	CreatedBy                  CreatedBy
 	Created                    Created
-	Sorting                    Sorting
-}
-
-type Paging struct {
-	Offset int
-	Limit  int
-}
-
-type Sorting struct {
-	Field     string
-	Direction string
-	LocaleID  string
 }
 
 type Created struct {
@@ -282,20 +271,8 @@ func toApiExportGlossaryRequest(params ExportParams) api.ExportGlossaryRequest {
 			UserIds: f.LastModifiedBy.UserIDs,
 		}
 	}
-	if f.Sorting.Field != "" || f.Sorting.Direction != "" || f.Sorting.LocaleID != "" {
-		req.Filter.Sorting = &api.ExportGlossarySorting{
-			Field:     f.Sorting.Field,
-			Direction: f.Sorting.Direction,
-			LocaleId:  f.Sorting.LocaleID,
-		}
-	}
-
 	// limit=0 means "return 0 entries" on Smartling's pagination
-	req.Filter.Paging.Offset = f.Paging.Offset
-	req.Filter.Paging.Limit = f.Paging.Limit
-	if req.Filter.Paging.Limit == 0 {
-		req.Filter.Paging.Limit = defaultExportPageLimit
-	}
+	req.Filter.Paging.Limit = defaultExportPageLimit
 
 	return req
 }

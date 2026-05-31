@@ -75,15 +75,6 @@ func resolveParams(cmd *cobra.Command, fileConfig glossarycmd.FileConfig, glossa
 				Level:   resolve.FallbackString(cmd.Flags().Lookup(filterLastModifiedByLevelFlag), resolve.StringParam{FlagName: filterLastModifiedByLevelFlag, Config: &cfg.Filter.LastModifiedBy.Level}),
 				UserIDs: resolve.FallbackStringArray(cmd, filterLastModifiedByUserIDFlag, cfg.Filter.LastModifiedBy.UserIDs),
 			},
-			Paging: srv.Paging{
-				Offset: resolve.FallbackInt(cmd, filterPagingOffsetFlag, cfg.Filter.Paging.Offset),
-				Limit:  resolve.FallbackInt(cmd, filterPagingLimitFlag, cfg.Filter.Paging.Limit),
-			},
-			Sorting: srv.Sorting{
-				Field:     resolve.FallbackString(cmd.Flags().Lookup(filterSortingFieldFlag), resolve.StringParam{FlagName: filterSortingFieldFlag, Config: &cfg.Filter.Sorting.Field}),
-				Direction: resolve.FallbackString(cmd.Flags().Lookup(filterSortingDirFlag), resolve.StringParam{FlagName: filterSortingDirFlag, Config: &cfg.Filter.Sorting.Direction}),
-				LocaleID:  resolve.FallbackString(cmd.Flags().Lookup(filterSortingLocaleIDFlag), resolve.StringParam{FlagName: filterSortingLocaleIDFlag, Config: &cfg.Filter.Sorting.LocaleID}),
-			},
 		},
 	}
 
