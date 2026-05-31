@@ -74,8 +74,9 @@ func (p ProgressOutput) JSONBytes() []byte { return p.JSON }
 // SimpleLines returns a human-readable summary of the progress.
 func (p ProgressOutput) SimpleLines() []string {
 	return []string{
-		fmt.Sprintf("Total word count:  %d", p.TotalWordCount),
-		fmt.Sprintf("Percent complete:  %v", p.PercentComplete),
+		fmt.Sprintf("Translation job UID: %s", p.TranslationJobUID),
+		fmt.Sprintf("Total word count:    %d", p.TotalWordCount),
+		fmt.Sprintf("Percent complete:    %v", p.PercentComplete),
 	}
 }
 

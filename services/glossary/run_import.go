@@ -146,7 +146,11 @@ func (s service) RunImport(ctx context.Context, params ImportParams) (ImportOutp
 			finalResponse.ImportStatus = importStatusResponse.ImportStatus
 			break
 		}
-		time.Sleep(pollingInterval)
+		select {
+		case <-ctx.Done():
+			return ImportOutput{}, ctx.Err()
+		case <-time.After(pollingInterval):
+		}
 	}
 	return toImportOutput(glossaryUID, params.ImportFile.Path, finalResponse), nil
 }

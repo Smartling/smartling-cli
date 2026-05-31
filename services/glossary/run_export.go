@@ -76,6 +76,9 @@ func (s service) RunExport(ctx context.Context, params ExportParams) (ExportOutp
 		copyErr = closeErr
 	}
 	if copyErr != nil {
+		if rmErr := os.Remove(outFile); rmErr != nil {
+			rlog.Errorf("failed to remove partial export file %q: %v", outFile, rmErr)
+		}
 		return ExportOutput{}, fmt.Errorf("failed to write export file %q: %w", outFile, copyErr)
 	}
 
