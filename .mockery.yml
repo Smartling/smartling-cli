@@ -35,6 +35,11 @@ packages:
       Job:
         config:
           dir: services/jobs/sdkmocks
+  github.com/Smartling/api-sdk-go/api/glossary:
+    interfaces:
+      Glossary:
+        config:
+          dir: services/glossary/sdkmocks
   github.com/Smartling/smartling-cli/cmd/files:
     interfaces:
       SrvInitializer:

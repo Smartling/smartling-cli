@@ -27,11 +27,11 @@ func NewImportCmd(initializer glossarycmd.SrvInitializer) *cobra.Command {
 	importCmd := &cobra.Command{
 		Use:   "import <glossaryUID|glossaryName> <inFile>",
 		Short: "Glossary import process",
-		Long: `Import a glossary file (CSV/XLSX/TBX) into an existing glossary.
+		Long: `Upload a CSV, XLSX, or TBX file into an existing glossary.
 
-The first argument is the glossary UID or name; the second is the local file
-to upload. The file extension is used to derive a media type unless
---media-type is supplied explicitly.`,
+Validates and uploads the file, waits for the server to confirm the import,
+then polls until the import reaches SUCCESSFUL or FAILED status. New entries
+are created.`,
 		Example: `
 # Import a CSV file into a glossary (media type derived from .csv extension)
 
