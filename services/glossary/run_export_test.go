@@ -161,10 +161,8 @@ func Test_service_RunExport(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "validation error — empty FileType",
-			setup: func(m *sdkmocks.MockGlossary, _ string) {
-				setupGetByName(m)
-			},
+			name:  "validation error — empty FileType",
+			setup: func(m *sdkmocks.MockGlossary, _ string) {},
 			params: func(outFile string) ExportParams {
 				p := baseParams(outFile)
 				p.FileType = ""

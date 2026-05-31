@@ -34,13 +34,13 @@ var (
 )
 
 func (s service) RunExport(ctx context.Context, params ExportParams) (ExportOutput, error) {
+	if err := params.Validate(); err != nil {
+		return ExportOutput{}, fmt.Errorf("invalid export params: %w", err)
+	}
+
 	glossaryUID, err := glossaryresolver.GetGlossaryUID(ctx, s.glossaryApi, params.AccountUID, params.GlossaryUIDOrName)
 	if err != nil {
 		return ExportOutput{}, fmt.Errorf("failed to get glossary UID: %w", err)
-	}
-
-	if err := params.Validate(); err != nil {
-		return ExportOutput{}, fmt.Errorf("invalid export params: %w", err)
 	}
 
 	// localeIds is required by the export API; when the caller didn't pass any
