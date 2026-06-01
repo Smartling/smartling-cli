@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
+
 	api "github.com/Smartling/api-sdk-go/api/glossary"
 	smerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	"github.com/Smartling/api-sdk-go/helpers/uid"
@@ -95,7 +97,7 @@ func (s service) RunCreate(ctx context.Context, params CreateParams) (CreateOutp
 }
 
 func toCreateOutput(resp api.CreateGlossaryResponse) CreateOutput {
-	out := CreateOutput{
+	res := CreateOutput{
 		Code:         resp.Code,
 		GlossaryUID:  resp.GlossaryUID,
 		AccountUID:   resp.AccountUID,
@@ -111,11 +113,13 @@ func toCreateOutput(resp api.CreateGlossaryResponse) CreateOutput {
 		AccountUID:   resp.AccountUID,
 		GlossaryName: resp.GlossaryName,
 	}
-	if b, err := json.Marshal(summary); err == nil {
-		out.JSON = b
+	b, err := json.Marshal(summary)
+	if err != nil {
+		rlog.Errorf("failed to marshal create output to JSON: %v", err)
+		return res
 	}
-
-	return out
+	res.JSON = b
+	return res
 }
 
 func toAPICreateParams(p CreateParams) api.CreateGlossaryRequest {

@@ -281,7 +281,7 @@ func toApiExportGlossaryRequest(params ExportParams) api.ExportGlossaryRequest {
 }
 
 func toExportOutput(glossaryUID, outFile, fileType string, resp api.ExportGlossaryResponse, bytesWritten uint64) ExportOutput {
-	out := ExportOutput{
+	res := ExportOutput{
 		GlossaryUID:  glossaryUID,
 		OutFile:      outFile,
 		FileType:     fileType,
@@ -301,9 +301,11 @@ func toExportOutput(glossaryUID, outFile, fileType string, resp api.ExportGlossa
 		ContentType:  resp.ContentType,
 		BytesWritten: bytesWritten,
 	}
-	if b, err := json.Marshal(summary); err == nil {
-		out.JSON = b
+	b, err := json.Marshal(summary)
+	if err != nil {
+		rlog.Errorf("failed to marshal export output to JSON: %v", err)
+		return res
 	}
-
-	return out
+	res.JSON = b
+	return res
 }

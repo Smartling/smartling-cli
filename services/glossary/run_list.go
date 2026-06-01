@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
+
 	api "github.com/Smartling/api-sdk-go/api/glossary"
 	"github.com/Smartling/api-sdk-go/helpers/uid"
 )
@@ -92,9 +94,12 @@ func toListOutput(resp []api.ReadGlossaryResponse) ListOutput {
 		})
 	}
 
-	out := ListOutput{Glossaries: items}
-	if b, err := json.Marshal(items); err == nil {
-		out.JSON = b
+	res := ListOutput{Glossaries: items}
+	b, err := json.Marshal(items)
+	if err != nil {
+		rlog.Errorf("failed to marshal list output to JSON: %v", err)
+		return res
 	}
-	return out
+	res.JSON = b
+	return res
 }

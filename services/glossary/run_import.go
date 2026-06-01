@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Smartling/smartling-cli/services/glossary/glossaryresolver"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/Smartling/api-sdk-go/api/glossary"
 	api "github.com/Smartling/api-sdk-go/api/glossary"
@@ -169,7 +170,7 @@ func toApiImportGlossaryRequest(params ImportParams) (api.ImportGlossaryRequest,
 }
 
 func toImportOutput(glossaryUID, sourceFile string, resp api.ImportGlossaryResponse) ImportOutput {
-	out := ImportOutput{
+	res := ImportOutput{
 		GlossaryUID:  glossaryUID,
 		ImportUID:    resp.ImportUID,
 		ImportStatus: resp.ImportStatus,
@@ -193,9 +194,11 @@ func toImportOutput(glossaryUID, sourceFile string, resp api.ImportGlossaryRespo
 		EntryChanges: resp.EntryChanges,
 		Warnings:     resp.Warnings,
 	}
-	if b, err := json.Marshal(summary); err == nil {
-		out.JSON = b
+	b, err := json.Marshal(summary)
+	if err != nil {
+		rlog.Errorf("failed to marshal import output to JSON: %v", err)
+		return res
 	}
-
-	return out
+	res.JSON = b
+	return res
 }
