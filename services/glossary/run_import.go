@@ -11,7 +11,6 @@ import (
 	"github.com/Smartling/smartling-cli/services/glossary/glossaryresolver"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
-	"github.com/Smartling/api-sdk-go/api/glossary"
 	api "github.com/Smartling/api-sdk-go/api/glossary"
 	smerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	"github.com/Smartling/api-sdk-go/helpers/uid"
@@ -140,10 +139,10 @@ func (s service) RunImport(ctx context.Context, params ImportParams) (ImportOutp
 		if err != nil {
 			return ImportOutput{}, fmt.Errorf("failed to get glossary import status: %w", err)
 		}
-		if importStatusResponse.ImportStatus == glossary.FailedImportStatus {
+		if importStatusResponse.ImportStatus == api.FailedImportStatus {
 			return ImportOutput{}, errFailedImport
 		}
-		if importStatusResponse.ImportStatus == glossary.SuccessfulImportStatus {
+		if importStatusResponse.ImportStatus == api.SuccessfulImportStatus {
 			finalResponse.ImportStatus = importStatusResponse.ImportStatus
 			break
 		}
