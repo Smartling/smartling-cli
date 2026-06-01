@@ -75,7 +75,7 @@ func (s service) RunList(ctx context.Context, params ListParams) (ListOutput, er
 		return ListOutput{}, fmt.Errorf("invalid list params: %w", err)
 	}
 
-	resp, err := s.glossaryApi.GetByName(ctx, string(params.AccountUID), params.Name)
+	resp, err := s.glossaryApi.GetByName(ctx, params.AccountUID, params.Name)
 	if err != nil {
 		return ListOutput{}, fmt.Errorf("failed to list glossaries: %w", err)
 	}
@@ -83,11 +83,11 @@ func (s service) RunList(ctx context.Context, params ListParams) (ListOutput, er
 	return toListOutput(resp), nil
 }
 
-func toListOutput(resp []api.ReadGlossaryResponse) ListOutput {
+func toListOutput(resp []api.GetGlossaryResponse) ListOutput {
 	items := make([]GlossaryItem, 0, len(resp))
 	for _, g := range resp {
 		items = append(items, GlossaryItem{
-			GlossaryUID: g.GlossaryUid,
+			GlossaryUID: g.GlossaryUID,
 			Name:        g.Name,
 			Description: g.Description,
 			LocaleIDs:   g.LocaleIDs,

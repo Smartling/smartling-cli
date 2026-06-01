@@ -107,7 +107,7 @@ func Test_service_RunImport(t *testing.T) {
 	}
 
 	setupGetByName := func(m *sdkmocks.MockGlossary) {
-		m.EXPECT().GetByName(ctx, string(testAccountUID), testGlossaryName).
+		m.EXPECT().GetByName(ctx, testAccountUID, testGlossaryName).
 			Return([]glossaryapi.ReadGlossaryResponse{
 				{GlossaryUid: testGlossaryUID, Name: testGlossaryName},
 			}, nil)
@@ -158,7 +158,7 @@ func Test_service_RunImport(t *testing.T) {
 		{
 			name: "GetGlossaryUID error",
 			setup: func(m *sdkmocks.MockGlossary, _ ImportFile) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), testGlossaryName).
+				m.EXPECT().GetByName(ctx, testAccountUID, testGlossaryName).
 					Return(nil, errors.New("network error"))
 			},
 			params:  baseParams,

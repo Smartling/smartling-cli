@@ -121,7 +121,7 @@ func Test_service_RunExport(t *testing.T) {
 	)
 
 	setupGetByName := func(m *sdkmocks.MockGlossary) {
-		m.EXPECT().GetByName(ctx, string(testAccountUID), testGlossaryName).
+		m.EXPECT().GetByName(ctx, testAccountUID, testGlossaryName).
 			Return([]glossaryapi.ReadGlossaryResponse{
 				{GlossaryUid: testGlossaryUID, Name: testGlossaryName},
 			}, nil)
@@ -154,7 +154,7 @@ func Test_service_RunExport(t *testing.T) {
 		{
 			name: "GetGlossaryUID error — glossary not found",
 			setup: func(m *sdkmocks.MockGlossary, _ string) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), testGlossaryName).
+				m.EXPECT().GetByName(ctx, testAccountUID, testGlossaryName).
 					Return(nil, errors.New("network error"))
 			},
 			params:  baseParams,
@@ -209,7 +209,7 @@ func Test_service_RunExport(t *testing.T) {
 			name: "success — no locale IDs defaults to glossary locales",
 			setup: func(m *sdkmocks.MockGlossary, outFile string) {
 				setupGetByName(m)
-				m.EXPECT().Get(ctx, string(testAccountUID), testGlossaryUID).
+				m.EXPECT().Get(ctx, testAccountUID, testGlossaryUID).
 					Return(glossaryapi.ReadGlossaryResponse{
 						GlossaryUid: testGlossaryUID,
 						LocaleIDs:   []string{"en-US", "es-ES"},
@@ -242,7 +242,7 @@ func Test_service_RunExport(t *testing.T) {
 			name: "Get error when defaulting locale IDs",
 			setup: func(m *sdkmocks.MockGlossary, _ string) {
 				setupGetByName(m)
-				m.EXPECT().Get(ctx, string(testAccountUID), testGlossaryUID).
+				m.EXPECT().Get(ctx, testAccountUID, testGlossaryUID).
 					Return(glossaryapi.ReadGlossaryResponse{}, errors.New("get error"))
 			},
 			params: func(outFile string) ExportParams {

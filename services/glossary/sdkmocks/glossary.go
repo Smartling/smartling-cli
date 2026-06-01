@@ -190,7 +190,7 @@ func (_c *MockGlossary_Export_Call) RunAndReturn(run func(ctx context.Context, a
 }
 
 // Get provides a mock function for the type MockGlossary
-func (_mock *MockGlossary) Get(ctx context.Context, accountUID string, glossaryUID string) (glossary.ReadGlossaryResponse, error) {
+func (_mock *MockGlossary) Get(ctx context.Context, accountUID uid.AccountUID, glossaryUID string) (glossary.ReadGlossaryResponse, error) {
 	ret := _mock.Called(ctx, accountUID, glossaryUID)
 
 	if len(ret) == 0 {
@@ -199,15 +199,15 @@ func (_mock *MockGlossary) Get(ctx context.Context, accountUID string, glossaryU
 
 	var r0 glossary.ReadGlossaryResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (glossary.ReadGlossaryResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uid.AccountUID, string) (glossary.ReadGlossaryResponse, error)); ok {
 		return returnFunc(ctx, accountUID, glossaryUID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) glossary.ReadGlossaryResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uid.AccountUID, string) glossary.ReadGlossaryResponse); ok {
 		r0 = returnFunc(ctx, accountUID, glossaryUID)
 	} else {
 		r0 = ret.Get(0).(glossary.ReadGlossaryResponse)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uid.AccountUID, string) error); ok {
 		r1 = returnFunc(ctx, accountUID, glossaryUID)
 	} else {
 		r1 = ret.Error(1)
@@ -222,21 +222,21 @@ type MockGlossary_Get_Call struct {
 
 // Get is a helper method to define mock.On call
 //   - ctx context.Context
-//   - accountUID string
+//   - accountUID uid.AccountUID
 //   - glossaryUID string
 func (_e *MockGlossary_Expecter) Get(ctx interface{}, accountUID interface{}, glossaryUID interface{}) *MockGlossary_Get_Call {
 	return &MockGlossary_Get_Call{Call: _e.mock.On("Get", ctx, accountUID, glossaryUID)}
 }
 
-func (_c *MockGlossary_Get_Call) Run(run func(ctx context.Context, accountUID string, glossaryUID string)) *MockGlossary_Get_Call {
+func (_c *MockGlossary_Get_Call) Run(run func(ctx context.Context, accountUID uid.AccountUID, glossaryUID string)) *MockGlossary_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 uid.AccountUID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(uid.AccountUID)
 		}
 		var arg2 string
 		if args[2] != nil {
@@ -256,13 +256,13 @@ func (_c *MockGlossary_Get_Call) Return(readGlossaryResponse glossary.ReadGlossa
 	return _c
 }
 
-func (_c *MockGlossary_Get_Call) RunAndReturn(run func(ctx context.Context, accountUID string, glossaryUID string) (glossary.ReadGlossaryResponse, error)) *MockGlossary_Get_Call {
+func (_c *MockGlossary_Get_Call) RunAndReturn(run func(ctx context.Context, accountUID uid.AccountUID, glossaryUID string) (glossary.ReadGlossaryResponse, error)) *MockGlossary_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetByName provides a mock function for the type MockGlossary
-func (_mock *MockGlossary) GetByName(ctx context.Context, accountUID string, name string) ([]glossary.ReadGlossaryResponse, error) {
+func (_mock *MockGlossary) GetByName(ctx context.Context, accountUID uid.AccountUID, name string) ([]glossary.ReadGlossaryResponse, error) {
 	ret := _mock.Called(ctx, accountUID, name)
 
 	if len(ret) == 0 {
@@ -271,17 +271,17 @@ func (_mock *MockGlossary) GetByName(ctx context.Context, accountUID string, nam
 
 	var r0 []glossary.ReadGlossaryResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) ([]glossary.ReadGlossaryResponse, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uid.AccountUID, string) ([]glossary.ReadGlossaryResponse, error)); ok {
 		return returnFunc(ctx, accountUID, name)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) []glossary.ReadGlossaryResponse); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uid.AccountUID, string) []glossary.ReadGlossaryResponse); ok {
 		r0 = returnFunc(ctx, accountUID, name)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]glossary.ReadGlossaryResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uid.AccountUID, string) error); ok {
 		r1 = returnFunc(ctx, accountUID, name)
 	} else {
 		r1 = ret.Error(1)
@@ -296,21 +296,21 @@ type MockGlossary_GetByName_Call struct {
 
 // GetByName is a helper method to define mock.On call
 //   - ctx context.Context
-//   - accountUID string
+//   - accountUID uid.AccountUID
 //   - name string
 func (_e *MockGlossary_Expecter) GetByName(ctx interface{}, accountUID interface{}, name interface{}) *MockGlossary_GetByName_Call {
 	return &MockGlossary_GetByName_Call{Call: _e.mock.On("GetByName", ctx, accountUID, name)}
 }
 
-func (_c *MockGlossary_GetByName_Call) Run(run func(ctx context.Context, accountUID string, name string)) *MockGlossary_GetByName_Call {
+func (_c *MockGlossary_GetByName_Call) Run(run func(ctx context.Context, accountUID uid.AccountUID, name string)) *MockGlossary_GetByName_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 uid.AccountUID
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(uid.AccountUID)
 		}
 		var arg2 string
 		if args[2] != nil {
@@ -330,7 +330,7 @@ func (_c *MockGlossary_GetByName_Call) Return(glossaries []glossary.ReadGlossary
 	return _c
 }
 
-func (_c *MockGlossary_GetByName_Call) RunAndReturn(run func(ctx context.Context, accountUID string, name string) ([]glossary.ReadGlossaryResponse, error)) *MockGlossary_GetByName_Call {
+func (_c *MockGlossary_GetByName_Call) RunAndReturn(run func(ctx context.Context, accountUID uid.AccountUID, name string) ([]glossary.ReadGlossaryResponse, error)) *MockGlossary_GetByName_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -67,7 +67,7 @@ func Test_service_RunList(t *testing.T) {
 		{
 			name: "GetByName API error",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), "").
+				m.EXPECT().GetByName(ctx, testAccountUID, "").
 					Return(nil, errors.New("API error"))
 			},
 			params:  ListParams{AccountUID: testAccountUID},
@@ -76,7 +76,7 @@ func Test_service_RunList(t *testing.T) {
 		{
 			name: "empty result",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), "").
+				m.EXPECT().GetByName(ctx, testAccountUID, "").
 					Return([]glossaryapi.ReadGlossaryResponse{}, nil)
 			},
 			params: ListParams{AccountUID: testAccountUID},
@@ -92,7 +92,7 @@ func Test_service_RunList(t *testing.T) {
 		{
 			name: "returns all glossaries when no name filter",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), "").
+				m.EXPECT().GetByName(ctx, testAccountUID, "").
 					Return([]glossaryapi.ReadGlossaryResponse{
 						{GlossaryUid: "uid-1", Name: "Alpha", Description: "desc A", LocaleIDs: []string{"en-US"}},
 						{GlossaryUid: "uid-2", Name: "Beta", Description: "desc B", LocaleIDs: []string{"en-US", "es-ES"}},
@@ -120,7 +120,7 @@ func Test_service_RunList(t *testing.T) {
 		{
 			name: "name filter is forwarded to API",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), "Marketing").
+				m.EXPECT().GetByName(ctx, testAccountUID, "Marketing").
 					Return([]glossaryapi.ReadGlossaryResponse{
 						{GlossaryUid: "uid-3", Name: "Marketing"},
 					}, nil)

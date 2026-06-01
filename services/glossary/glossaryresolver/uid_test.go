@@ -40,7 +40,7 @@ func TestGetGlossaryUID(t *testing.T) {
 		{
 			name: "UUID input found via Get",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().Get(ctx, string(testAccountUID), testGlossaryUID).
+				m.EXPECT().Get(ctx, testAccountUID, testGlossaryUID).
 					Return(glossaryapi.ReadGlossaryResponse{GlossaryUid: testGlossaryUID, Name: "My Glossary"}, nil)
 			},
 			glossaryUIDOrName: testGlossaryUID,
@@ -49,9 +49,9 @@ func TestGetGlossaryUID(t *testing.T) {
 		{
 			name: "UUID input not found via Get falls through to GetByName",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().Get(ctx, string(testAccountUID), testGlossaryUID).
+				m.EXPECT().Get(ctx, testAccountUID, testGlossaryUID).
 					Return(glossaryapi.ReadGlossaryResponse{}, glossaryapi.ErrGlossaryNotFound)
-				m.EXPECT().GetByName(ctx, string(testAccountUID), testGlossaryUID).
+				m.EXPECT().GetByName(ctx, testAccountUID, testGlossaryUID).
 					Return([]glossaryapi.ReadGlossaryResponse{
 						{GlossaryUid: testGlossaryUID, Name: testGlossaryUID},
 					}, nil)
@@ -62,7 +62,7 @@ func TestGetGlossaryUID(t *testing.T) {
 		{
 			name: "UUID input Get returns unexpected error",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().Get(ctx, string(testAccountUID), testGlossaryUID).
+				m.EXPECT().Get(ctx, testAccountUID, testGlossaryUID).
 					Return(glossaryapi.ReadGlossaryResponse{}, errors.New("network error"))
 			},
 			glossaryUIDOrName: testGlossaryUID,
@@ -71,7 +71,7 @@ func TestGetGlossaryUID(t *testing.T) {
 		{
 			name: "name input found via GetByName exact match",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), "My Glossary").
+				m.EXPECT().GetByName(ctx, testAccountUID, "My Glossary").
 					Return([]glossaryapi.ReadGlossaryResponse{
 						{GlossaryUid: testGlossaryUID, Name: "My Glossary"},
 						{GlossaryUid: "aaaaaaaa-0000-0000-0000-000000000000", Name: "Other"},
@@ -83,7 +83,7 @@ func TestGetGlossaryUID(t *testing.T) {
 		{
 			name: "name input falls back to first result when no exact match",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), "partial").
+				m.EXPECT().GetByName(ctx, testAccountUID, "partial").
 					Return([]glossaryapi.ReadGlossaryResponse{
 						{GlossaryUid: testGlossaryUID, Name: "partial match"},
 					}, nil)
@@ -94,7 +94,7 @@ func TestGetGlossaryUID(t *testing.T) {
 		{
 			name: "name input GetByName returns empty list",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), "unknown").
+				m.EXPECT().GetByName(ctx, testAccountUID, "unknown").
 					Return([]glossaryapi.ReadGlossaryResponse{}, nil)
 			},
 			glossaryUIDOrName: "unknown",
@@ -103,7 +103,7 @@ func TestGetGlossaryUID(t *testing.T) {
 		{
 			name: "name input first result has empty UID",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), "bad").
+				m.EXPECT().GetByName(ctx, testAccountUID, "bad").
 					Return([]glossaryapi.ReadGlossaryResponse{
 						{GlossaryUid: "", Name: "bad"},
 					}, nil)
@@ -114,7 +114,7 @@ func TestGetGlossaryUID(t *testing.T) {
 		{
 			name: "name input GetByName error",
 			setup: func(m *sdkmocks.MockGlossary) {
-				m.EXPECT().GetByName(ctx, string(testAccountUID), "My Glossary").
+				m.EXPECT().GetByName(ctx, testAccountUID, "My Glossary").
 					Return(nil, errors.New("network error"))
 			},
 			glossaryUIDOrName: "My Glossary",

@@ -46,7 +46,7 @@ func (s service) RunExport(ctx context.Context, params ExportParams) (ExportOutp
 	// localeIds is required by the export API; when the caller didn't pass any
 	// --locale flags, fall back to the glossary's full locale list.
 	if len(params.LocaleIDs) == 0 {
-		gl, err := s.glossaryApi.Get(ctx, string(params.AccountUID), glossaryUID)
+		gl, err := s.glossaryApi.Get(ctx, params.AccountUID, glossaryUID)
 		if err != nil {
 			return ExportOutput{}, fmt.Errorf("get glossary %q to default locale list: %w", glossaryUID, err)
 		}

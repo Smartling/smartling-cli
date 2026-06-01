@@ -24,13 +24,13 @@ func GetGlossaryUID(ctx context.Context, api glossaryapi.Glossary, accountUID ui
 		return "", glossaryapi.ErrGlossaryNotFound
 	}
 	if glossaryUIDPattern.MatchString(glossaryUIDOrName) {
-		gl, err := api.Get(ctx, string(accountUID), glossaryUIDOrName)
+		gl, err := api.Get(ctx, accountUID, glossaryUIDOrName)
 		switch {
 		case err == nil:
-			if strings.TrimSpace(gl.GlossaryUid) == "" {
+			if strings.TrimSpace(gl.GlossaryUID) == "" {
 				return "", glossaryapi.ErrGlossaryNotFound
 			}
-			return gl.GlossaryUid, nil
+			return gl.GlossaryUID, nil
 		case errors.Is(err, glossaryapi.ErrGlossaryNotFound):
 			// 12-char input wasn't a UID — could still be a glossary name, fall through
 		default:
@@ -38,7 +38,7 @@ func GetGlossaryUID(ctx context.Context, api glossaryapi.Glossary, accountUID ui
 		}
 	}
 
-	glossaries, err := api.GetByName(ctx, string(accountUID), glossaryUIDOrName)
+	glossaries, err := api.GetByName(ctx, accountUID, glossaryUIDOrName)
 	if err != nil {
 		return "", fmt.Errorf("search glossaries by name %q: %w", glossaryUIDOrName, err)
 	}
@@ -46,13 +46,13 @@ func GetGlossaryUID(ctx context.Context, api glossaryapi.Glossary, accountUID ui
 		return "", glossaryapi.ErrGlossaryNotFound
 	}
 	for _, glossary := range glossaries {
-		if glossary.Name == glossaryUIDOrName && strings.TrimSpace(glossary.GlossaryUid) != "" {
-			return glossary.GlossaryUid, nil
+		if glossary.Name == glossaryUIDOrName && strings.TrimSpace(glossary.GlossaryUID) != "" {
+			return glossary.GlossaryUID, nil
 		}
 	}
 	first := glossaries[0]
-	if strings.TrimSpace(first.GlossaryUid) == "" {
+	if strings.TrimSpace(first.GlossaryUID) == "" {
 		return "", glossaryapi.ErrGlossaryNotFound
 	}
-	return first.GlossaryUid, nil
+	return first.GlossaryUID, nil
 }
