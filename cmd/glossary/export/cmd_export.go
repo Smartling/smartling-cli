@@ -80,8 +80,20 @@ func NewExportCmd(initializer glossarycmd.SrvInitializer) *cobra.Command {
 
 	exportCmd := &cobra.Command{
 		Use:   "export <glossaryUID|glossaryName> [outFile]",
-		Short: "Glossary export process",
-		Long:  `Export glossary entries into a file with the selected format.`,
+		Short: "Export a glossary to a file",
+		Long: `Export a glossary's entries to a file.
+
+The glossary is identified by its UID or name (the first positional argument).
+Choose the format with --file-type: csv, xlsx, or tbx. For tbx you must also
+pass --tbx-version (v2 or v3).
+
+By default every locale in the glossary is exported; pass one or more --locale
+flags to limit the export to specific locales. The --filter-* flags narrow the
+exported entries (by query, entry state, labels, creation/modification date,
+and more).
+
+If outFile is omitted the file is written to "<glossaryUID>.<file-type>" in the
+current directory.`,
 		Example: `
 # Export a glossary as CSV to the server-suggested filename
 
