@@ -135,10 +135,10 @@ func TestEnumerateJobFiles_EmptyFiles(t *testing.T) {
 func TestRunPull_JobWithNoFiles_ReturnsError(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "proj-1", "job-empty-files").
-		Return([]sdkjob.GetJobResponse{
+		ListProjectJobs(context.Background(), "proj-1", sdkjob.ListProjectJobsParams{JobName: "job-empty-files"}).
+		Return(sdkjob.ListJobsResponse{Items: []sdkjob.JobSummary{
 			{TranslationJobUID: "job-empty-files-uid", JobName: "job-empty-files", TargetLocaleIDs: []string{"fr-FR"}},
-		}, nil)
+		}}, nil)
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "job-empty-files-uid").
 		Return(sdkjob.GetJobResponse{
@@ -185,10 +185,10 @@ func TestRunPull_DryRun_DoesNotCallAPIClient(t *testing.T) {
 	// or DownloadFile in dry-run mode this test will nil-panic and fail.
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "proj-1", "job-1").
-		Return([]sdkjob.GetJobResponse{
+		ListProjectJobs(context.Background(), "proj-1", sdkjob.ListProjectJobsParams{JobName: "job-1"}).
+		Return(sdkjob.ListJobsResponse{Items: []sdkjob.JobSummary{
 			{TranslationJobUID: "job-1", JobName: "job-1"},
-		}, nil)
+		}}, nil)
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "job-1").
 		Return(sdkjob.GetJobResponse{
@@ -221,10 +221,10 @@ func TestRunPull_DryRun_DoesNotCallAPIClient(t *testing.T) {
 func TestRunPull_EmptyLocaleIntersection_Errors(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "proj-1", "job-1").
-		Return([]sdkjob.GetJobResponse{
+		ListProjectJobs(context.Background(), "proj-1", sdkjob.ListProjectJobsParams{JobName: "job-1"}).
+		Return(sdkjob.ListJobsResponse{Items: []sdkjob.JobSummary{
 			{TranslationJobUID: "job-1", JobName: "job-1"},
-		}, nil)
+		}}, nil)
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "job-1").
 		Return(sdkjob.GetJobResponse{
@@ -260,10 +260,10 @@ func TestRunPull_EmptyLocaleIntersection_Errors(t *testing.T) {
 func TestRunPull_JobUIDPlusURI_FiltersJobFiles(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "proj-1", "job-1").
-		Return([]sdkjob.GetJobResponse{
+		ListProjectJobs(context.Background(), "proj-1", sdkjob.ListProjectJobsParams{JobName: "job-1"}).
+		Return(sdkjob.ListJobsResponse{Items: []sdkjob.JobSummary{
 			{TranslationJobUID: "job-1", JobName: "job-1"},
-		}, nil)
+		}}, nil)
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "job-1").
 		Return(sdkjob.GetJobResponse{
@@ -320,10 +320,10 @@ func TestRunPull_JobUIDPlusURI_FiltersJobFiles(t *testing.T) {
 func TestRunPull_JobWithNoLocales_ReturnsError(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "proj-1", "job-empty").
-		Return([]sdkjob.GetJobResponse{
+		ListProjectJobs(context.Background(), "proj-1", sdkjob.ListProjectJobsParams{JobName: "job-empty"}).
+		Return(sdkjob.ListJobsResponse{Items: []sdkjob.JobSummary{
 			{TranslationJobUID: "job-empty", JobName: "job-empty"},
-		}, nil)
+		}}, nil)
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "job-empty").
 		Return(sdkjob.GetJobResponse{
@@ -355,10 +355,10 @@ func TestRunPull_JobWithNoLocales_ReturnsError(t *testing.T) {
 func TestRunPull_JobUIDPlusURIWithNoMatch_ReturnsError(t *testing.T) {
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "proj-1", "job-1").
-		Return([]sdkjob.GetJobResponse{
+		ListProjectJobs(context.Background(), "proj-1", sdkjob.ListProjectJobsParams{JobName: "job-1"}).
+		Return(sdkjob.ListJobsResponse{Items: []sdkjob.JobSummary{
 			{TranslationJobUID: "job-1", JobName: "job-1"},
-		}, nil)
+		}}, nil)
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "job-1").
 		Return(sdkjob.GetJobResponse{
@@ -408,10 +408,10 @@ func TestRunPull_Resume_SkipsExistingFiles(t *testing.T) {
 	}
 	mockJob := jobmocks.NewMockJob(t)
 	mockJob.EXPECT().
-		SearchByName(context.Background(), "proj-1", "job-1").
-		Return([]sdkjob.GetJobResponse{
+		ListProjectJobs(context.Background(), "proj-1", sdkjob.ListProjectJobsParams{JobName: "job-1"}).
+		Return(sdkjob.ListJobsResponse{Items: []sdkjob.JobSummary{
 			{TranslationJobUID: "job-1", JobName: "job-1"},
-		}, nil)
+		}}, nil)
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "job-1").
 		Return(sdkjob.GetJobResponse{

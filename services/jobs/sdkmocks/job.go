@@ -110,6 +110,78 @@ func (_c *MockJob_GetJob_Call) RunAndReturn(run func(ctx context.Context, projec
 	return _c
 }
 
+// ListAccountJobs provides a mock function for the type MockJob
+func (_mock *MockJob) ListAccountJobs(ctx context.Context, accountUID string, params job.ListAccountJobsParams) (job.ListJobsResponse, error) {
+	ret := _mock.Called(ctx, accountUID, params)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListAccountJobs")
+	}
+
+	var r0 job.ListJobsResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, job.ListAccountJobsParams) (job.ListJobsResponse, error)); ok {
+		return returnFunc(ctx, accountUID, params)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, job.ListAccountJobsParams) job.ListJobsResponse); ok {
+		r0 = returnFunc(ctx, accountUID, params)
+	} else {
+		r0 = ret.Get(0).(job.ListJobsResponse)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, job.ListAccountJobsParams) error); ok {
+		r1 = returnFunc(ctx, accountUID, params)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockJob_ListAccountJobs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListAccountJobs'
+type MockJob_ListAccountJobs_Call struct {
+	*mock.Call
+}
+
+// ListAccountJobs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - accountUID string
+//   - params job.ListAccountJobsParams
+func (_e *MockJob_Expecter) ListAccountJobs(ctx interface{}, accountUID interface{}, params interface{}) *MockJob_ListAccountJobs_Call {
+	return &MockJob_ListAccountJobs_Call{Call: _e.mock.On("ListAccountJobs", ctx, accountUID, params)}
+}
+
+func (_c *MockJob_ListAccountJobs_Call) Run(run func(ctx context.Context, accountUID string, params job.ListAccountJobsParams)) *MockJob_ListAccountJobs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 job.ListAccountJobsParams
+		if args[2] != nil {
+			arg2 = args[2].(job.ListAccountJobsParams)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockJob_ListAccountJobs_Call) Return(listJobsResponse job.ListJobsResponse, err error) *MockJob_ListAccountJobs_Call {
+	_c.Call.Return(listJobsResponse, err)
+	return _c
+}
+
+func (_c *MockJob_ListAccountJobs_Call) RunAndReturn(run func(ctx context.Context, accountUID string, params job.ListAccountJobsParams) (job.ListJobsResponse, error)) *MockJob_ListAccountJobs_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListFiles provides a mock function for the type MockJob
 func (_mock *MockJob) ListFiles(ctx context.Context, projectID string, jobUID string, limit uint32, offset uint32) (job.ListJobFilesResponse, error) {
 	ret := _mock.Called(ctx, projectID, jobUID, limit, offset)
@@ -194,6 +266,78 @@ func (_c *MockJob_ListFiles_Call) RunAndReturn(run func(ctx context.Context, pro
 	return _c
 }
 
+// ListProjectJobs provides a mock function for the type MockJob
+func (_mock *MockJob) ListProjectJobs(ctx context.Context, projectID string, params job.ListProjectJobsParams) (job.ListJobsResponse, error) {
+	ret := _mock.Called(ctx, projectID, params)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListProjectJobs")
+	}
+
+	var r0 job.ListJobsResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, job.ListProjectJobsParams) (job.ListJobsResponse, error)); ok {
+		return returnFunc(ctx, projectID, params)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, job.ListProjectJobsParams) job.ListJobsResponse); ok {
+		r0 = returnFunc(ctx, projectID, params)
+	} else {
+		r0 = ret.Get(0).(job.ListJobsResponse)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, job.ListProjectJobsParams) error); ok {
+		r1 = returnFunc(ctx, projectID, params)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockJob_ListProjectJobs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListProjectJobs'
+type MockJob_ListProjectJobs_Call struct {
+	*mock.Call
+}
+
+// ListProjectJobs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - projectID string
+//   - params job.ListProjectJobsParams
+func (_e *MockJob_Expecter) ListProjectJobs(ctx interface{}, projectID interface{}, params interface{}) *MockJob_ListProjectJobs_Call {
+	return &MockJob_ListProjectJobs_Call{Call: _e.mock.On("ListProjectJobs", ctx, projectID, params)}
+}
+
+func (_c *MockJob_ListProjectJobs_Call) Run(run func(ctx context.Context, projectID string, params job.ListProjectJobsParams)) *MockJob_ListProjectJobs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 job.ListProjectJobsParams
+		if args[2] != nil {
+			arg2 = args[2].(job.ListProjectJobsParams)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockJob_ListProjectJobs_Call) Return(listJobsResponse job.ListJobsResponse, err error) *MockJob_ListProjectJobs_Call {
+	_c.Call.Return(listJobsResponse, err)
+	return _c
+}
+
+func (_c *MockJob_ListProjectJobs_Call) RunAndReturn(run func(ctx context.Context, projectID string, params job.ListProjectJobsParams) (job.ListJobsResponse, error)) *MockJob_ListProjectJobs_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Progress provides a mock function for the type MockJob
 func (_mock *MockJob) Progress(ctx context.Context, projectID string, jobUID string) (job.GetJobProgressResponse, error) {
 	ret := _mock.Called(ctx, projectID, jobUID)
@@ -266,48 +410,46 @@ func (_c *MockJob_Progress_Call) RunAndReturn(run func(ctx context.Context, proj
 	return _c
 }
 
-// SearchByName provides a mock function for the type MockJob
-func (_mock *MockJob) SearchByName(ctx context.Context, projectID string, name string) ([]job.GetJobResponse, error) {
-	ret := _mock.Called(ctx, projectID, name)
+// SearchJobs provides a mock function for the type MockJob
+func (_mock *MockJob) SearchJobs(ctx context.Context, projectID string, req job.SearchJobsRequest) (job.ListJobsResponse, error) {
+	ret := _mock.Called(ctx, projectID, req)
 
 	if len(ret) == 0 {
-		panic("no return value specified for SearchByName")
+		panic("no return value specified for SearchJobs")
 	}
 
-	var r0 []job.GetJobResponse
+	var r0 job.ListJobsResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) ([]job.GetJobResponse, error)); ok {
-		return returnFunc(ctx, projectID, name)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, job.SearchJobsRequest) (job.ListJobsResponse, error)); ok {
+		return returnFunc(ctx, projectID, req)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) []job.GetJobResponse); ok {
-		r0 = returnFunc(ctx, projectID, name)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, job.SearchJobsRequest) job.ListJobsResponse); ok {
+		r0 = returnFunc(ctx, projectID, req)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]job.GetJobResponse)
-		}
+		r0 = ret.Get(0).(job.ListJobsResponse)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = returnFunc(ctx, projectID, name)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, job.SearchJobsRequest) error); ok {
+		r1 = returnFunc(ctx, projectID, req)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// MockJob_SearchByName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SearchByName'
-type MockJob_SearchByName_Call struct {
+// MockJob_SearchJobs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SearchJobs'
+type MockJob_SearchJobs_Call struct {
 	*mock.Call
 }
 
-// SearchByName is a helper method to define mock.On call
+// SearchJobs is a helper method to define mock.On call
 //   - ctx context.Context
 //   - projectID string
-//   - name string
-func (_e *MockJob_Expecter) SearchByName(ctx interface{}, projectID interface{}, name interface{}) *MockJob_SearchByName_Call {
-	return &MockJob_SearchByName_Call{Call: _e.mock.On("SearchByName", ctx, projectID, name)}
+//   - req job.SearchJobsRequest
+func (_e *MockJob_Expecter) SearchJobs(ctx interface{}, projectID interface{}, req interface{}) *MockJob_SearchJobs_Call {
+	return &MockJob_SearchJobs_Call{Call: _e.mock.On("SearchJobs", ctx, projectID, req)}
 }
 
-func (_c *MockJob_SearchByName_Call) Run(run func(ctx context.Context, projectID string, name string)) *MockJob_SearchByName_Call {
+func (_c *MockJob_SearchJobs_Call) Run(run func(ctx context.Context, projectID string, req job.SearchJobsRequest)) *MockJob_SearchJobs_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -317,9 +459,9 @@ func (_c *MockJob_SearchByName_Call) Run(run func(ctx context.Context, projectID
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
-		var arg2 string
+		var arg2 job.SearchJobsRequest
 		if args[2] != nil {
-			arg2 = args[2].(string)
+			arg2 = args[2].(job.SearchJobsRequest)
 		}
 		run(
 			arg0,
@@ -330,12 +472,12 @@ func (_c *MockJob_SearchByName_Call) Run(run func(ctx context.Context, projectID
 	return _c
 }
 
-func (_c *MockJob_SearchByName_Call) Return(jobs []job.GetJobResponse, err error) *MockJob_SearchByName_Call {
-	_c.Call.Return(jobs, err)
+func (_c *MockJob_SearchJobs_Call) Return(listJobsResponse job.ListJobsResponse, err error) *MockJob_SearchJobs_Call {
+	_c.Call.Return(listJobsResponse, err)
 	return _c
 }
 
-func (_c *MockJob_SearchByName_Call) RunAndReturn(run func(ctx context.Context, projectID string, name string) ([]job.GetJobResponse, error)) *MockJob_SearchByName_Call {
+func (_c *MockJob_SearchJobs_Call) RunAndReturn(run func(ctx context.Context, projectID string, req job.SearchJobsRequest) (job.ListJobsResponse, error)) *MockJob_SearchJobs_Call {
 	_c.Call.Return(run)
 	return _c
 }

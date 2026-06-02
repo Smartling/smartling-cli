@@ -19,7 +19,10 @@ import (
 	gllist "github.com/Smartling/smartling-cli/cmd/glossaries/list"
 	initialize "github.com/Smartling/smartling-cli/cmd/init"
 	"github.com/Smartling/smartling-cli/cmd/jobs"
+	jobfiles "github.com/Smartling/smartling-cli/cmd/jobs/files"
+	joblist "github.com/Smartling/smartling-cli/cmd/jobs/list"
 	"github.com/Smartling/smartling-cli/cmd/jobs/progress"
+	jobview "github.com/Smartling/smartling-cli/cmd/jobs/view"
 	"github.com/Smartling/smartling-cli/cmd/mt"
 	"github.com/Smartling/smartling-cli/cmd/mt/detect"
 	"github.com/Smartling/smartling-cli/cmd/mt/translate"
@@ -73,6 +76,9 @@ func main() {
 	rootCmd.AddCommand(jobsCmd)
 	jobInitializer := jobs.NewSrvInitializer()
 	jobsCmd.AddCommand(progress.NewProgressCmd(jobInitializer))
+	jobsCmd.AddCommand(joblist.NewListCmd(jobInitializer))
+	jobsCmd.AddCommand(jobview.NewViewCmd(jobInitializer))
+	jobsCmd.AddCommand(jobfiles.NewFilesCmd(jobInitializer))
 
 	glossariesCmd := glossaries.NewGlossariesCmd()
 	rootCmd.AddCommand(glossariesCmd)

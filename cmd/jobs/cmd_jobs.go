@@ -17,6 +17,7 @@ const (
 var (
 	outputFormat   string
 	allowedOutputs = []string{
+		"table",
 		"json",
 		"simple",
 	}
@@ -41,6 +42,7 @@ content owners, project managers, and translators.
 Available options:
   --output string   Output format: ` + joinedAllowedOutputs + ` (default "simple")
                     - simple: Human-readable format optimized for terminal display
+                    - table: ASCII table with one row per job/file
                     - json: Raw API response for programmatic processing and automation`,
 		Example: `
 # View job progress in human-readable format

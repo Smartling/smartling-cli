@@ -9,6 +9,9 @@ import (
 // Service defines behavior for interacting with Smartling jobs.
 type Service interface {
 	RunProgress(ctx context.Context, p ProgressParams) (ProgressOutput, error)
+	RunList(ctx context.Context, p ListParams) (ListOutput, error)
+	RunView(ctx context.Context, p ViewParams) (ViewOutput, error)
+	RunFiles(ctx context.Context, p FilesParams) (FilesOutput, error)
 }
 
 // NewService creates a new implementation of the Service

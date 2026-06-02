@@ -76,15 +76,15 @@ func Test_service_RunProgress(t *testing.T) {
 			},
 		},
 		{
-			name: "UID lookup: GetJob returns ErrNotFound, falls back to SearchByName",
+			name: "UID lookup: GetJob returns ErrNotFound, falls back to ListProjectJobs",
 			setup: func(t *testing.T) *jobmocks.MockJob {
 				m := jobmocks.NewMockJob(t)
 				m.On("GetJob", mock.Anything, validProjectUID, validJobUID).
 					Return(job.GetJobResponse{}, job.ErrNotFound)
-				m.On("SearchByName", mock.Anything, validProjectUID, validJobUID).
-					Return([]job.GetJobResponse{
+				m.On("ListProjectJobs", mock.Anything, validProjectUID, job.ListProjectJobsParams{JobName: validJobUID}).
+					Return(job.ListJobsResponse{Items: []job.JobSummary{
 						{TranslationJobUID: "resolveduid01", JobName: validJobUID},
-					}, nil)
+					}}, nil)
 				m.On("Progress", mock.Anything, validProjectUID, "resolveduid01").
 					Return(job.GetJobProgressResponse{
 						TranslationJobUID: "resolveduid01",
@@ -114,11 +114,11 @@ func Test_service_RunProgress(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "name lookup: SearchByName returns API error",
+			name: "name lookup: ListProjectJobs returns API error",
 			setup: func(t *testing.T) *jobmocks.MockJob {
 				m := jobmocks.NewMockJob(t)
-				m.On("SearchByName", mock.Anything, validProjectUID, validJobName).
-					Return(nil, apiErr)
+				m.On("ListProjectJobs", mock.Anything, validProjectUID, job.ListProjectJobsParams{JobName: validJobName}).
+					Return(job.ListJobsResponse{}, apiErr)
 				return m
 			},
 			ctx:     context.Background(),
@@ -126,11 +126,11 @@ func Test_service_RunProgress(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "name lookup: SearchByName returns empty list",
+			name: "name lookup: ListProjectJobs returns empty list",
 			setup: func(t *testing.T) *jobmocks.MockJob {
 				m := jobmocks.NewMockJob(t)
-				m.On("SearchByName", mock.Anything, validProjectUID, validJobName).
-					Return([]job.GetJobResponse{}, nil)
+				m.On("ListProjectJobs", mock.Anything, validProjectUID, job.ListProjectJobsParams{JobName: validJobName}).
+					Return(job.ListJobsResponse{Items: []job.JobSummary{}}, nil)
 				return m
 			},
 			ctx:     context.Background(),
@@ -141,10 +141,10 @@ func Test_service_RunProgress(t *testing.T) {
 			name: "name lookup: results have no matching name",
 			setup: func(t *testing.T) *jobmocks.MockJob {
 				m := jobmocks.NewMockJob(t)
-				m.On("SearchByName", mock.Anything, validProjectUID, validJobName).
-					Return([]job.GetJobResponse{
+				m.On("ListProjectJobs", mock.Anything, validProjectUID, job.ListProjectJobsParams{JobName: validJobName}).
+					Return(job.ListJobsResponse{Items: []job.JobSummary{
 						{TranslationJobUID: "otheruid0001", JobName: "different name"},
-					}, nil)
+					}}, nil)
 				return m
 			},
 			ctx:     context.Background(),
@@ -155,11 +155,11 @@ func Test_service_RunProgress(t *testing.T) {
 			name: "name lookup: matching name resolves to UID, Progress succeeds",
 			setup: func(t *testing.T) *jobmocks.MockJob {
 				m := jobmocks.NewMockJob(t)
-				m.On("SearchByName", mock.Anything, validProjectUID, validJobName).
-					Return([]job.GetJobResponse{
+				m.On("ListProjectJobs", mock.Anything, validProjectUID, job.ListProjectJobsParams{JobName: validJobName}).
+					Return(job.ListJobsResponse{Items: []job.JobSummary{
 						{TranslationJobUID: "otheruid0001", JobName: "different name"},
 						{TranslationJobUID: "matcheduid002", JobName: validJobName},
-					}, nil)
+					}}, nil)
 				m.On("Progress", mock.Anything, validProjectUID, "matcheduid002").
 					Return(job.GetJobProgressResponse{
 						TranslationJobUID: "matcheduid002",

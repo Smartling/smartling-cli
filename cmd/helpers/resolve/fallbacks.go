@@ -20,6 +20,12 @@ type StringParam struct {
 	Config   *string
 }
 
+// IntParam defines resolve int param
+type IntParam struct {
+	FlagName string
+	Config   *int
+}
+
 // BoolParam defines resolve bool param
 type BoolParam struct {
 	FlagName string
@@ -105,20 +111,39 @@ func FallbackStringArray(cmd *cobra.Command, flagName string, configVal []string
 	return nil
 }
 
-// FallbackInt resolves an int from flag → env → config.
-func FallbackInt(cmd *cobra.Command, flagName string, configVal int) int {
-	flag := cmd.Flags().Lookup(flagName)
+// FallbackInt resolve int value from hierarchy of fallbacks
+func FallbackInt(flag *pflag.Flag, param IntParam) (int, error) {
+	// return flag value if it was changed
 	if flag != nil && flag.Changed {
-		v, _ := cmd.Flags().GetInt(flagName)
-		return v
-	}
-	envVarName := env.VarNameFromCLIFlagName(flagName)
-	if val, isSet := os.LookupEnv(envVarName); isSet {
-		if i, err := strconv.Atoi(val); err == nil {
-			return i
+		v, err := strconv.Atoi(flag.Value.String())
+		if err != nil {
+			return 0, fmt.Errorf("invalid --%s (int): %w", param.FlagName, err)
 		}
+		return v, nil
 	}
-	return configVal
+	// return env value if it is available
+	envVarName := env.VarNameFromCLIFlagName(param.FlagName)
+	if val, isSet := os.LookupEnv(envVarName); isSet {
+		v, err := strconv.Atoi(val)
+		if err != nil {
+			return 0, fmt.Errorf("invalid %s env var (int): %w", envVarName, err)
+		}
+		return v, nil
+	}
+	// return config value if it is available
+	if param.Config != nil {
+		return *param.Config, nil
+	}
+	// return zero value if no flag
+	if flag == nil {
+		return 0, nil
+	}
+	// return default flag value
+	v, err := strconv.Atoi(flag.DefValue)
+	if err != nil {
+		return 0, fmt.Errorf("invalid default value for --%s (int): %w", param.FlagName, err)
+	}
+	return v, nil
 }
 
 // FallbackDate resolves a time.Time from flag → env → config (all RFC3339 strings).

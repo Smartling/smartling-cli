@@ -31,14 +31,14 @@ func GetJobUID(ctx context.Context, api jobapi.Job, projectUID, jobUIDOrName str
 		}
 	}
 
-	jobs, err := api.SearchByName(ctx, projectUID, jobUIDOrName)
+	resp, err := api.ListProjectJobs(ctx, projectUID, jobapi.ListProjectJobsParams{JobName: jobUIDOrName})
 	if err != nil {
 		return "", fmt.Errorf("search jobs by name %q: %w", jobUIDOrName, err)
 	}
-	if len(jobs) == 0 {
+	if len(resp.Items) == 0 {
 		return "", jobapi.ErrNotFound
 	}
-	j, found := jobapi.FindFirstJobByName(jobs, jobUIDOrName)
+	j, found := jobapi.FindFirstJobByName(resp.Items, jobUIDOrName)
 	if !found {
 		return "", jobapi.ErrNotFound
 	}
