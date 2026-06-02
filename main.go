@@ -12,11 +12,11 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/files/push"
 	"github.com/Smartling/smartling-cli/cmd/files/rename"
 	"github.com/Smartling/smartling-cli/cmd/files/status"
-	"github.com/Smartling/smartling-cli/cmd/glossary"
-	glcreate "github.com/Smartling/smartling-cli/cmd/glossary/create"
-	glexport "github.com/Smartling/smartling-cli/cmd/glossary/export"
-	glimport "github.com/Smartling/smartling-cli/cmd/glossary/import"
-	gllist "github.com/Smartling/smartling-cli/cmd/glossary/list"
+	"github.com/Smartling/smartling-cli/cmd/glossaries"
+	glcreate "github.com/Smartling/smartling-cli/cmd/glossaries/create"
+	glexport "github.com/Smartling/smartling-cli/cmd/glossaries/export"
+	glimport "github.com/Smartling/smartling-cli/cmd/glossaries/import"
+	gllist "github.com/Smartling/smartling-cli/cmd/glossaries/list"
 	initialize "github.com/Smartling/smartling-cli/cmd/init"
 	"github.com/Smartling/smartling-cli/cmd/jobs"
 	"github.com/Smartling/smartling-cli/cmd/jobs/progress"
@@ -74,17 +74,17 @@ func main() {
 	jobInitializer := jobs.NewSrvInitializer()
 	jobsCmd.AddCommand(progress.NewProgressCmd(jobInitializer))
 
-	glossaryCmd := glossary.NewGlossaryCmd()
-	rootCmd.AddCommand(glossaryCmd)
-	glossarySrvInitializer := glossary.NewSrvInitializer()
+	glossariesCmd := glossaries.NewGlossariesCmd()
+	rootCmd.AddCommand(glossariesCmd)
+	glossarySrvInitializer := glossaries.NewSrvInitializer()
 	glossaryImport := glimport.NewImportCmd(glossarySrvInitializer)
 	glossaryExport := glexport.NewExportCmd(glossarySrvInitializer)
 	glossaryCreate := glcreate.NewCreateCmd(glossarySrvInitializer)
 	glossaryList := gllist.NewListCmd(glossarySrvInitializer)
-	glossaryCmd.AddCommand(glossaryImport)
-	glossaryCmd.AddCommand(glossaryExport)
-	glossaryCmd.AddCommand(glossaryCreate)
-	glossaryCmd.AddCommand(glossaryList)
+	glossariesCmd.AddCommand(glossaryImport)
+	glossariesCmd.AddCommand(glossaryExport)
+	glossariesCmd.AddCommand(glossaryCreate)
+	glossariesCmd.AddCommand(glossaryList)
 
 	if err := rootCmd.Execute(); err != nil {
 		output.RenderAndExitIfErr(err)

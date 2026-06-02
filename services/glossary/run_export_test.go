@@ -122,8 +122,8 @@ func Test_service_RunExport(t *testing.T) {
 
 	setupGetByName := func(m *sdkmocks.MockGlossary) {
 		m.EXPECT().GetByName(ctx, testAccountUID, testGlossaryName).
-			Return([]glossaryapi.ReadGlossaryResponse{
-				{GlossaryUid: testGlossaryUID, Name: testGlossaryName},
+			Return([]glossaryapi.GetGlossaryResponse{
+				{GlossaryUID: testGlossaryUID, Name: testGlossaryName},
 			}, nil)
 	}
 
@@ -210,8 +210,8 @@ func Test_service_RunExport(t *testing.T) {
 			setup: func(m *sdkmocks.MockGlossary, outFile string) {
 				setupGetByName(m)
 				m.EXPECT().Get(ctx, testAccountUID, testGlossaryUID).
-					Return(glossaryapi.ReadGlossaryResponse{
-						GlossaryUid: testGlossaryUID,
+					Return(glossaryapi.GetGlossaryResponse{
+						GlossaryUID: testGlossaryUID,
 						LocaleIDs:   []string{"en-US", "es-ES"},
 					}, nil)
 				p := ExportParams{
@@ -243,7 +243,7 @@ func Test_service_RunExport(t *testing.T) {
 			setup: func(m *sdkmocks.MockGlossary, _ string) {
 				setupGetByName(m)
 				m.EXPECT().Get(ctx, testAccountUID, testGlossaryUID).
-					Return(glossaryapi.ReadGlossaryResponse{}, errors.New("get error"))
+					Return(glossaryapi.GetGlossaryResponse{}, errors.New("get error"))
 			},
 			params: func(outFile string) ExportParams {
 				p := baseParams(outFile)

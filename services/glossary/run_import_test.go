@@ -108,8 +108,8 @@ func Test_service_RunImport(t *testing.T) {
 
 	setupGetByName := func(m *sdkmocks.MockGlossary) {
 		m.EXPECT().GetByName(ctx, testAccountUID, testGlossaryName).
-			Return([]glossaryapi.ReadGlossaryResponse{
-				{GlossaryUid: testGlossaryUID, Name: testGlossaryName},
+			Return([]glossaryapi.GetGlossaryResponse{
+				{GlossaryUID: testGlossaryUID, Name: testGlossaryName},
 			}, nil)
 	}
 
