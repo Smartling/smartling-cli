@@ -9,5 +9,8 @@ type UIError struct {
 }
 
 func (e UIError) Error() string {
-	return e.Err.Error()
+	if e.Err != nil {
+		return e.Err.Error()
+	}
+	return e.Description
 }

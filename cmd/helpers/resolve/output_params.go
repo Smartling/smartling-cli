@@ -10,7 +10,7 @@ import (
 // OutputParams resolve OutputParams for subcommands
 func OutputParams(cmd *cobra.Command, fileConfigMTFileFormat *string) (output.Params, error) {
 	const outputTemplateFlag = "format"
-	format, err := cmd.Parent().PersistentFlags().GetString("output")
+	format, err := cmd.Flags().GetString("output")
 	if err != nil {
 		return output.Params{}, clierror.UIError{
 			Operation:   "get output",
@@ -23,7 +23,7 @@ func OutputParams(cmd *cobra.Command, fileConfigMTFileFormat *string) (output.Pa
 		Config:   fileConfigMTFileFormat,
 	})
 
-	mode, err := cmd.Parent().PersistentFlags().GetString("output-mode")
+	mode, err := cmd.Flags().GetString("output-mode")
 	if err != nil {
 		return output.Params{}, clierror.UIError{
 			Operation:   "get output mode",

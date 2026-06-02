@@ -12,6 +12,7 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	api "github.com/Smartling/api-sdk-go/api/mt"
+	"github.com/Smartling/api-sdk-go/helpers/uid"
 )
 
 // DetectParams is the parameters for the RunDetect method.
@@ -19,7 +20,7 @@ type DetectParams struct {
 	InputDirectory string
 	FileType       string
 	FileOrPattern  string
-	AccountUID     api.AccountUID
+	AccountUID     uid.AccountUID
 }
 
 func (s service) RunDetect(ctx context.Context, p DetectParams, files []string, updates chan any) ([]DetectOutput, error) {

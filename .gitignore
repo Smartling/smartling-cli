@@ -15,5 +15,9 @@
 /tests/post-release-tests/smartling-cli
 .DS_Store
 
+# Local workspace (use go.work.sample as a template)
+go.work
+go.work.sum
+
 # IDEs
 .idea

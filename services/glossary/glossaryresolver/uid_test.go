@@ -1,0 +1,138 @@
+package glossaryresolver
+
+import (
+	"errors"
+	"testing"
+
+	sdkmocks "github.com/Smartling/smartling-cli/services/glossary/sdkmocks"
+
+	glossaryapi "github.com/Smartling/api-sdk-go/api/glossary"
+	"github.com/Smartling/api-sdk-go/helpers/uid"
+)
+
+const (
+	testAccountUID  = uid.AccountUID("test-account-uid")
+	testGlossaryUID = "00000000-0000-0000-0000-000000000001"
+)
+
+func TestGetGlossaryUID(t *testing.T) {
+	ctx := t.Context()
+
+	tests := []struct {
+		name              string
+		setup             func(*sdkmocks.MockGlossary)
+		glossaryUIDOrName string
+		want              string
+		wantErr           bool
+	}{
+		{
+			name:              "empty input returns not found",
+			setup:             func(m *sdkmocks.MockGlossary) {},
+			glossaryUIDOrName: "",
+			wantErr:           true,
+		},
+		{
+			name:              "whitespace input returns not found",
+			setup:             func(m *sdkmocks.MockGlossary) {},
+			glossaryUIDOrName: "   ",
+			wantErr:           true,
+		},
+		{
+			name: "UUID input found via Get",
+			setup: func(m *sdkmocks.MockGlossary) {
+				m.EXPECT().Get(ctx, testAccountUID, testGlossaryUID).
+					Return(glossaryapi.GetGlossaryResponse{GlossaryUID: testGlossaryUID, Name: "My Glossary"}, nil)
+			},
+			glossaryUIDOrName: testGlossaryUID,
+			want:              testGlossaryUID,
+		},
+		{
+			name: "UUID input not found via Get falls through to GetByName",
+			setup: func(m *sdkmocks.MockGlossary) {
+				m.EXPECT().Get(ctx, testAccountUID, testGlossaryUID).
+					Return(glossaryapi.GetGlossaryResponse{}, glossaryapi.ErrGlossaryNotFound)
+				m.EXPECT().GetByName(ctx, testAccountUID, testGlossaryUID).
+					Return([]glossaryapi.GetGlossaryResponse{
+						{GlossaryUID: testGlossaryUID, Name: testGlossaryUID},
+					}, nil)
+			},
+			glossaryUIDOrName: testGlossaryUID,
+			want:              testGlossaryUID,
+		},
+		{
+			name: "UUID input Get returns unexpected error",
+			setup: func(m *sdkmocks.MockGlossary) {
+				m.EXPECT().Get(ctx, testAccountUID, testGlossaryUID).
+					Return(glossaryapi.GetGlossaryResponse{}, errors.New("network error"))
+			},
+			glossaryUIDOrName: testGlossaryUID,
+			wantErr:           true,
+		},
+		{
+			name: "name input found via GetByName exact match",
+			setup: func(m *sdkmocks.MockGlossary) {
+				m.EXPECT().GetByName(ctx, testAccountUID, "My Glossary").
+					Return([]glossaryapi.GetGlossaryResponse{
+						{GlossaryUID: testGlossaryUID, Name: "My Glossary"},
+						{GlossaryUID: "aaaaaaaa-0000-0000-0000-000000000000", Name: "Other"},
+					}, nil)
+			},
+			glossaryUIDOrName: "My Glossary",
+			want:              testGlossaryUID,
+		},
+		{
+			name: "name input falls back to first result when no exact match",
+			setup: func(m *sdkmocks.MockGlossary) {
+				m.EXPECT().GetByName(ctx, testAccountUID, "partial").
+					Return([]glossaryapi.GetGlossaryResponse{
+						{GlossaryUID: testGlossaryUID, Name: "partial match"},
+					}, nil)
+			},
+			glossaryUIDOrName: "partial",
+			want:              testGlossaryUID,
+		},
+		{
+			name: "name input GetByName returns empty list",
+			setup: func(m *sdkmocks.MockGlossary) {
+				m.EXPECT().GetByName(ctx, testAccountUID, "unknown").
+					Return([]glossaryapi.GetGlossaryResponse{}, nil)
+			},
+			glossaryUIDOrName: "unknown",
+			wantErr:           true,
+		},
+		{
+			name: "name input first result has empty UID",
+			setup: func(m *sdkmocks.MockGlossary) {
+				m.EXPECT().GetByName(ctx, testAccountUID, "bad").
+					Return([]glossaryapi.GetGlossaryResponse{
+						{GlossaryUID: "", Name: "bad"},
+					}, nil)
+			},
+			glossaryUIDOrName: "bad",
+			wantErr:           true,
+		},
+		{
+			name: "name input GetByName error",
+			setup: func(m *sdkmocks.MockGlossary) {
+				m.EXPECT().GetByName(ctx, testAccountUID, "My Glossary").
+					Return(nil, errors.New("network error"))
+			},
+			glossaryUIDOrName: "My Glossary",
+			wantErr:           true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := sdkmocks.NewMockGlossary(t)
+			tt.setup(m)
+			got, err := GetGlossaryUID(ctx, m, testAccountUID, tt.glossaryUIDOrName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetGlossaryUID() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetGlossaryUID() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

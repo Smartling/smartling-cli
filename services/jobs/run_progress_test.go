@@ -9,13 +9,13 @@ import (
 	jobmocks "github.com/Smartling/smartling-cli/services/jobs/sdkmocks"
 
 	"github.com/Smartling/api-sdk-go/api/job"
-	api "github.com/Smartling/api-sdk-go/api/mt"
+	"github.com/Smartling/api-sdk-go/helpers/uid"
 	"github.com/stretchr/testify/mock"
 )
 
 func Test_service_RunProgress(t *testing.T) {
 	const (
-		validAccountUID = api.AccountUID("ACCT12345678")
+		validAccountUID = uid.AccountUID("ACCT12345678")
 		validProjectUID = "PROJ87654321"
 		validJobUID     = "aabbccdd1122"
 		validJobName    = "Website Q1 2026"
@@ -211,7 +211,7 @@ func Test_service_RunProgress(t *testing.T) {
 func TestProgressParams_Validate(t *testing.T) {
 	tests := []struct {
 		name         string
-		AccountUID   api.AccountUID
+		AccountUID   uid.AccountUID
 		ProjectUID   string
 		JobUIDOrName string
 		wantErr      bool

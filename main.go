@@ -12,6 +12,11 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/files/push"
 	"github.com/Smartling/smartling-cli/cmd/files/rename"
 	"github.com/Smartling/smartling-cli/cmd/files/status"
+	"github.com/Smartling/smartling-cli/cmd/glossaries"
+	glcreate "github.com/Smartling/smartling-cli/cmd/glossaries/create"
+	glexport "github.com/Smartling/smartling-cli/cmd/glossaries/export"
+	glimport "github.com/Smartling/smartling-cli/cmd/glossaries/import"
+	gllist "github.com/Smartling/smartling-cli/cmd/glossaries/list"
 	initialize "github.com/Smartling/smartling-cli/cmd/init"
 	"github.com/Smartling/smartling-cli/cmd/jobs"
 	"github.com/Smartling/smartling-cli/cmd/jobs/progress"
@@ -68,6 +73,18 @@ func main() {
 	rootCmd.AddCommand(jobsCmd)
 	jobInitializer := jobs.NewSrvInitializer()
 	jobsCmd.AddCommand(progress.NewProgressCmd(jobInitializer))
+
+	glossariesCmd := glossaries.NewGlossariesCmd()
+	rootCmd.AddCommand(glossariesCmd)
+	glossarySrvInitializer := glossaries.NewSrvInitializer()
+	glossaryImport := glimport.NewImportCmd(glossarySrvInitializer)
+	glossaryExport := glexport.NewExportCmd(glossarySrvInitializer)
+	glossaryCreate := glcreate.NewCreateCmd(glossarySrvInitializer)
+	glossaryList := gllist.NewListCmd(glossarySrvInitializer)
+	glossariesCmd.AddCommand(glossaryImport)
+	glossariesCmd.AddCommand(glossaryExport)
+	glossariesCmd.AddCommand(glossaryCreate)
+	glossariesCmd.AddCommand(glossaryList)
 
 	if err := rootCmd.Execute(); err != nil {
 		output.RenderAndExitIfErr(err)
