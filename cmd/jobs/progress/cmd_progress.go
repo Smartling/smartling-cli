@@ -123,7 +123,7 @@ Available options:` + help.AuthenticationOptions,
 				ProjectUID:   cnf.ProjectID,
 				JobUIDOrName: idOrName,
 			}
-			format, err := cmd.Parent().PersistentFlags().GetString("output")
+			format, err := cmd.Flags().GetString("output")
 			if err != nil {
 				return err
 			}

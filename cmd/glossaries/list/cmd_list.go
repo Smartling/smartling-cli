@@ -43,7 +43,7 @@ returned.`,
 				return fmt.Errorf("failed to resolve list params: %w", err)
 			}
 
-			format, err := cmd.Parent().PersistentFlags().GetString("output")
+			format, err := cmd.Flags().GetString("output")
 			if err != nil {
 				return err
 			}

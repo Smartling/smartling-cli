@@ -32,15 +32,15 @@ func TestGlossaryExport(t *testing.T) {
 			wantErr:           false,
 		},
 		{
-			name:            "missing --file-type required flag",
+			name:            "missing file type is rejected",
 			args:            append(subCommands, testGlossary),
-			expectedOutputs: []string{"file-type"},
+			expectedOutputs: []string{"file type is required"},
 			wantErr:         true,
 		},
 		{
 			name:            "tbx file type without --tbx-version is rejected",
 			args:            append(subCommands, testGlossary, "--file-type", "tbx"),
-			expectedOutputs: []string{"tbx-version"},
+			expectedOutputs: []string{"tbx version is required"},
 			wantErr:         true,
 		},
 		{

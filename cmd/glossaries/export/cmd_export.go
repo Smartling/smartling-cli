@@ -1,7 +1,6 @@
 package glexport
 
 import (
-	"fmt"
 	"strings"
 
 	glossariescmd "github.com/Smartling/smartling-cli/cmd/glossaries"
@@ -115,12 +114,6 @@ current directory.`,
 
   smartling-cli glossaries export "CLI glossary" terms.csv --file-type csv --filter-query "checkout"
 `,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if strings.EqualFold(fileType, glossarysvc.TbxExportFileType) && tbxVersion == "" {
-				return fmt.Errorf("flag --%s is required when --%s is '%s'", tbxVersionFlag, fileTypeFlag, glossarysvc.TbxExportFileType)
-			}
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			var glossaryUIDOrName, outFile string
@@ -141,7 +134,7 @@ current directory.`,
 				return err
 			}
 
-			format, err := cmd.Parent().PersistentFlags().GetString("output")
+			format, err := cmd.Flags().GetString("output")
 			if err != nil {
 				return err
 			}
@@ -182,10 +175,6 @@ current directory.`,
 	f.StringArrayVar(&fCreatedByUsers, filterCreatedByUserIDFlag, nil, "Filter: createdBy.userIds entry (repeatable).")
 	f.StringVar(&fLastModByLevel, filterLastModifiedByLevelFlag, "", "Filter: lastModifiedBy.level.")
 	f.StringArrayVar(&fLastModByUsers, filterLastModifiedByUserIDFlag, nil, "Filter: lastModifiedBy.userIds entry (repeatable).")
-
-	if err := exportCmd.MarkFlagRequired(fileTypeFlag); err != nil {
-		panic(err)
-	}
 
 	return exportCmd
 }

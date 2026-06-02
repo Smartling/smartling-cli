@@ -176,7 +176,7 @@ func (p ExportParams) Validate() error {
 		return smerror.ErrEmptyParam("GlossaryUIDOrName")
 	}
 	if p.FileType == "" {
-		return smerror.ErrEmptyParam("FileType")
+		return fmt.Errorf("file type is required: allowed values are %v", AllowedExportFileTypes)
 	}
 	fileType := strings.ToLower(p.FileType)
 	if !slices.Contains(AllowedExportFileTypes, fileType) {
@@ -184,7 +184,7 @@ func (p ExportParams) Validate() error {
 	}
 	if fileType == TbxExportFileType {
 		if p.TbxVersion == "" {
-			return smerror.ErrEmptyParam("TbxVersion")
+			return fmt.Errorf("tbx version is required when file type is %q", TbxExportFileType)
 		}
 		if !slices.Contains(AllowedExportTbxVersions, strings.ToLower(p.TbxVersion)) {
 			return fmt.Errorf("unsupported tbx version %q: allowed values are %v", p.TbxVersion, AllowedExportTbxVersions)
