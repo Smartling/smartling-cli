@@ -6,6 +6,7 @@ import (
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	jobscmd "github.com/Smartling/smartling-cli/cmd/jobs"
 	"github.com/Smartling/smartling-cli/output"
+	srv "github.com/Smartling/smartling-cli/services/jobs"
 
 	"github.com/spf13/cobra"
 )
@@ -15,9 +16,9 @@ func NewListCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list",
 		Short: "List translation jobs in a project or account.",
-		Long: `List jobs within the configured project (default), within the account
-(--account), or search jobs containing specific files or string hashcodes
-(--file / --hashcode).`,
+		Long: `List jobs within the configured project (default), across all projects
+in the account (--all-projects), or search jobs containing specific files or
+string hashcodes (--file / --hashcode).`,
 		Example: `
 # List jobs in the current project
 
@@ -27,9 +28,9 @@ func NewListCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 
   smartling-cli jobs list --name "Release" --status IN_PROGRESS
 
-# List jobs across the account
+# List jobs across all projects in the account
 
-  smartling-cli jobs list --account --with-priority
+  smartling-cli --account <accountUid> jobs list --all-projects --with-priority
 
 # Search jobs that contain a file
 
@@ -63,7 +64,7 @@ func NewListCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 
 // registerListFlags adds all jobs-list flags to the command.
 func registerListFlags(cmd *cobra.Command) {
-	cmd.Flags().Bool(accountFlag, false, "List jobs across the account instead of a single project.")
+	cmd.Flags().Bool(allProjectsFlag, false, "List jobs across all projects in the account instead of a single project (requires accountUID).")
 	cmd.Flags().String(nameFlag, "", "Filter by job name (maps to jobName).")
 	cmd.Flags().String(numberFlag, "", "Filter by job number (project scope only).")
 	cmd.Flags().StringArray(statusFlag, nil, "Filter by job status (repeatable; maps to translationJobStatus).")
@@ -74,6 +75,6 @@ func registerListFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(withPriorityFlag, false, "Include priority (account scope only).")
 	cmd.Flags().String(sortByFlag, "", "Sort field.")
 	cmd.Flags().String(sortDirectionFlag, "", "Sort direction (asc/desc).")
-	cmd.Flags().Uint32(limitFlag, 500, "Maximum number of jobs to return.")
+	cmd.Flags().Uint32(limitFlag, srv.DefaultListPageLimit, "Maximum number of jobs to return.")
 	cmd.Flags().Uint32(offsetFlag, 0, "Offset for pagination.")
 }

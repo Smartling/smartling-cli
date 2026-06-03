@@ -16,6 +16,7 @@ import (
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
+	srv "github.com/Smartling/smartling-cli/services/jobs"
 	jobmocks "github.com/Smartling/smartling-cli/services/jobs/sdkmocks"
 )
 
@@ -57,7 +58,7 @@ func TestEnumerateJobFiles_HappyPath(t *testing.T) {
 			TargetLocaleIDs:   []string{"fr-FR", "de-DE"},
 		}, nil)
 	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-1", uint32(500), uint32(0)).
+		ListFiles(context.Background(), "proj-1", "job-1", uint32(srv.DefaultListPageLimit), uint32(0)).
 		Return(sdkjob.ListJobFilesResponse{
 			Items: []sdkjob.JobFile{
 				{FileURI: "/a.json"},

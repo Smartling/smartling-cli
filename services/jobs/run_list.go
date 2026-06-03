@@ -15,6 +15,8 @@ import (
 	"github.com/Smartling/api-sdk-go/helpers/uid"
 )
 
+const DefaultListPageLimit = 500
+
 // ListParams carries the jobs-list request from CLI to service.
 type ListParams struct {
 	AccountUID         uid.AccountUID
@@ -63,7 +65,7 @@ func (p ListParams) Validate() error {
 func (p ListParams) searchConflicts() []string {
 	var conflicts []string
 	if p.Account {
-		conflicts = append(conflicts, "--account")
+		conflicts = append(conflicts, "--all-projects")
 	}
 	if p.JobName != "" {
 		conflicts = append(conflicts, "--name")
@@ -85,12 +87,6 @@ func (p ListParams) searchConflicts() []string {
 	}
 	if p.SortDirection != "" {
 		conflicts = append(conflicts, "--sort-direction")
-	}
-	if p.Limit > 0 {
-		conflicts = append(conflicts, "--limit")
-	}
-	if p.Offset > 0 {
-		conflicts = append(conflicts, "--offset")
 	}
 	return conflicts
 }
@@ -195,13 +191,17 @@ func (s service) RunList(ctx context.Context, params ListParams) (ListOutput, er
 			TranslationJobUIDs: params.TranslationJobUIDs,
 		})
 	case params.Account:
+		limit := params.Limit
+		if limit == 0 {
+			limit = DefaultListPageLimit
+		}
 		resp, err = s.job.ListAccountJobs(ctx, string(params.AccountUID), jobapi.ListAccountJobsParams{
 			JobName:      params.JobName,
 			ProjectIDs:   params.ProjectIDs,
 			JobStatus:    params.JobStatus,
 			WithPriority: params.WithPriority,
 			Page: jobapi.Page{
-				Limit:  params.Limit,
+				Limit:  limit,
 				Offset: params.Offset,
 			},
 			Sort: jobapi.Sort{
@@ -210,13 +210,17 @@ func (s service) RunList(ctx context.Context, params ListParams) (ListOutput, er
 			},
 		})
 	default:
+		limit := params.Limit
+		if limit == 0 {
+			limit = DefaultListPageLimit
+		}
 		resp, err = s.job.ListProjectJobs(ctx, params.ProjectUID, jobapi.ListProjectJobsParams{
 			JobName:            params.JobName,
 			JobNumber:          params.JobNumber,
 			TranslationJobUIDs: params.TranslationJobUIDs,
 			JobStatus:          params.JobStatus,
 			Page: jobapi.Page{
-				Limit:  params.Limit,
+				Limit:  limit,
 				Offset: params.Offset,
 			},
 			Sort: jobapi.Sort{

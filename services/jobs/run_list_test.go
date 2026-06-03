@@ -60,7 +60,7 @@ func TestRunList_SearchScopeRejectsIncompatibleFlags(t *testing.T) {
 		Account:    true,
 	})
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "--account")
+	require.Contains(t, err.Error(), "--all-projects")
 	require.Contains(t, err.Error(), "--status")
 	m.AssertNotCalled(t, "SearchJobs", mock.Anything, mock.Anything, mock.Anything)
 }
@@ -133,9 +133,9 @@ func TestListParams_searchConflicts(t *testing.T) {
 			want:   nil,
 		},
 		{
-			name:   "account",
+			name:   "all-projects",
 			params: ListParams{Account: true},
-			want:   []string{"--account"},
+			want:   []string{"--all-projects"},
 		},
 		{
 			name:   "name",
@@ -173,14 +173,14 @@ func TestListParams_searchConflicts(t *testing.T) {
 			want:   []string{"--sort-direction"},
 		},
 		{
-			name:   "limit",
+			name:   "limit is not a conflict (pagination ignored by search)",
 			params: ListParams{Limit: 10},
-			want:   []string{"--limit"},
+			want:   nil,
 		},
 		{
-			name:   "offset",
+			name:   "offset is not a conflict (pagination ignored by search)",
 			params: ListParams{Offset: 5},
-			want:   []string{"--offset"},
+			want:   nil,
 		},
 		{
 			name: "all conflicts in declared order",
@@ -197,7 +197,7 @@ func TestListParams_searchConflicts(t *testing.T) {
 				Offset:        5,
 			},
 			want: []string{
-				"--account",
+				"--all-projects",
 				"--name",
 				"--number",
 				"--status",
@@ -205,8 +205,6 @@ func TestListParams_searchConflicts(t *testing.T) {
 				"--with-priority",
 				"--sort-by",
 				"--sort-direction",
-				"--limit",
-				"--offset",
 			},
 		},
 	}

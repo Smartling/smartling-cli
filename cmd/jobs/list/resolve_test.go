@@ -20,7 +20,7 @@ func TestResolveParams_DefaultProjectScope(t *testing.T) {
 
 func TestResolveParams_AccountScope(t *testing.T) {
 	cmd := newTestCmd()
-	require.NoError(t, cmd.Flags().Set("account", "true"))
+	require.NoError(t, cmd.Flags().Set("all-projects", "true"))
 
 	params, err := resolveParams(cmd, "proj-1", "test-account-uid")
 	require.NoError(t, err)

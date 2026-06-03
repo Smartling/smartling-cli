@@ -12,8 +12,6 @@ import (
 	smerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 )
 
-const defaultFilesPageLimit = 500
-
 // FilesParams carries the jobs-files request.
 type FilesParams struct {
 	ProjectUID   string
@@ -105,7 +103,7 @@ func (s service) RunFiles(ctx context.Context, params FilesParams) (FilesOutput,
 
 	limit := params.Limit
 	if limit == 0 {
-		limit = defaultFilesPageLimit
+		limit = DefaultListPageLimit
 	}
 
 	page, err := s.job.ListFiles(ctx, params.ProjectUID, jobUID, limit, params.Offset)

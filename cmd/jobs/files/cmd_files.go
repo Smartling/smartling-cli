@@ -52,7 +52,7 @@ func NewFilesCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 		},
 	}
 
-	filesCmd.Flags().Uint32Var(&limit, "limit", 500, "Maximum number of files to return.")
+	filesCmd.Flags().Uint32Var(&limit, "limit", srv.DefaultListPageLimit, "Maximum number of files to return.")
 	filesCmd.Flags().Uint32Var(&offset, "offset", 0, "Offset for pagination.")
 
 	return filesCmd

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	accountFlag       = "account"
+	allProjectsFlag   = "all-projects"
 	nameFlag          = "name"
 	numberFlag        = "number"
 	statusFlag        = "status"
@@ -28,7 +28,7 @@ const (
 // resolveParams resolves jobs-list params from flags with an env-var
 // fallback (flag → env).
 func resolveParams(cmd *cobra.Command, projectID, accountIDConfig string) (srv.ListParams, error) {
-	account, _ := cmd.Flags().GetBool(accountFlag)
+	account, _ := cmd.Flags().GetBool(allProjectsFlag)
 
 	accountUID, err := resolve.FallbackAccount(cmd.Root().PersistentFlags().Lookup("account"), accountIDConfig)
 	if err != nil && account {
@@ -43,9 +43,15 @@ func resolveParams(cmd *cobra.Command, projectID, accountIDConfig string) (srv.L
 	if err != nil {
 		return srv.ListParams{}, fmt.Errorf("invalid value for --%s: %w", limitFlag, err)
 	}
+	if limit < 0 {
+		return srv.ListParams{}, fmt.Errorf("--%s cannot be negative", limitFlag)
+	}
 	offset, err := resolve.FallbackInt(cmd.Flags().Lookup(offsetFlag), resolve.IntParam{FlagName: offsetFlag})
 	if err != nil {
 		return srv.ListParams{}, fmt.Errorf("invalid value for --%s: %w", offsetFlag, err)
+	}
+	if offset < 0 {
+		return srv.ListParams{}, fmt.Errorf("--%s cannot be negative", offsetFlag)
 	}
 
 	return srv.ListParams{
