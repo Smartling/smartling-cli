@@ -1,13 +1,9 @@
 package jobview
 
 import (
-	"errors"
-	"fmt"
-
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	jobscmd "github.com/Smartling/smartling-cli/cmd/jobs"
 	"github.com/Smartling/smartling-cli/output"
-	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	srv "github.com/Smartling/smartling-cli/services/jobs"
 
 	"github.com/spf13/cobra"
@@ -19,6 +15,7 @@ func NewViewCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 		Use:   "view <translationJobUid|translationJobName>",
 		Short: "Show full details of a translation job.",
 		Long:  `Retrieve full details of a single translation job by UID or name.`,
+		Args:  cobra.ExactArgs(1),
 		Example: `
 # View a job by UID
 
@@ -30,13 +27,6 @@ func NewViewCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			if len(args) != 1 {
-				return clierror.UIError{
-					Operation:   "check args",
-					Err:         errors.New("wrong argument quantity"),
-					Description: fmt.Sprintf("expected one argument, got: %d", len(args)),
-				}
-			}
 
 			cnf, err := rootcmd.Config()
 			if err != nil {

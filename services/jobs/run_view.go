@@ -35,7 +35,7 @@ func (p ViewParams) Validate() error {
 // ViewOutput is the full detail of a single job.
 type ViewOutput struct {
 	jobapi.GetJobResponse
-	JSON []byte
+	JSON []byte `json:"-"`
 }
 
 // JSONBytes returns the raw JSON payload.
@@ -100,8 +100,7 @@ func (s service) RunView(ctx context.Context, params ViewParams) (ViewOutput, er
 	out := ViewOutput{GetJobResponse: detail}
 	b, err := json.Marshal(detail)
 	if err != nil {
-		rlog.Errorf("failed to marshal job detail to JSON: %v", err)
-		return out, nil
+		return ViewOutput{}, fmt.Errorf("marshal job detail to JSON: %w", err)
 	}
 	out.JSON = b
 	return out, nil

@@ -74,6 +74,6 @@ func registerListFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(withPriorityFlag, false, "Include priority (account scope only).")
 	cmd.Flags().String(sortByFlag, "", "Sort field.")
 	cmd.Flags().String(sortDirectionFlag, "", "Sort direction (asc/desc).")
-	cmd.Flags().Uint32(limitFlag, 0, "Maximum number of jobs to return.")
+	cmd.Flags().Uint32(limitFlag, 500, "Maximum number of jobs to return.")
 	cmd.Flags().Uint32(offsetFlag, 0, "Offset for pagination.")
 }

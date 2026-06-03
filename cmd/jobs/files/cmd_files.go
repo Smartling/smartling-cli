@@ -1,13 +1,9 @@
 package jobfiles
 
 import (
-	"errors"
-	"fmt"
-
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
 	jobscmd "github.com/Smartling/smartling-cli/cmd/jobs"
 	"github.com/Smartling/smartling-cli/output"
-	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	srv "github.com/Smartling/smartling-cli/services/jobs"
 
 	"github.com/spf13/cobra"
@@ -24,6 +20,7 @@ func NewFilesCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 		Use:   "files <translationJobUid|translationJobName>",
 		Short: "List source files attached to a translation job.",
 		Long:  `List the source files attached to a translation job, by UID or name.`,
+		Args:  cobra.ExactArgs(1),
 		Example: `
 # List files for a job by UID
 
@@ -35,13 +32,6 @@ func NewFilesCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			if len(args) != 1 {
-				return clierror.UIError{
-					Operation:   "check args",
-					Err:         errors.New("wrong argument quantity"),
-					Description: fmt.Sprintf("expected one argument, got: %d", len(args)),
-				}
-			}
 
 			cnf, err := rootcmd.Config()
 			if err != nil {

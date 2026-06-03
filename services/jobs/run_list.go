@@ -34,8 +34,21 @@ type ListParams struct {
 	SortDirection      string
 }
 
-// Validate checks the fields required for the chosen scope.
+// Validate checks the fields required for the chosen scope and rejects
+// filters that are incompatible with that scope.
 func (p ListParams) Validate() error {
+	if p.searchScope() {
+		if conflicts := p.searchConflicts(); len(conflicts) > 0 {
+			return fmt.Errorf(
+				"--file/--hashcode search cannot be combined with: %s",
+				strings.Join(conflicts, ", "),
+			)
+		}
+		if p.ProjectUID == "" {
+			return smerror.ErrEmptyParam("ProjectUID")
+		}
+		return nil
+	}
 	if p.Account {
 		return p.AccountUID.Validate()
 	}
@@ -43,6 +56,43 @@ func (p ListParams) Validate() error {
 		return smerror.ErrEmptyParam("ProjectUID")
 	}
 	return nil
+}
+
+// searchConflicts lists the flags set by the caller that the search
+// endpoint ignores (it accepts only --file, --hashcode, and --uid).
+func (p ListParams) searchConflicts() []string {
+	var conflicts []string
+	if p.Account {
+		conflicts = append(conflicts, "--account")
+	}
+	if p.JobName != "" {
+		conflicts = append(conflicts, "--name")
+	}
+	if p.JobNumber != "" {
+		conflicts = append(conflicts, "--number")
+	}
+	if len(p.JobStatus) > 0 {
+		conflicts = append(conflicts, "--status")
+	}
+	if len(p.ProjectIDs) > 0 {
+		conflicts = append(conflicts, "--project-id")
+	}
+	if p.WithPriority {
+		conflicts = append(conflicts, "--with-priority")
+	}
+	if p.SortBy != "" {
+		conflicts = append(conflicts, "--sort-by")
+	}
+	if p.SortDirection != "" {
+		conflicts = append(conflicts, "--sort-direction")
+	}
+	if p.Limit > 0 {
+		conflicts = append(conflicts, "--limit")
+	}
+	if p.Offset > 0 {
+		conflicts = append(conflicts, "--offset")
+	}
+	return conflicts
 }
 
 // searchScope reports whether the file/hashcode search endpoint should be used.
@@ -64,9 +114,24 @@ type JobListItem struct {
 
 // ListOutput is the result of a jobs list.
 type ListOutput struct {
-	Jobs    []JobListItem
-	Account bool
-	JSON    []byte
+	Jobs       []JobListItem
+	Account    bool
+	TotalCount int
+	Offset     uint32
+	JSON       []byte `json:"-"`
+}
+
+// truncated reports whether more jobs exist beyond the returned page.
+func (o ListOutput) truncated() bool {
+	return int(o.Offset)+len(o.Jobs) < o.TotalCount
+}
+
+// truncationNote describes the visible-vs-total page when truncated.
+func (o ListOutput) truncationNote() string {
+	return fmt.Sprintf(
+		"Showing %d of %d jobs. Use --offset %d to see more.",
+		len(o.Jobs), o.TotalCount, o.Offset+uint32(len(o.Jobs)),
+	)
 }
 
 // JSONBytes returns the raw JSON payload of the list.
@@ -77,9 +142,12 @@ func (o ListOutput) SimpleLines() []string {
 	if len(o.Jobs) == 0 {
 		return []string{"No jobs found."}
 	}
-	lines := make([]string, 0, len(o.Jobs))
+	lines := make([]string, 0, len(o.Jobs)+1)
 	for _, j := range o.Jobs {
 		lines = append(lines, fmt.Sprintf("%s  %s  %s", j.TranslationJobUID, j.JobName, j.JobStatus))
+	}
+	if o.truncated() {
+		lines = append(lines, o.truncationNote())
 	}
 	return lines
 }
@@ -88,16 +156,22 @@ func (o ListOutput) SimpleLines() []string {
 func (o ListOutput) TableData() ([]string, [][]string) {
 	if o.Account {
 		headers := []string{"TRANSLATION JOB UID", "NAME", "STATUS", "DUE DATE", "PROJECT ID", "PRIORITY"}
-		rows := make([][]string, 0, len(o.Jobs))
+		rows := make([][]string, 0, len(o.Jobs)+1)
 		for _, j := range o.Jobs {
 			rows = append(rows, []string{j.TranslationJobUID, j.JobName, j.JobStatus, j.DueDate, j.ProjectID, fmt.Sprintf("%d", j.Priority)})
+		}
+		if o.truncated() {
+			rows = append(rows, []string{o.truncationNote(), "", "", "", "", ""})
 		}
 		return headers, rows
 	}
 	headers := []string{"TRANSLATION JOB UID", "NAME", "NUMBER", "STATUS", "DUE DATE", "LOCALES"}
-	rows := make([][]string, 0, len(o.Jobs))
+	rows := make([][]string, 0, len(o.Jobs)+1)
 	for _, j := range o.Jobs {
 		rows = append(rows, []string{j.TranslationJobUID, j.JobName, j.JobNumber, j.JobStatus, j.DueDate, strings.Join(j.TargetLocaleIDs, ",")})
+	}
+	if o.truncated() {
+		rows = append(rows, []string{o.truncationNote(), "", "", "", "", ""})
 	}
 	return headers, rows
 }
@@ -155,10 +229,18 @@ func (s service) RunList(ctx context.Context, params ListParams) (ListOutput, er
 		return ListOutput{}, fmt.Errorf("failed to list jobs: %w", err)
 	}
 
-	return toListOutput(resp, params.Account), nil
+	return toListOutput(resp, params.Account, params.Offset)
 }
 
-func toListOutput(resp jobapi.ListJobsResponse, account bool) ListOutput {
+// listJSON is the JSON shape for jobs-list output, carrying pagination
+// metadata so consumers can detect truncated pages.
+type listJSON struct {
+	Jobs       []JobListItem `json:"jobs"`
+	TotalCount int           `json:"totalCount"`
+	Offset     uint32        `json:"offset"`
+}
+
+func toListOutput(resp jobapi.ListJobsResponse, account bool, offset uint32) (ListOutput, error) {
 	items := make([]JobListItem, 0, len(resp.Items))
 	for _, j := range resp.Items {
 		items = append(items, JobListItem{
@@ -172,12 +254,15 @@ func toListOutput(resp jobapi.ListJobsResponse, account bool) ListOutput {
 			Priority:          j.Priority,
 		})
 	}
-	out := ListOutput{Jobs: items, Account: account}
-	b, err := json.Marshal(items)
+	out := ListOutput{Jobs: items, Account: account, TotalCount: resp.TotalCount, Offset: offset}
+	b, err := json.Marshal(listJSON{
+		Jobs:       items,
+		TotalCount: resp.TotalCount,
+		Offset:     offset,
+	})
 	if err != nil {
-		rlog.Errorf("failed to marshal jobs list to JSON: %v", err)
-		return out
+		return ListOutput{}, fmt.Errorf("marshal jobs list to JSON: %w", err)
 	}
 	out.JSON = b
-	return out
+	return out, nil
 }

@@ -55,7 +55,7 @@ func TestJobsFiles(t *testing.T) {
 		{
 			name:            "missing positional arg is rejected",
 			args:            []string{"jobs", "files"},
-			expectedOutputs: []string{"wrong argument quantity"},
+			expectedOutputs: []string{"accepts 1 arg(s), received 0"},
 			wantErr:         true,
 		},
 	}

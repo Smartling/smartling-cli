@@ -43,7 +43,21 @@ type JobFileItem struct {
 type FilesOutput struct {
 	Files      []JobFileItem
 	TotalCount int
-	JSON       []byte
+	Offset     uint32
+	JSON       []byte `json:"-"`
+}
+
+// truncated reports whether more files exist beyond the returned page.
+func (o FilesOutput) truncated() bool {
+	return int(o.Offset)+len(o.Files) < o.TotalCount
+}
+
+// truncationNote describes the visible-vs-total page when truncated.
+func (o FilesOutput) truncationNote() string {
+	return fmt.Sprintf(
+		"Showing %d of %d files. Use --offset %d to see more.",
+		len(o.Files), o.TotalCount, o.Offset+uint32(len(o.Files)),
+	)
 }
 
 // JSONBytes returns the raw JSON payload.
@@ -54,9 +68,12 @@ func (o FilesOutput) SimpleLines() []string {
 	if len(o.Files) == 0 {
 		return []string{"No files found."}
 	}
-	lines := make([]string, 0, len(o.Files))
+	lines := make([]string, 0, len(o.Files)+1)
 	for _, f := range o.Files {
 		lines = append(lines, fmt.Sprintf("%s  %s", f.FileURI, strings.Join(f.LocaleIDs, ",")))
+	}
+	if o.truncated() {
+		lines = append(lines, o.truncationNote())
 	}
 	return lines
 }
@@ -64,9 +81,12 @@ func (o FilesOutput) SimpleLines() []string {
 // TableData returns the files as a table.
 func (o FilesOutput) TableData() ([]string, [][]string) {
 	headers := []string{"FILE URI", "LOCALES"}
-	rows := make([][]string, 0, len(o.Files))
+	rows := make([][]string, 0, len(o.Files)+1)
 	for _, f := range o.Files {
 		rows = append(rows, []string{f.FileURI, strings.Join(f.LocaleIDs, ",")})
+	}
+	if o.truncated() {
+		rows = append(rows, []string{o.truncationNote(), ""})
 	}
 	return headers, rows
 }
@@ -97,12 +117,23 @@ func (s service) RunFiles(ctx context.Context, params FilesParams) (FilesOutput,
 	for i, file := range page.Items {
 		files[i] = JobFileItem{FileURI: file.FileURI, LocaleIDs: file.LocaleIDs}
 	}
-	res := FilesOutput{Files: files, TotalCount: page.TotalCount}
-	b, err := json.Marshal(files)
+	res := FilesOutput{Files: files, TotalCount: page.TotalCount, Offset: params.Offset}
+	b, err := json.Marshal(filesJSON{
+		Files:      files,
+		TotalCount: page.TotalCount,
+		Offset:     params.Offset,
+	})
 	if err != nil {
-		rlog.Errorf("failed to marshal job files to JSON: %v", err)
-		return res, nil
+		return FilesOutput{}, fmt.Errorf("marshal job files to JSON: %w", err)
 	}
 	res.JSON = b
 	return res, nil
+}
+
+// filesJSON is the JSON shape for jobs-files output, carrying pagination
+// metadata so consumers can detect truncated pages.
+type filesJSON struct {
+	Files      []JobFileItem `json:"files"`
+	TotalCount int           `json:"totalCount"`
+	Offset     uint32        `json:"offset"`
 }

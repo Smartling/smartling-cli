@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	jobapi "github.com/Smartling/api-sdk-go/api/job"
@@ -48,6 +49,22 @@ func TestRunList_AccountScope(t *testing.T) {
 	require.Equal(t, "a1", out.Jobs[0].TranslationJobUID)
 }
 
+func TestRunList_SearchScopeRejectsIncompatibleFlags(t *testing.T) {
+	m := jobmocks.NewMockJob(t)
+
+	s := NewService(m)
+	_, err := s.RunList(context.Background(), ListParams{
+		ProjectUID: "proj-1",
+		FileURIs:   []string{"a.json"},
+		JobStatus:  []string{"IN_PROGRESS"},
+		Account:    true,
+	})
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "--account")
+	require.Contains(t, err.Error(), "--status")
+	m.AssertNotCalled(t, "SearchJobs", mock.Anything, mock.Anything, mock.Anything)
+}
+
 func TestRunList_SearchScope(t *testing.T) {
 	m := jobmocks.NewMockJob(t)
 	m.On("SearchJobs", mock.Anything, "proj-1", mock.MatchedBy(func(r jobapi.SearchJobsRequest) bool {
@@ -63,4 +80,201 @@ func TestRunList_SearchScope(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, out.Jobs, 1)
 	require.Equal(t, "s1", out.Jobs[0].TranslationJobUID)
+}
+
+func TestRunList_TruncationNote(t *testing.T) {
+	m := jobmocks.NewMockJob(t)
+	m.On("ListProjectJobs", mock.Anything, "proj-1", mock.Anything).
+		Return(jobapi.ListJobsResponse{
+			Items:      []jobapi.JobSummary{{TranslationJobUID: "u1"}, {TranslationJobUID: "u2"}},
+			TotalCount: 10,
+		}, nil)
+
+	s := NewService(m)
+	out, err := s.RunList(context.Background(), ListParams{
+		ProjectUID: "proj-1",
+		Limit:      2,
+		Offset:     4,
+	})
+	require.NoError(t, err)
+	require.Equal(t, 10, out.TotalCount)
+	require.Equal(t, uint32(4), out.Offset)
+
+	lines := out.SimpleLines()
+	require.Contains(t, lines[len(lines)-1], "Showing 2 of 10 jobs")
+	require.Contains(t, lines[len(lines)-1], "--offset 6")
+}
+
+func TestRunList_NoTruncationWhenComplete(t *testing.T) {
+	m := jobmocks.NewMockJob(t)
+	m.On("ListProjectJobs", mock.Anything, "proj-1", mock.Anything).
+		Return(jobapi.ListJobsResponse{
+			Items:      []jobapi.JobSummary{{TranslationJobUID: "u1"}, {TranslationJobUID: "u2"}},
+			TotalCount: 2,
+		}, nil)
+
+	s := NewService(m)
+	out, err := s.RunList(context.Background(), ListParams{ProjectUID: "proj-1"})
+	require.NoError(t, err)
+	for _, line := range out.SimpleLines() {
+		require.NotContains(t, line, "Showing")
+	}
+}
+
+func TestListParams_searchConflicts(t *testing.T) {
+	tests := []struct {
+		name   string
+		params ListParams
+		want   []string
+	}{
+		{
+			name:   "no conflicts",
+			params: ListParams{FileURIs: []string{"a.json"}},
+			want:   nil,
+		},
+		{
+			name:   "account",
+			params: ListParams{Account: true},
+			want:   []string{"--account"},
+		},
+		{
+			name:   "name",
+			params: ListParams{JobName: "Release"},
+			want:   []string{"--name"},
+		},
+		{
+			name:   "number",
+			params: ListParams{JobNumber: "42"},
+			want:   []string{"--number"},
+		},
+		{
+			name:   "status",
+			params: ListParams{JobStatus: []string{"IN_PROGRESS"}},
+			want:   []string{"--status"},
+		},
+		{
+			name:   "project-id",
+			params: ListParams{ProjectIDs: []string{"p1"}},
+			want:   []string{"--project-id"},
+		},
+		{
+			name:   "with-priority",
+			params: ListParams{WithPriority: true},
+			want:   []string{"--with-priority"},
+		},
+		{
+			name:   "sort-by",
+			params: ListParams{SortBy: "name"},
+			want:   []string{"--sort-by"},
+		},
+		{
+			name:   "sort-direction",
+			params: ListParams{SortDirection: "asc"},
+			want:   []string{"--sort-direction"},
+		},
+		{
+			name:   "limit",
+			params: ListParams{Limit: 10},
+			want:   []string{"--limit"},
+		},
+		{
+			name:   "offset",
+			params: ListParams{Offset: 5},
+			want:   []string{"--offset"},
+		},
+		{
+			name: "all conflicts in declared order",
+			params: ListParams{
+				Account:       true,
+				JobName:       "Release",
+				JobNumber:     "42",
+				JobStatus:     []string{"IN_PROGRESS"},
+				ProjectIDs:    []string{"p1"},
+				WithPriority:  true,
+				SortBy:        "name",
+				SortDirection: "asc",
+				Limit:         10,
+				Offset:        5,
+			},
+			want: []string{
+				"--account",
+				"--name",
+				"--number",
+				"--status",
+				"--project-id",
+				"--with-priority",
+				"--sort-by",
+				"--sort-direction",
+				"--limit",
+				"--offset",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.params.searchConflicts(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("searchConflicts() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestListParams_Validate(t *testing.T) {
+	tests := []struct {
+		name    string
+		params  ListParams
+		wantErr bool
+	}{
+		{
+			name:    "project scope ok",
+			params:  ListParams{ProjectUID: "proj-1"},
+			wantErr: false,
+		},
+		{
+			name:    "project scope missing project uid",
+			params:  ListParams{},
+			wantErr: true,
+		},
+		{
+			name:    "account scope ok",
+			params:  ListParams{Account: true, AccountUID: uid.AccountUID("test-account-uid")},
+			wantErr: false,
+		},
+		{
+			name:    "account scope missing account uid",
+			params:  ListParams{Account: true},
+			wantErr: true,
+		},
+		{
+			name:    "search scope ok",
+			params:  ListParams{ProjectUID: "proj-1", FileURIs: []string{"a.json"}},
+			wantErr: false,
+		},
+		{
+			name:    "search scope by hashcode ok",
+			params:  ListParams{ProjectUID: "proj-1", Hashcodes: []string{"h1"}},
+			wantErr: false,
+		},
+		{
+			name:    "search scope missing project uid",
+			params:  ListParams{FileURIs: []string{"a.json"}},
+			wantErr: true,
+		},
+		{
+			name: "search scope with conflicting flag",
+			params: ListParams{
+				ProjectUID: "proj-1",
+				FileURIs:   []string{"a.json"},
+				JobStatus:  []string{"IN_PROGRESS"},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.params.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }

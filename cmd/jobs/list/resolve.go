@@ -6,7 +6,6 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	srv "github.com/Smartling/smartling-cli/services/jobs"
 
-	"github.com/Smartling/api-sdk-go/helpers/uid"
 	"github.com/spf13/cobra"
 )
 
@@ -31,13 +30,9 @@ const (
 func resolveParams(cmd *cobra.Command, projectID, accountIDConfig string) (srv.ListParams, error) {
 	account, _ := cmd.Flags().GetBool(accountFlag)
 
-	accountUID := accountIDConfig
-	if account {
-		resolved, err := resolve.FallbackAccount(cmd.Root().PersistentFlags().Lookup("account"), accountIDConfig)
-		if err != nil {
-			return srv.ListParams{}, err
-		}
-		accountUID = string(resolved)
+	accountUID, err := resolve.FallbackAccount(cmd.Root().PersistentFlags().Lookup("account"), accountIDConfig)
+	if err != nil && account {
+		return srv.ListParams{}, err
 	}
 
 	// FallbackBool defaults to true when the flag is present-but-unchanged
@@ -54,7 +49,7 @@ func resolveParams(cmd *cobra.Command, projectID, accountIDConfig string) (srv.L
 	}
 
 	return srv.ListParams{
-		AccountUID:         uid.AccountUID(accountUID),
+		AccountUID:         accountUID,
 		ProjectUID:         projectID,
 		Account:            account,
 		JobName:            resolve.FallbackString(cmd.Flags().Lookup(nameFlag), resolve.StringParam{FlagName: nameFlag}),

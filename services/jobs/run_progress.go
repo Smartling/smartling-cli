@@ -7,21 +7,16 @@ import (
 	"github.com/Smartling/smartling-cli/services/jobs/jobresolver"
 
 	smerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
-	"github.com/Smartling/api-sdk-go/helpers/uid"
 )
 
 // ProgressParams is the parameters for the RunProgress method.
 type ProgressParams struct {
-	AccountUID   uid.AccountUID
 	ProjectUID   string
 	JobUIDOrName string
 }
 
 // Validate validates params for RunProgress.
 func (p ProgressParams) Validate() error {
-	if err := p.AccountUID.Validate(); err != nil {
-		return err
-	}
 	if p.ProjectUID == "" {
 		return smerror.ErrEmptyParam("ProjectUID")
 	}
