@@ -4,9 +4,9 @@ List translation jobs in a project or account.
 
 ### Synopsis
 
-List jobs within the configured project (default), within the account
-(--account), or search jobs containing specific files or string hashcodes
-(--file / --hashcode).
+List jobs within the configured project (default), across all projects
+in the account (--all-projects), or search jobs containing specific files or
+string hashcodes (--file / --hashcode).
 
 ```
 smartling-cli jobs list [flags]
@@ -24,9 +24,9 @@ smartling-cli jobs list [flags]
 
   smartling-cli jobs list --name "Release" --status IN_PROGRESS
 
-# List jobs across the account
+# List jobs across all projects in the account
 
-  smartling-cli jobs list --account --with-priority
+  smartling-cli --account <accountUid> jobs list --all-projects --with-priority
 
 # Search jobs that contain a file
 
@@ -37,7 +37,7 @@ smartling-cli jobs list [flags]
 ### Options
 
 ```
-      --account                  List jobs across the account instead of a single project.
+      --all-projects             List jobs across all projects in the account instead of a single project (requires accountUID).
       --file stringArray         Search jobs containing this file URI (repeatable; uses the search endpoint).
       --hashcode stringArray     Search jobs containing this string hashcode (repeatable; uses the search endpoint).
   -h, --help                     help for list
@@ -56,6 +56,8 @@ smartling-cli jobs list [flags]
 ### Options inherited from parent commands
 
 ```
+  -a, --account string               Account ID to operate on.
+                                     This option overrides config value "account_id".
   -c, --config string                Config file in YAML format.
                                      By default CLI will look for file named
                                      "smartling.yml" in current directory and in all
