@@ -12,6 +12,7 @@ import (
 
 var jobUIDPattern = regexp.MustCompile(`^[a-z0-9]{12}$`)
 
+// GetJobUID resolves a job UID from a UID or name.
 func GetJobUID(ctx context.Context, api jobapi.Job, projectUID, jobUIDOrName string) (string, error) {
 	if jobUIDOrName == "" {
 		return "", jobapi.ErrNotFound

@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// ConfigDirectory resolves the operation directory.
 func ConfigDirectory(cmd *cobra.Command) string {
 	flag := cmd.Root().PersistentFlags().Lookup("operation-directory")
 	if flag == nil {
@@ -23,6 +24,7 @@ func ConfigDirectory(cmd *cobra.Command) string {
 	return flag.DefValue
 }
 
+// ConfigFile resolves the config file name.
 func ConfigFile(cmd *cobra.Command) string {
 	flag := cmd.Root().PersistentFlags().Lookup("config")
 	if flag == nil {

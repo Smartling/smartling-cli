@@ -78,6 +78,7 @@ func FallbackBool(flag *pflag.Flag, param BoolParam) bool {
 	return true
 }
 
+// FallbackAccount resolves the account UID from flag or config.
 func FallbackAccount(flag *pflag.Flag, accountIDConfig string) (uid.AccountUID, error) {
 	var config *string
 	if accountIDConfig != "" {

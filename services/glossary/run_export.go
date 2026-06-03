@@ -18,11 +18,13 @@ import (
 	"github.com/Smartling/api-sdk-go/helpers/uid"
 )
 
-const TbxExportFileType = "tbx"
-
-// defaultExportPageLimit is the page size we send when the caller didn't
-// supply --filter-paging-limit.
-const defaultExportPageLimit = 5000
+const (
+	// TbxExportFileType is the TBX export file type.
+	TbxExportFileType = "tbx"
+	// defaultExportPageLimit is the page size we send when the caller didn't
+	// supply --filter-paging-limit.
+	defaultExportPageLimit = 5000
+)
 
 var (
 	// AllowedExportFileTypes is the set of file types values accepted by the
@@ -131,22 +133,27 @@ type ExportFilter struct {
 	Created                    Created
 }
 
+// Created filters entries by creation.
 type Created struct {
 	Level string
 	Type  string
 	Date  time.Time
 }
 
+// CreatedBy filters entries by creator.
 type CreatedBy struct {
 	Level   string
 	UserIDs []string
 }
 
+// LastModified filters entries by last modification.
 type LastModified struct {
 	Level string
 	Type  string
 	Date  time.Time
 }
+
+// LastModifiedBy filters entries by last modifier.
 type LastModifiedBy struct {
 	Level   string
 	UserIDs []string

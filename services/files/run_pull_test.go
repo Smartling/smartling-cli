@@ -299,7 +299,7 @@ func TestRunPull_JobUIDPlusURI_FiltersJobFiles(t *testing.T) {
 		DryRun:       true,
 	})
 
-	w.Close()
+	_ = w.Close()
 	os.Stdout = stdout
 	out, _ := io.ReadAll(r)
 

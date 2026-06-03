@@ -22,6 +22,7 @@ var (
 	pollingInterval             = time.Second
 )
 
+// ImportParams defines import params.
 type ImportParams struct {
 	GlossaryUIDOrName string
 	AccountUID        uid.AccountUID
@@ -49,6 +50,7 @@ func (p ImportParams) Validate() error {
 	return nil
 }
 
+// ImportFile is the file to import.
 type ImportFile struct {
 	Path string
 	Name string

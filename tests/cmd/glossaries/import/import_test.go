@@ -19,7 +19,7 @@ func exportCSV(t *testing.T, absDir, glossaryName, outName string) string {
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("export for import test: %v\n%s", err, out)
 	}
-	t.Cleanup(func() { os.Remove(outPath) })
+	t.Cleanup(func() { _ = os.Remove(outPath) })
 	return outName
 }
 

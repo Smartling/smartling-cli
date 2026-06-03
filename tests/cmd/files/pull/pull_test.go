@@ -53,7 +53,7 @@ func TestFilesPull(t *testing.T) {
 		},
 		{
 			name:              "Download translated files files without --all",
-			args:              append(subCommands),
+			args:              subCommands,
 			expectedOutputs:   []string{"ERROR"},
 			unexpectedOutputs: []string{"downloaded"},
 			wantErr:           true,

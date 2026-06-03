@@ -280,10 +280,10 @@ func Test_service_RunImport(t *testing.T) {
 					Return(true, nil)
 				m.EXPECT().ImportStatus(ctx, testAccountUID, testGlossaryUID, testImportUID).
 					Return(glossaryapi.ImportStatusResponse{ImportStatus: glossaryapi.PendingImportStatus}, nil).
-					Call.Once()
+					Once()
 				m.EXPECT().ImportStatus(ctx, testAccountUID, testGlossaryUID, testImportUID).
 					Return(glossaryapi.ImportStatusResponse{ImportStatus: glossaryapi.SuccessfulImportStatus}, nil).
-					Call.Once()
+					Once()
 			},
 			params: baseParams,
 			check: func(t *testing.T, got ImportOutput) {

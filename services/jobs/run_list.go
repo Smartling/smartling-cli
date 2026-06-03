@@ -122,14 +122,18 @@ func (s service) RunList(ctx context.Context, params ListParams) (ListOutput, er
 		})
 	case params.Account:
 		resp, err = s.job.ListAccountJobs(ctx, string(params.AccountUID), jobapi.ListAccountJobsParams{
-			JobName:       params.JobName,
-			ProjectIDs:    params.ProjectIDs,
-			JobStatus:     params.JobStatus,
-			WithPriority:  params.WithPriority,
-			Limit:         params.Limit,
-			Offset:        params.Offset,
-			SortBy:        params.SortBy,
-			SortDirection: params.SortDirection,
+			JobName:      params.JobName,
+			ProjectIDs:   params.ProjectIDs,
+			JobStatus:    params.JobStatus,
+			WithPriority: params.WithPriority,
+			Page: jobapi.Page{
+				Limit:  params.Limit,
+				Offset: params.Offset,
+			},
+			Sort: jobapi.Sort{
+				SortBy:        params.SortBy,
+				SortDirection: params.SortDirection,
+			},
 		})
 	default:
 		resp, err = s.job.ListProjectJobs(ctx, params.ProjectUID, jobapi.ListProjectJobsParams{
@@ -137,10 +141,14 @@ func (s service) RunList(ctx context.Context, params ListParams) (ListOutput, er
 			JobNumber:          params.JobNumber,
 			TranslationJobUIDs: params.TranslationJobUIDs,
 			JobStatus:          params.JobStatus,
-			Limit:              params.Limit,
-			Offset:             params.Offset,
-			SortBy:             params.SortBy,
-			SortDirection:      params.SortDirection,
+			Page: jobapi.Page{
+				Limit:  params.Limit,
+				Offset: params.Offset,
+			},
+			Sort: jobapi.Sort{
+				SortBy:        params.SortBy,
+				SortDirection: params.SortDirection,
+			},
 		})
 	}
 	if err != nil {

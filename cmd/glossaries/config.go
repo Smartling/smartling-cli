@@ -26,6 +26,7 @@ type ImportConfig struct {
 	MediaType   string `yaml:"media_type,omitzero"`
 }
 
+// ExportConfig mirrors the flags accepted by `glossaries export`.
 type ExportConfig struct {
 	FileType      string             `yaml:"file_type,omitzero"`
 	TbxVersion    string             `yaml:"tbx_version,omitzero"`
@@ -35,6 +36,7 @@ type ExportConfig struct {
 	Filter        ExportFilterConfig `yaml:"filter,omitzero"`
 }
 
+// ExportFilterConfig defines export filter settings.
 type ExportFilterConfig struct {
 	Query                      string               `yaml:"query,omitzero"`
 	LocaleIDs                  []string             `yaml:"locale_ids,omitzero"`
@@ -52,23 +54,27 @@ type ExportFilterConfig struct {
 	LastModifiedBy             LastModifiedByConfig `yaml:"last_modified_by,omitzero"`
 }
 
+// CreatedConfig filters entries by creation.
 type CreatedConfig struct {
 	Level string `yaml:"level,omitzero"`
 	Type  string `yaml:"type,omitzero"`
 	Date  string `yaml:"date,omitzero"`
 }
 
+// CreatedByConfig filters entries by creator.
 type CreatedByConfig struct {
 	Level   string   `yaml:"level,omitzero"`
 	UserIDs []string `yaml:"user_ids,omitzero"`
 }
 
+// LastModifiedConfig filters entries by last modification.
 type LastModifiedConfig struct {
 	Level string `yaml:"level,omitzero"`
 	Type  string `yaml:"type,omitzero"`
 	Date  string `yaml:"date,omitzero"`
 }
 
+// LastModifiedByConfig filters entries by last modifier.
 type LastModifiedByConfig struct {
 	Level   string   `yaml:"level,omitzero"`
 	UserIDs []string `yaml:"user_ids,omitzero"`
