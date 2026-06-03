@@ -3,6 +3,7 @@ package helpers
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 // MKeyValueToMap converts key/value pairs `key="value"` into map[string]string{key:value}
@@ -33,4 +34,13 @@ func KeyValueToMap(s string) (map[string]string, error) {
 	key := strings.TrimSpace(parts[0])
 	value := strings.Trim(strings.TrimSpace(parts[1]), `"`)
 	return map[string]string{key: value}, nil
+}
+
+// TimeToString renders a job timestamp for display, returning an empty
+// string for the zero time (dates the API omitted).
+func TimeToString(t time.Time, layout string) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format(layout)
 }

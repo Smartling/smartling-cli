@@ -25,8 +25,8 @@ func (p ListParams) Validate() error {
 	return p.AccountUID.Validate()
 }
 
-// GlossaryItem is a single row in a glossary list.
-type GlossaryItem struct {
+// Item is a single row in a glossary list.
+type Item struct {
 	GlossaryUID string
 	Name        string
 	Description string
@@ -35,7 +35,7 @@ type GlossaryItem struct {
 
 // ListOutput represents the result of a glossary list.
 type ListOutput struct {
-	Glossaries []GlossaryItem
+	Glossaries []Item
 	JSON       []byte
 }
 
@@ -84,9 +84,9 @@ func (s service) RunList(ctx context.Context, params ListParams) (ListOutput, er
 }
 
 func toListOutput(resp []api.GetGlossaryResponse) ListOutput {
-	items := make([]GlossaryItem, 0, len(resp))
+	items := make([]Item, 0, len(resp))
 	for _, g := range resp {
-		items = append(items, GlossaryItem{
+		items = append(items, Item{
 			GlossaryUID: g.GlossaryUID,
 			Name:        g.Name,
 			Description: g.Description,

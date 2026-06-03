@@ -9,13 +9,11 @@ import (
 	jobmocks "github.com/Smartling/smartling-cli/services/jobs/sdkmocks"
 
 	"github.com/Smartling/api-sdk-go/api/job"
-	"github.com/Smartling/api-sdk-go/helpers/uid"
 	"github.com/stretchr/testify/mock"
 )
 
 func Test_service_RunProgress(t *testing.T) {
 	const (
-		validAccountUID = uid.AccountUID("ACCT12345678")
 		validProjectUID = "PROJ87654321"
 		validJobUID     = "aabbccdd1122"
 		validJobName    = "Website Q1 2026"
@@ -31,24 +29,17 @@ func Test_service_RunProgress(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "invalid: empty AccountUID",
-			setup:   func(t *testing.T) *jobmocks.MockJob { return jobmocks.NewMockJob(t) },
-			ctx:     context.Background(),
-			params:  ProgressParams{ProjectUID: validProjectUID, JobUIDOrName: validJobUID},
-			wantErr: true,
-		},
-		{
 			name:    "invalid: empty ProjectUID",
 			setup:   func(t *testing.T) *jobmocks.MockJob { return jobmocks.NewMockJob(t) },
 			ctx:     context.Background(),
-			params:  ProgressParams{AccountUID: validAccountUID, JobUIDOrName: validJobUID},
+			params:  ProgressParams{JobUIDOrName: validJobUID},
 			wantErr: true,
 		},
 		{
 			name:    "invalid: empty JobUIDOrName",
 			setup:   func(t *testing.T) *jobmocks.MockJob { return jobmocks.NewMockJob(t) },
 			ctx:     context.Background(),
-			params:  ProgressParams{AccountUID: validAccountUID, ProjectUID: validProjectUID},
+			params:  ProgressParams{ProjectUID: validProjectUID},
 			wantErr: true,
 		},
 		{
@@ -67,7 +58,7 @@ func Test_service_RunProgress(t *testing.T) {
 				return m
 			},
 			ctx:    context.Background(),
-			params: ProgressParams{AccountUID: validAccountUID, ProjectUID: validProjectUID, JobUIDOrName: validJobUID},
+			params: ProgressParams{ProjectUID: validProjectUID, JobUIDOrName: validJobUID},
 			want: ProgressOutput{
 				TranslationJobUID: validJobUID,
 				TotalWordCount:    100,
@@ -76,15 +67,15 @@ func Test_service_RunProgress(t *testing.T) {
 			},
 		},
 		{
-			name: "UID lookup: GetJob returns ErrNotFound, falls back to SearchByName",
+			name: "UID lookup: GetJob returns ErrNotFound, falls back to ListProjectJobs",
 			setup: func(t *testing.T) *jobmocks.MockJob {
 				m := jobmocks.NewMockJob(t)
 				m.On("GetJob", mock.Anything, validProjectUID, validJobUID).
 					Return(job.GetJobResponse{}, job.ErrNotFound)
-				m.On("SearchByName", mock.Anything, validProjectUID, validJobUID).
-					Return([]job.GetJobResponse{
+				m.On("ListProjectJobs", mock.Anything, validProjectUID, job.ListProjectJobsParams{JobName: validJobUID}).
+					Return(job.ListJobsResponse{Items: []job.JobSummary{
 						{TranslationJobUID: "resolveduid01", JobName: validJobUID},
-					}, nil)
+					}}, nil)
 				m.On("Progress", mock.Anything, validProjectUID, "resolveduid01").
 					Return(job.GetJobProgressResponse{
 						TranslationJobUID: "resolveduid01",
@@ -94,7 +85,7 @@ func Test_service_RunProgress(t *testing.T) {
 				return m
 			},
 			ctx:    context.Background(),
-			params: ProgressParams{AccountUID: validAccountUID, ProjectUID: validProjectUID, JobUIDOrName: validJobUID},
+			params: ProgressParams{ProjectUID: validProjectUID, JobUIDOrName: validJobUID},
 			want: ProgressOutput{
 				TranslationJobUID: "resolveduid01",
 				TotalWordCount:    7,
@@ -110,56 +101,56 @@ func Test_service_RunProgress(t *testing.T) {
 				return m
 			},
 			ctx:     context.Background(),
-			params:  ProgressParams{AccountUID: validAccountUID, ProjectUID: validProjectUID, JobUIDOrName: validJobUID},
+			params:  ProgressParams{ProjectUID: validProjectUID, JobUIDOrName: validJobUID},
 			wantErr: true,
 		},
 		{
-			name: "name lookup: SearchByName returns API error",
+			name: "name lookup: ListProjectJobs returns API error",
 			setup: func(t *testing.T) *jobmocks.MockJob {
 				m := jobmocks.NewMockJob(t)
-				m.On("SearchByName", mock.Anything, validProjectUID, validJobName).
-					Return(nil, apiErr)
+				m.On("ListProjectJobs", mock.Anything, validProjectUID, job.ListProjectJobsParams{JobName: validJobName}).
+					Return(job.ListJobsResponse{}, apiErr)
 				return m
 			},
 			ctx:     context.Background(),
-			params:  ProgressParams{AccountUID: validAccountUID, ProjectUID: validProjectUID, JobUIDOrName: validJobName},
+			params:  ProgressParams{ProjectUID: validProjectUID, JobUIDOrName: validJobName},
 			wantErr: true,
 		},
 		{
-			name: "name lookup: SearchByName returns empty list",
+			name: "name lookup: ListProjectJobs returns empty list",
 			setup: func(t *testing.T) *jobmocks.MockJob {
 				m := jobmocks.NewMockJob(t)
-				m.On("SearchByName", mock.Anything, validProjectUID, validJobName).
-					Return([]job.GetJobResponse{}, nil)
+				m.On("ListProjectJobs", mock.Anything, validProjectUID, job.ListProjectJobsParams{JobName: validJobName}).
+					Return(job.ListJobsResponse{Items: []job.JobSummary{}}, nil)
 				return m
 			},
 			ctx:     context.Background(),
-			params:  ProgressParams{AccountUID: validAccountUID, ProjectUID: validProjectUID, JobUIDOrName: validJobName},
+			params:  ProgressParams{ProjectUID: validProjectUID, JobUIDOrName: validJobName},
 			wantErr: true,
 		},
 		{
 			name: "name lookup: results have no matching name",
 			setup: func(t *testing.T) *jobmocks.MockJob {
 				m := jobmocks.NewMockJob(t)
-				m.On("SearchByName", mock.Anything, validProjectUID, validJobName).
-					Return([]job.GetJobResponse{
+				m.On("ListProjectJobs", mock.Anything, validProjectUID, job.ListProjectJobsParams{JobName: validJobName}).
+					Return(job.ListJobsResponse{Items: []job.JobSummary{
 						{TranslationJobUID: "otheruid0001", JobName: "different name"},
-					}, nil)
+					}}, nil)
 				return m
 			},
 			ctx:     context.Background(),
-			params:  ProgressParams{AccountUID: validAccountUID, ProjectUID: validProjectUID, JobUIDOrName: validJobName},
+			params:  ProgressParams{ProjectUID: validProjectUID, JobUIDOrName: validJobName},
 			wantErr: true,
 		},
 		{
 			name: "name lookup: matching name resolves to UID, Progress succeeds",
 			setup: func(t *testing.T) *jobmocks.MockJob {
 				m := jobmocks.NewMockJob(t)
-				m.On("SearchByName", mock.Anything, validProjectUID, validJobName).
-					Return([]job.GetJobResponse{
+				m.On("ListProjectJobs", mock.Anything, validProjectUID, job.ListProjectJobsParams{JobName: validJobName}).
+					Return(job.ListJobsResponse{Items: []job.JobSummary{
 						{TranslationJobUID: "otheruid0001", JobName: "different name"},
 						{TranslationJobUID: "matcheduid002", JobName: validJobName},
-					}, nil)
+					}}, nil)
 				m.On("Progress", mock.Anything, validProjectUID, "matcheduid002").
 					Return(job.GetJobProgressResponse{
 						TranslationJobUID: "matcheduid002",
@@ -169,7 +160,7 @@ func Test_service_RunProgress(t *testing.T) {
 				return m
 			},
 			ctx:    context.Background(),
-			params: ProgressParams{AccountUID: validAccountUID, ProjectUID: validProjectUID, JobUIDOrName: validJobName},
+			params: ProgressParams{ProjectUID: validProjectUID, JobUIDOrName: validJobName},
 			want: ProgressOutput{
 				TranslationJobUID: "matcheduid002",
 				TotalWordCount:    250,
@@ -187,7 +178,7 @@ func Test_service_RunProgress(t *testing.T) {
 				return m
 			},
 			ctx:     context.Background(),
-			params:  ProgressParams{AccountUID: validAccountUID, ProjectUID: validProjectUID, JobUIDOrName: validJobUID},
+			params:  ProgressParams{ProjectUID: validProjectUID, JobUIDOrName: validJobUID},
 			wantErr: true,
 		},
 	}
@@ -211,56 +202,36 @@ func Test_service_RunProgress(t *testing.T) {
 func TestProgressParams_Validate(t *testing.T) {
 	tests := []struct {
 		name         string
-		AccountUID   uid.AccountUID
 		ProjectUID   string
 		JobUIDOrName string
 		wantErr      bool
 	}{
 		{
 			name:         "valid",
-			AccountUID:   "ACCT12345678",
 			ProjectUID:   "PROJ87654321",
 			JobUIDOrName: "aabbccdd1122",
 			wantErr:      false,
 		},
 		{
 			name:         "valid: JobUIDOrName as name",
-			AccountUID:   "ACCT12345678",
 			ProjectUID:   "PROJ87654321",
 			JobUIDOrName: "Website Q1 2026",
 			wantErr:      false,
 		},
 		{
-			name:         "invalid: empty AccountUID",
-			AccountUID:   "",
-			ProjectUID:   "PROJ87654321",
-			JobUIDOrName: "aabbccdd1122",
-			wantErr:      true,
-		},
-		{
-			name:         "invalid: whitespace-only AccountUID",
-			AccountUID:   "   ",
-			ProjectUID:   "PROJ87654321",
-			JobUIDOrName: "aabbccdd1122",
-			wantErr:      true,
-		},
-		{
 			name:         "invalid: empty ProjectUID",
-			AccountUID:   "ACCT12345678",
 			ProjectUID:   "",
 			JobUIDOrName: "aabbccdd1122",
 			wantErr:      true,
 		},
 		{
 			name:         "invalid: empty JobUIDOrName",
-			AccountUID:   "ACCT12345678",
 			ProjectUID:   "PROJ87654321",
 			JobUIDOrName: "",
 			wantErr:      true,
 		},
 		{
 			name:         "invalid: all empty",
-			AccountUID:   "",
 			ProjectUID:   "",
 			JobUIDOrName: "",
 			wantErr:      true,
@@ -269,7 +240,6 @@ func TestProgressParams_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := ProgressParams{
-				AccountUID:   tt.AccountUID,
 				ProjectUID:   tt.ProjectUID,
 				JobUIDOrName: tt.JobUIDOrName,
 			}

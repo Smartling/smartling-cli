@@ -9,6 +9,7 @@ import (
 	projectconfig "github.com/Smartling/smartling-cli/services/projects/config"
 )
 
+// RenderTable renders data as a table.
 func RenderTable(config projectconfig.Extended) error {
 	tableWriter := table.NewTableWriter(os.Stdout)
 	for _, row := range buildInfoRows(config) {

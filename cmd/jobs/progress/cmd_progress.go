@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
-	"github.com/Smartling/smartling-cli/cmd/helpers/resolve"
 	jobscmd "github.com/Smartling/smartling-cli/cmd/jobs"
 	"github.com/Smartling/smartling-cli/output"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
@@ -62,7 +61,6 @@ Use Cases:
 
 Project Configuration:
   Project ID must be configured in smartling.yml or specified via --project flag.
-  Account ID can be configured in smartling.yml or specified via --account flag.
 
 Authentication is required via user_id and secret in smartling.yml or environment variables.
 
@@ -113,13 +111,7 @@ Available options:` + help.AuthenticationOptions,
 				return err
 			}
 
-			accountUID, err := resolve.FallbackAccount(cmd.Root().PersistentFlags().Lookup("account"), cnf.AccountID)
-			if err != nil {
-				return err
-			}
-
 			params := srv.ProgressParams{
-				AccountUID:   accountUID,
 				ProjectUID:   cnf.ProjectID,
 				JobUIDOrName: idOrName,
 			}

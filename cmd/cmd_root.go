@@ -75,6 +75,7 @@ to stderr before the command runs.`)
 	return rootCmd
 }
 
+// RunRootPersistentPreRun runs before any subcommand.
 func RunRootPersistentPreRun(cmd *cobra.Command) error {
 	configureLoggerVerbose()
 

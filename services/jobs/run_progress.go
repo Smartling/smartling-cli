@@ -2,36 +2,26 @@ package jobs
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/Smartling/smartling-cli/services/jobs/jobresolver"
 
-	"github.com/Smartling/api-sdk-go/helpers/uid"
-)
-
-var (
-	errEmptyProjectUID   = errors.New("project UID is required")
-	errEmptyJobUIDOrName = errors.New("job UID or job name is required")
+	smerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 )
 
 // ProgressParams is the parameters for the RunProgress method.
 type ProgressParams struct {
-	AccountUID   uid.AccountUID
 	ProjectUID   string
 	JobUIDOrName string
 }
 
 // Validate validates params for RunProgress.
 func (p ProgressParams) Validate() error {
-	if err := p.AccountUID.Validate(); err != nil {
-		return err
-	}
 	if p.ProjectUID == "" {
-		return errEmptyProjectUID
+		return smerror.ErrEmptyParam("ProjectUID")
 	}
 	if p.JobUIDOrName == "" {
-		return errEmptyJobUIDOrName
+		return smerror.ErrEmptyParam("JobUIDOrName")
 	}
 	return nil
 }

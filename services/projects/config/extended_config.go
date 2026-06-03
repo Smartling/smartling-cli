@@ -23,6 +23,7 @@ type Extended struct {
 	Sources    string
 }
 
+// InjectConfig injects fields from config.
 func (e *Extended) InjectConfig(cfg config.Config) {
 	e.AccountUID = cfg.AccountID
 	e.UserID = cfg.UserID
@@ -31,6 +32,7 @@ func (e *Extended) InjectConfig(cfg config.Config) {
 	e.Sources = cfg.Sources.String()
 }
 
+// InjectProject injects fields from project details.
 func (e *Extended) InjectProject(project sdk.ProjectDetails) {
 	e.ProjectID = project.ProjectID
 	e.AccountUID = project.AccountUID
