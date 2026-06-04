@@ -9,10 +9,6 @@ Add or remove target locales on an existing translation job.
 A job's target locales determine which languages its content is translated into.
 Use these commands to attach a locale to a job or detach one from it.
 
-```
-smartling-cli jobs locales [flags]
-```
-
 ### Examples
 
 ```

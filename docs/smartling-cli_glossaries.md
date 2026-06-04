@@ -12,10 +12,6 @@ definitions, part of speech, notes, term variations, and a "do not translate"
 (DNT) flag. Glossaries give translators and machine translation a shared,
 consistent understanding of your terminology across every locale.
 
-```
-smartling-cli glossaries [flags]
-```
-
 ### Options
 
 ```

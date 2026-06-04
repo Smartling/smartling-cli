@@ -20,10 +20,6 @@ Available options:
                     - table: ASCII table with one row per job/file
                     - json: Raw API response for programmatic processing and automation
 
-```
-smartling-cli jobs [flags]
-```
-
 ### Examples
 
 ```
