@@ -2,6 +2,7 @@ package jobstrings
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	jobsdkmocks "github.com/Smartling/smartling-cli/services/jobs/sdkmocks"
@@ -51,6 +52,10 @@ func TestRunList(t *testing.T) {
 				}
 				if got.Items[0].Hashcode != "h1" || got.Items[1].TargetLocaleID != "fr-FR" {
 					t.Errorf("unexpected items: %+v", got.Items)
+				}
+				lines := got.SimpleLines()
+				if !strings.Contains(lines[len(lines)-1], "Showing 2 of 2") {
+					t.Errorf("SimpleLines = %v, want trailing total line", lines)
 				}
 			},
 		},

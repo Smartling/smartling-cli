@@ -35,7 +35,7 @@ func TestJobsStringsRemove(t *testing.T) {
 		},
 		{
 			name:              "remove strings from a job",
-			args:              append(subCommands, "test-integration-job", "--hashcode", "ca51a04da69cf64dce022bb4f146c962"),
+			args:              append(subCommands, "CLI uploads", "--hashcode", "ca51a04da69cf64dce022bb4f146c962"),
 			expectedOutputs:   []string{"removed"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,

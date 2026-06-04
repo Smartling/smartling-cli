@@ -35,14 +35,14 @@ func TestJobsStringsAdd(t *testing.T) {
 		},
 		{
 			name:              "add strings to a job",
-			args:              append(subCommands, "test-integration-job", "--hashcode", "ca51a04da69cf64dce022bb4f146c962"),
+			args:              append(subCommands, "CLI uploads", "--hashcode", "ca51a04da69cf64dce022bb4f146c962"),
 			expectedOutputs:   []string{"added"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,
 		},
 		{
 			name:              "json output format contains field names",
-			args:              []string{"jobs", "--output", "json", "strings", "add", "test-integration-job", "--hashcode", "ca51a04da69cf64dce022bb4f146c962"},
+			args:              []string{"jobs", "--output", "json", "strings", "add", "CLI uploads", "--hashcode", "ca51a04da69cf64dce022bb4f146c962"},
 			expectedOutputs:   []string{"action", "translationJobUid", "hashcodes"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,

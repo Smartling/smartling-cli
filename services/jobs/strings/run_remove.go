@@ -38,5 +38,5 @@ func (s service) RunRemove(ctx context.Context, params RemoveParams) (MutateOutp
 	if err != nil {
 		return MutateOutput{}, err
 	}
-	return newMutateOutput("removed", params.ProjectID, jobUID, params.Hashcodes, params.LocaleIDs, res.SuccessCount, res.FailCount)
+	return newMutateOutput("removed", params.ProjectID, jobUID, params.Hashcodes, nil, params.LocaleIDs, res.SuccessCount, res.FailCount)
 }

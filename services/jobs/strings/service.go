@@ -41,6 +41,7 @@ type MutateOutput struct {
 	ProjectUID        string   `json:"projectUid"`
 	TranslationJobUID string   `json:"translationJobUid"`
 	Hashcodes         []string `json:"hashcodes"`
+	TargetLocaleIDs   []string `json:"targetLocaleIds,omitempty"`
 	LocaleIDs         []string `json:"localeIds,omitempty"`
 	SuccessCount      int      `json:"successCount"`
 	FailCount         int      `json:"failCount"`
@@ -48,12 +49,13 @@ type MutateOutput struct {
 	JSON []byte `json:"-"`
 }
 
-func newMutateOutput(action, projectUID, jobUID string, hashcodes, localeIDs []string, successCount, failCount int) (MutateOutput, error) {
+func newMutateOutput(action, projectUID, jobUID string, hashcodes, targetLocaleIDs, localeIDs []string, successCount, failCount int) (MutateOutput, error) {
 	o := MutateOutput{
 		Action:            action,
 		ProjectUID:        projectUID,
 		TranslationJobUID: jobUID,
 		Hashcodes:         hashcodes,
+		TargetLocaleIDs:   targetLocaleIDs,
 		LocaleIDs:         localeIDs,
 		SuccessCount:      successCount,
 		FailCount:         failCount,

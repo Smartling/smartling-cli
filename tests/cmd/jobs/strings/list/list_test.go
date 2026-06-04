@@ -35,7 +35,7 @@ func TestJobsStringsList(t *testing.T) {
 		},
 		{
 			name:              "list strings as table",
-			args:              []string{"jobs", "--output", "table", "strings", "list", "test-integration-job"},
+			args:              []string{"jobs", "--output", "table", "strings", "list", "CLI uploads"},
 			expectedOutputs:   []string{"TARGET LOCALE ID", "HASHCODE"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 			wantErr:           false,

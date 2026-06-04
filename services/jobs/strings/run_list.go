@@ -58,10 +58,11 @@ func (o ListOutput) SimpleLines() []string {
 	if len(o.Items) == 0 {
 		return []string{"No strings found."}
 	}
-	lines := make([]string, 0, len(o.Items))
+	lines := make([]string, 0, len(o.Items)+1)
 	for _, it := range o.Items {
 		lines = append(lines, fmt.Sprintf("%s  %s", it.TargetLocaleID, it.Hashcode))
 	}
+	lines = append(lines, fmt.Sprintf("Showing %d of %d string(s). Use --limit/--offset to page.", len(o.Items), o.TotalCount))
 	return lines
 }
 

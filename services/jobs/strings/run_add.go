@@ -40,5 +40,5 @@ func (s service) RunAdd(ctx context.Context, params AddParams) (MutateOutput, er
 	if err != nil {
 		return MutateOutput{}, err
 	}
-	return newMutateOutput("added", params.ProjectID, jobUID, params.Hashcodes, params.TargetLocaleIDs, res.SuccessCount, res.FailCount)
+	return newMutateOutput("added", params.ProjectID, jobUID, params.Hashcodes, params.TargetLocaleIDs, nil, res.SuccessCount, res.FailCount)
 }
