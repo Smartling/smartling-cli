@@ -45,12 +45,6 @@ consistent understanding of your terminology across every locale.`,
 			}
 			return nil
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 && cmd.Flags().NFlag() == 0 {
-				return cmd.Help()
-			}
-			return nil
-		},
 	}
 
 	glossariesCmd.PersistentFlags().StringVar(&outputFormat, outputFormatFlag, "simple", "Output format: "+joinedAllowedOutputs)
