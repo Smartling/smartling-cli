@@ -15,6 +15,7 @@ import (
 	"github.com/Smartling/api-sdk-go/helpers/uid"
 )
 
+// DefaultListPageLimit is default list page limit
 const DefaultListPageLimit = 500
 
 // ListParams carries the jobs-list request from CLI to service.

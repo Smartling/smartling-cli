@@ -21,6 +21,9 @@ import (
 	"github.com/Smartling/smartling-cli/cmd/jobs"
 	jobfiles "github.com/Smartling/smartling-cli/cmd/jobs/files"
 	joblist "github.com/Smartling/smartling-cli/cmd/jobs/list"
+	joblocales "github.com/Smartling/smartling-cli/cmd/jobs/locales"
+	joblocaleadd "github.com/Smartling/smartling-cli/cmd/jobs/locales/add"
+	joblocaleremove "github.com/Smartling/smartling-cli/cmd/jobs/locales/remove"
 	"github.com/Smartling/smartling-cli/cmd/jobs/progress"
 	jobview "github.com/Smartling/smartling-cli/cmd/jobs/view"
 	"github.com/Smartling/smartling-cli/cmd/mt"
@@ -79,6 +82,11 @@ func main() {
 	jobsCmd.AddCommand(joblist.NewListCmd(jobInitializer))
 	jobsCmd.AddCommand(jobview.NewViewCmd(jobInitializer))
 	jobsCmd.AddCommand(jobfiles.NewFilesCmd(jobInitializer))
+	jobLocales := joblocales.NewJobLocalesCmd()
+	jobLocalesInitializer := joblocales.NewSrvInitializer()
+	jobLocales.AddCommand(joblocaleadd.NewJobLocalesAddCmd(jobLocalesInitializer))
+	jobLocales.AddCommand(joblocaleremove.NewJobLocalesRemoveCmd(jobLocalesInitializer))
+	jobsCmd.AddCommand(jobLocales)
 
 	glossariesCmd := glossaries.NewGlossariesCmd()
 	rootCmd.AddCommand(glossariesCmd)
