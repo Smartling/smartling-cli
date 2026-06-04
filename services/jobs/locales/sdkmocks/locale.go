@@ -38,8 +38,8 @@ func (_m *MockJobLocale) EXPECT() *MockJobLocale_Expecter {
 }
 
 // Add provides a mock function for the type MockJobLocale
-func (_mock *MockJobLocale) Add(ctx context.Context, projectID string, translationJobUID string, targetLocaleID string) error {
-	ret := _mock.Called(ctx, projectID, translationJobUID, targetLocaleID)
+func (_mock *MockJobLocale) Add(ctx context.Context, projectID string, jobUID string, targetLocaleID string) error {
+	ret := _mock.Called(ctx, projectID, jobUID, targetLocaleID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Add")
@@ -47,7 +47,7 @@ func (_mock *MockJobLocale) Add(ctx context.Context, projectID string, translati
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
-		r0 = returnFunc(ctx, projectID, translationJobUID, targetLocaleID)
+		r0 = returnFunc(ctx, projectID, jobUID, targetLocaleID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -62,13 +62,13 @@ type MockJobLocale_Add_Call struct {
 // Add is a helper method to define mock.On call
 //   - ctx context.Context
 //   - projectID string
-//   - translationJobUID string
+//   - jobUID string
 //   - targetLocaleID string
-func (_e *MockJobLocale_Expecter) Add(ctx interface{}, projectID interface{}, translationJobUID interface{}, targetLocaleID interface{}) *MockJobLocale_Add_Call {
-	return &MockJobLocale_Add_Call{Call: _e.mock.On("Add", ctx, projectID, translationJobUID, targetLocaleID)}
+func (_e *MockJobLocale_Expecter) Add(ctx interface{}, projectID interface{}, jobUID interface{}, targetLocaleID interface{}) *MockJobLocale_Add_Call {
+	return &MockJobLocale_Add_Call{Call: _e.mock.On("Add", ctx, projectID, jobUID, targetLocaleID)}
 }
 
-func (_c *MockJobLocale_Add_Call) Run(run func(ctx context.Context, projectID string, translationJobUID string, targetLocaleID string)) *MockJobLocale_Add_Call {
+func (_c *MockJobLocale_Add_Call) Run(run func(ctx context.Context, projectID string, jobUID string, targetLocaleID string)) *MockJobLocale_Add_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -101,14 +101,14 @@ func (_c *MockJobLocale_Add_Call) Return(err error) *MockJobLocale_Add_Call {
 	return _c
 }
 
-func (_c *MockJobLocale_Add_Call) RunAndReturn(run func(ctx context.Context, projectID string, translationJobUID string, targetLocaleID string) error) *MockJobLocale_Add_Call {
+func (_c *MockJobLocale_Add_Call) RunAndReturn(run func(ctx context.Context, projectID string, jobUID string, targetLocaleID string) error) *MockJobLocale_Add_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Remove provides a mock function for the type MockJobLocale
-func (_mock *MockJobLocale) Remove(ctx context.Context, projectID string, translationJobUID string, targetLocaleID string) error {
-	ret := _mock.Called(ctx, projectID, translationJobUID, targetLocaleID)
+func (_mock *MockJobLocale) Remove(ctx context.Context, projectID string, jobUID string, targetLocaleID string) error {
+	ret := _mock.Called(ctx, projectID, jobUID, targetLocaleID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Remove")
@@ -116,7 +116,7 @@ func (_mock *MockJobLocale) Remove(ctx context.Context, projectID string, transl
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
-		r0 = returnFunc(ctx, projectID, translationJobUID, targetLocaleID)
+		r0 = returnFunc(ctx, projectID, jobUID, targetLocaleID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -131,13 +131,13 @@ type MockJobLocale_Remove_Call struct {
 // Remove is a helper method to define mock.On call
 //   - ctx context.Context
 //   - projectID string
-//   - translationJobUID string
+//   - jobUID string
 //   - targetLocaleID string
-func (_e *MockJobLocale_Expecter) Remove(ctx interface{}, projectID interface{}, translationJobUID interface{}, targetLocaleID interface{}) *MockJobLocale_Remove_Call {
-	return &MockJobLocale_Remove_Call{Call: _e.mock.On("Remove", ctx, projectID, translationJobUID, targetLocaleID)}
+func (_e *MockJobLocale_Expecter) Remove(ctx interface{}, projectID interface{}, jobUID interface{}, targetLocaleID interface{}) *MockJobLocale_Remove_Call {
+	return &MockJobLocale_Remove_Call{Call: _e.mock.On("Remove", ctx, projectID, jobUID, targetLocaleID)}
 }
 
-func (_c *MockJobLocale_Remove_Call) Run(run func(ctx context.Context, projectID string, translationJobUID string, targetLocaleID string)) *MockJobLocale_Remove_Call {
+func (_c *MockJobLocale_Remove_Call) Run(run func(ctx context.Context, projectID string, jobUID string, targetLocaleID string)) *MockJobLocale_Remove_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -170,7 +170,7 @@ func (_c *MockJobLocale_Remove_Call) Return(err error) *MockJobLocale_Remove_Cal
 	return _c
 }
 
-func (_c *MockJobLocale_Remove_Call) RunAndReturn(run func(ctx context.Context, projectID string, translationJobUID string, targetLocaleID string) error) *MockJobLocale_Remove_Call {
+func (_c *MockJobLocale_Remove_Call) RunAndReturn(run func(ctx context.Context, projectID string, jobUID string, targetLocaleID string) error) *MockJobLocale_Remove_Call {
 	_c.Call.Return(run)
 	return _c
 }
