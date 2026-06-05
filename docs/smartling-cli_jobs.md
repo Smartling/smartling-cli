@@ -72,6 +72,7 @@ Available options:
 
 * [smartling-cli](smartling-cli.md)	 - Manage translation files using Smartling CLI.
 * [smartling-cli jobs files](smartling-cli_jobs_files.md)	 - Manage the source files attached to a translation job.
+* [smartling-cli jobs find-by-strings](smartling-cli_jobs_find-by-strings.md)	 - Find jobs that contain specific strings in specific locales.
 * [smartling-cli jobs list](smartling-cli_jobs_list.md)	 - List translation jobs in a project or account.
 * [smartling-cli jobs locales](smartling-cli_jobs_locales.md)	 - Manage target locales on a translation job.
 * [smartling-cli jobs progress](smartling-cli_jobs_progress.md)	 - Track translation progress for a specific job.
