@@ -1,10 +1,10 @@
 module github.com/Smartling/smartling-cli
 
-go 1.26.2
+go 1.26.4
 
 require (
 	dario.cat/mergo v1.0.2
-	github.com/Smartling/api-sdk-go v0.0.0-20260605194940-81e93c92e142
+	github.com/Smartling/api-sdk-go v0.0.0-20260605200854-f6e6dbeaf6f4
 	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.6
 	github.com/charmbracelet/lipgloss v1.1.0
