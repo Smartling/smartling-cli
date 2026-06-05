@@ -17,6 +17,7 @@ import (
 
 // Service defines behavior for managing a translation job's files.
 type Service interface {
+	RunList(ctx context.Context, params ListParams) (ListOutput, error)
 	RunAdd(ctx context.Context, params AddParams) (MutateOutput, error)
 	RunRemove(ctx context.Context, params RemoveParams) (MutateOutput, error)
 }
@@ -80,6 +81,17 @@ func newMutateOutput(action, projectUID, jobUID string, targetLocaleIDs []string
 
 // JSONBytes returns the JSON representation of the result.
 func (o MutateOutput) JSONBytes() []byte { return o.JSON }
+
+// FailedFileURIs returns the URIs whose per-file API call errored.
+func (o MutateOutput) FailedFileURIs() []string {
+	var failed []string
+	for _, f := range o.Files {
+		if f.Error != "" {
+			failed = append(failed, f.FileURI)
+		}
+	}
+	return failed
+}
 
 // SimpleLines returns a human-readable summary of the result.
 func (o MutateOutput) SimpleLines() []string {

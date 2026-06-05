@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	filescmd "github.com/Smartling/smartling-cli/cmd/jobs/files"
 	"github.com/Smartling/smartling-cli/output"
@@ -43,5 +44,13 @@ func run(ctx context.Context,
 	}
 
 	static.GetOutputFormat[srv.MutateOutput](outputParams.Format).FormatAndRender(removeOutput)
+
+	if failed := removeOutput.FailedFileURIs(); len(failed) > 0 {
+		return clierror.UIError{
+			Operation:   "remove files",
+			Err:         fmt.Errorf("%d of %d file(s) failed to remove", len(failed), len(removeOutput.Files)),
+			Description: fmt.Sprintf("failed files: %s", strings.Join(failed, ", ")),
+		}
+	}
 	return nil
 }

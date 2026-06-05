@@ -1,17 +1,18 @@
-package jobs
+package jobsfiles
 
 import (
 	"context"
 	"testing"
 
-	jobapi "github.com/Smartling/api-sdk-go/api/job"
 	jobmocks "github.com/Smartling/smartling-cli/services/jobs/sdkmocks"
+
+	jobapi "github.com/Smartling/api-sdk-go/api/job"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-func TestRunFiles_ResolvesUIDAndReturnsFiles(t *testing.T) {
+func TestRunList_ResolvesUIDAndReturnsFiles(t *testing.T) {
 	m := jobmocks.NewMockJob(t)
 	m.On("GetJob", mock.Anything, "proj-1", "aabbccdd1122").
 		Return(jobapi.GetJobResponse{TranslationJobUID: "aabbccdd1122", JobName: "My Job"}, nil)
@@ -21,9 +22,9 @@ func TestRunFiles_ResolvesUIDAndReturnsFiles(t *testing.T) {
 			Items:      []jobapi.JobFile{{FileURI: "/a.json", LocaleIDs: []string{"fr-FR"}}},
 		}, nil)
 
-	s := NewService(m)
-	out, err := s.RunFiles(context.Background(), FilesParams{
-		ProjectUID:   "proj-1",
+	s := service{job: m}
+	out, err := s.RunList(context.Background(), ListParams{
+		ProjectID:    "proj-1",
 		JobUIDOrName: "aabbccdd1122",
 		Limit:        500,
 		Offset:       0,

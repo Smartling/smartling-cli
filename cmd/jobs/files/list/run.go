@@ -5,32 +5,32 @@ import (
 	"errors"
 	"fmt"
 
-	jobscmd "github.com/Smartling/smartling-cli/cmd/jobs"
+	filescmd "github.com/Smartling/smartling-cli/cmd/jobs/files"
 	"github.com/Smartling/smartling-cli/output"
 	"github.com/Smartling/smartling-cli/output/static"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
-	srv "github.com/Smartling/smartling-cli/services/jobs"
+	srv "github.com/Smartling/smartling-cli/services/jobs/files"
 
 	jobapi "github.com/Smartling/api-sdk-go/api/job"
 )
 
 func run(ctx context.Context,
-	initializer jobscmd.SrvInitializer,
-	params srv.FilesParams,
+	initializer filescmd.SrvInitializer,
+	params srv.ListParams,
 	outputParams output.Params,
 ) error {
-	rlog.Debugf("running jobs files with params: %v", params)
-	jobSrv, err := initializer.InitJobSrv(ctx)
+	rlog.Debugf("running jobs files list with params: %v", params)
+	filesSrv, err := initializer.InitJobFilesSrv(ctx)
 	if err != nil {
 		return clierror.UIError{
 			Operation:   "init",
 			Err:         err,
-			Description: "unable to initialize Jobs service",
+			Description: "unable to initialize Job Files service",
 		}
 	}
 
-	filesOutput, err := jobSrv.RunFiles(ctx, params)
+	listOutput, err := filesSrv.RunList(ctx, params)
 	if err != nil {
 		if errors.Is(err, jobapi.ErrNotFound) {
 			return clierror.UIError{
@@ -42,7 +42,6 @@ func run(ctx context.Context,
 		return err
 	}
 
-	outputFormat := static.GetOutputFormat[srv.FilesOutput](outputParams.Format)
-	outputFormat.FormatAndRender(filesOutput)
+	static.GetOutputFormat[srv.ListOutput](outputParams.Format).FormatAndRender(listOutput)
 	return nil
 }

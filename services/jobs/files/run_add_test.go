@@ -101,5 +101,8 @@ func TestRunAdd(t *testing.T) {
 		if got.SuccessCount != 1 {
 			t.Errorf("SuccessCount = %d, want 1", got.SuccessCount)
 		}
+		if failed := got.FailedFileURIs(); len(failed) != 1 || failed[0] != "a.json" {
+			t.Errorf("FailedFileURIs() = %v, want [a.json]", failed)
+		}
 	})
 }

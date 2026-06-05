@@ -2,15 +2,15 @@ package list
 
 import (
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
-	jobscmd "github.com/Smartling/smartling-cli/cmd/jobs"
+	filescmd "github.com/Smartling/smartling-cli/cmd/jobs/files"
 	"github.com/Smartling/smartling-cli/output"
-	srv "github.com/Smartling/smartling-cli/services/jobs"
+	srv "github.com/Smartling/smartling-cli/services/jobs/files"
 
 	"github.com/spf13/cobra"
 )
 
 // NewListCmd builds the `jobs files list` command.
-func NewListCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
+func NewListCmd(initializer filescmd.SrvInitializer) *cobra.Command {
 	var (
 		limit  uint32
 		offset uint32
@@ -38,8 +38,8 @@ func NewListCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 				return err
 			}
 
-			params := srv.FilesParams{
-				ProjectUID:   cnf.ProjectID,
+			params := srv.ListParams{
+				ProjectID:    cnf.ProjectID,
 				JobUIDOrName: args[0],
 				Limit:        limit,
 				Offset:       offset,

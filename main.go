@@ -90,7 +90,7 @@ func main() {
 	jobsCmd.AddCommand(jobview.NewViewCmd(jobInitializer))
 	jobFiles := jobfiles.NewJobFilesCmd()
 	jobFilesInitializer := jobfiles.NewSrvInitializer()
-	jobFiles.AddCommand(jobfilelist.NewListCmd(jobInitializer))
+	jobFiles.AddCommand(jobfilelist.NewListCmd(jobFilesInitializer))
 	jobFiles.AddCommand(jobfileadd.NewJobFilesAddCmd(jobFilesInitializer))
 	jobFiles.AddCommand(jobfileremove.NewJobFilesRemoveCmd(jobFilesInitializer))
 	jobsCmd.AddCommand(jobFiles)

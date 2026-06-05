@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	filescmd "github.com/Smartling/smartling-cli/cmd/jobs/files"
 	"github.com/Smartling/smartling-cli/output"
@@ -43,5 +44,13 @@ func run(ctx context.Context,
 	}
 
 	static.GetOutputFormat[srv.MutateOutput](outputParams.Format).FormatAndRender(addOutput)
+
+	if failed := addOutput.FailedFileURIs(); len(failed) > 0 {
+		return clierror.UIError{
+			Operation:   "add files",
+			Err:         fmt.Errorf("%d of %d file(s) failed to add", len(failed), len(addOutput.Files)),
+			Description: fmt.Sprintf("failed files: %s", strings.Join(failed, ", ")),
+		}
+	}
 	return nil
 }
