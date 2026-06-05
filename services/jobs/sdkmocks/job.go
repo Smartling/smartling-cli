@@ -38,6 +38,78 @@ func (_m *MockJob) EXPECT() *MockJob_Expecter {
 	return &MockJob_Expecter{mock: &_m.Mock}
 }
 
+// FindJobsByStrings provides a mock function for the type MockJob
+func (_mock *MockJob) FindJobsByStrings(ctx context.Context, projectID string, req job.FindJobsByStringsRequest) (job.FindJobsByStringsResponse, error) {
+	ret := _mock.Called(ctx, projectID, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindJobsByStrings")
+	}
+
+	var r0 job.FindJobsByStringsResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, job.FindJobsByStringsRequest) (job.FindJobsByStringsResponse, error)); ok {
+		return returnFunc(ctx, projectID, req)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, job.FindJobsByStringsRequest) job.FindJobsByStringsResponse); ok {
+		r0 = returnFunc(ctx, projectID, req)
+	} else {
+		r0 = ret.Get(0).(job.FindJobsByStringsResponse)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, job.FindJobsByStringsRequest) error); ok {
+		r1 = returnFunc(ctx, projectID, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockJob_FindJobsByStrings_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindJobsByStrings'
+type MockJob_FindJobsByStrings_Call struct {
+	*mock.Call
+}
+
+// FindJobsByStrings is a helper method to define mock.On call
+//   - ctx context.Context
+//   - projectID string
+//   - req job.FindJobsByStringsRequest
+func (_e *MockJob_Expecter) FindJobsByStrings(ctx interface{}, projectID interface{}, req interface{}) *MockJob_FindJobsByStrings_Call {
+	return &MockJob_FindJobsByStrings_Call{Call: _e.mock.On("FindJobsByStrings", ctx, projectID, req)}
+}
+
+func (_c *MockJob_FindJobsByStrings_Call) Run(run func(ctx context.Context, projectID string, req job.FindJobsByStringsRequest)) *MockJob_FindJobsByStrings_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 job.FindJobsByStringsRequest
+		if args[2] != nil {
+			arg2 = args[2].(job.FindJobsByStringsRequest)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockJob_FindJobsByStrings_Call) Return(findJobsByStringsResponse job.FindJobsByStringsResponse, err error) *MockJob_FindJobsByStrings_Call {
+	_c.Call.Return(findJobsByStringsResponse, err)
+	return _c
+}
+
+func (_c *MockJob_FindJobsByStrings_Call) RunAndReturn(run func(ctx context.Context, projectID string, req job.FindJobsByStringsRequest) (job.FindJobsByStringsResponse, error)) *MockJob_FindJobsByStrings_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetJob provides a mock function for the type MockJob
 func (_mock *MockJob) GetJob(ctx context.Context, projectID string, jobUID string) (job.GetJobResponse, error) {
 	ret := _mock.Called(ctx, projectID, jobUID)

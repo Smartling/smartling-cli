@@ -23,6 +23,7 @@ import (
 	jobfileadd "github.com/Smartling/smartling-cli/cmd/jobs/files/add"
 	jobfilelist "github.com/Smartling/smartling-cli/cmd/jobs/files/list"
 	jobfileremove "github.com/Smartling/smartling-cli/cmd/jobs/files/remove"
+	jobfindbystrings "github.com/Smartling/smartling-cli/cmd/jobs/find_by_strings"
 	joblist "github.com/Smartling/smartling-cli/cmd/jobs/list"
 	joblocales "github.com/Smartling/smartling-cli/cmd/jobs/locales"
 	joblocaleadd "github.com/Smartling/smartling-cli/cmd/jobs/locales/add"
@@ -88,6 +89,7 @@ func main() {
 	jobsCmd.AddCommand(progress.NewProgressCmd(jobInitializer))
 	jobsCmd.AddCommand(joblist.NewListCmd(jobInitializer))
 	jobsCmd.AddCommand(jobview.NewViewCmd(jobInitializer))
+	jobsCmd.AddCommand(jobfindbystrings.NewFindByStringsCmd(jobInitializer))
 	jobFiles := jobfiles.NewJobFilesCmd()
 	jobFilesInitializer := jobfiles.NewSrvInitializer()
 	jobFiles.AddCommand(jobfilelist.NewListCmd(jobFilesInitializer))
