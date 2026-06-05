@@ -37,9 +37,9 @@ func (p FindByStringsParams) Validate() error {
 	if locales == 0 {
 		locales = 1
 	}
-	if records := len(p.Hashcodes) * locales; records > MaxFindByStringsRecords {
-		return fmt.Errorf("too many records: %d hashcodes × %d locales = %d exceeds the limit of %d",
-			len(p.Hashcodes), locales, records, MaxFindByStringsRecords)
+	if len(p.Hashcodes) > MaxFindByStringsRecords/locales {
+		return fmt.Errorf("too many records: %d hashcodes × %d locales exceeds the limit of %d",
+			len(p.Hashcodes), locales, MaxFindByStringsRecords)
 	}
 	return nil
 }
