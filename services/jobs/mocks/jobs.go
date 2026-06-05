@@ -38,6 +38,72 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 	return &MockService_Expecter{mock: &_m.Mock}
 }
 
+// RunFindByStrings provides a mock function for the type MockService
+func (_mock *MockService) RunFindByStrings(ctx context.Context, p jobs.FindByStringsParams) (jobs.FindByStringsOutput, error) {
+	ret := _mock.Called(ctx, p)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RunFindByStrings")
+	}
+
+	var r0 jobs.FindByStringsOutput
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, jobs.FindByStringsParams) (jobs.FindByStringsOutput, error)); ok {
+		return returnFunc(ctx, p)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, jobs.FindByStringsParams) jobs.FindByStringsOutput); ok {
+		r0 = returnFunc(ctx, p)
+	} else {
+		r0 = ret.Get(0).(jobs.FindByStringsOutput)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, jobs.FindByStringsParams) error); ok {
+		r1 = returnFunc(ctx, p)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockService_RunFindByStrings_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RunFindByStrings'
+type MockService_RunFindByStrings_Call struct {
+	*mock.Call
+}
+
+// RunFindByStrings is a helper method to define mock.On call
+//   - ctx context.Context
+//   - p jobs.FindByStringsParams
+func (_e *MockService_Expecter) RunFindByStrings(ctx interface{}, p interface{}) *MockService_RunFindByStrings_Call {
+	return &MockService_RunFindByStrings_Call{Call: _e.mock.On("RunFindByStrings", ctx, p)}
+}
+
+func (_c *MockService_RunFindByStrings_Call) Run(run func(ctx context.Context, p jobs.FindByStringsParams)) *MockService_RunFindByStrings_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 jobs.FindByStringsParams
+		if args[1] != nil {
+			arg1 = args[1].(jobs.FindByStringsParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockService_RunFindByStrings_Call) Return(findByStringsOutput jobs.FindByStringsOutput, err error) *MockService_RunFindByStrings_Call {
+	_c.Call.Return(findByStringsOutput, err)
+	return _c
+}
+
+func (_c *MockService_RunFindByStrings_Call) RunAndReturn(run func(ctx context.Context, p jobs.FindByStringsParams) (jobs.FindByStringsOutput, error)) *MockService_RunFindByStrings_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RunList provides a mock function for the type MockService
 func (_mock *MockService) RunList(ctx context.Context, p jobs.ListParams) (jobs.ListOutput, error) {
 	ret := _mock.Called(ctx, p)
