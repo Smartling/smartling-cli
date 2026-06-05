@@ -39,9 +39,12 @@ type ListOutput struct {
 }
 
 func newListOutput(resp api.ListResponse) (ListOutput, error) {
-	o := ListOutput{TotalCount: resp.TotalCount}
-	for _, it := range resp.Items {
-		o.Items = append(o.Items, Item{TargetLocaleID: it.TargetLocaleID, Hashcode: it.Hashcode})
+	o := ListOutput{
+		Items:      make([]Item, len(resp.Items)),
+		TotalCount: resp.TotalCount,
+	}
+	for i, item := range resp.Items {
+		o.Items[i] = Item{TargetLocaleID: item.TargetLocaleID, Hashcode: item.Hashcode}
 	}
 	var err error
 	if o.JSON, err = json.Marshal(o); err != nil {

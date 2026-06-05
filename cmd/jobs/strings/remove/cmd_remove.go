@@ -2,9 +2,11 @@ package remove
 
 import (
 	"fmt"
+	"os"
 
 	stringscmd "github.com/Smartling/smartling-cli/cmd/jobs/strings"
 	"github.com/Smartling/smartling-cli/output"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
@@ -51,6 +53,10 @@ func NewJobStringsRemoveCmd(initializer stringscmd.SrvInitializer) *cobra.Comman
 
 	removeCmd.Flags().StringArrayVar(&hashcodes, hashcodeFlag, nil, "String hashcode to remove (repeatable, required).")
 	removeCmd.Flags().StringArrayVar(&localeIDs, localeFlag, nil, "Locale to remove the strings from (repeatable; default all job locales).")
+	if err := removeCmd.MarkFlagRequired(hashcodeFlag); err != nil {
+		rlog.Errorf("failed to mark --%s required: %s", hashcodeFlag, err)
+		os.Exit(1)
+	}
 
 	return removeCmd
 }

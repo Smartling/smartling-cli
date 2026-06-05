@@ -2,9 +2,11 @@ package add
 
 import (
 	"fmt"
+	"os"
 
 	stringscmd "github.com/Smartling/smartling-cli/cmd/jobs/strings"
 	"github.com/Smartling/smartling-cli/output"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
 	"github.com/spf13/cobra"
 )
@@ -54,6 +56,10 @@ func NewJobStringsAddCmd(initializer stringscmd.SrvInitializer) *cobra.Command {
 	addCmd.Flags().StringArrayVar(&hashcodes, hashcodeFlag, nil, "String hashcode to add (repeatable, required).")
 	addCmd.Flags().StringArrayVar(&targetLocales, targetLocaleFlag, nil, "Target locale to add the strings to (repeatable; default all job locales).")
 	addCmd.Flags().BoolVar(&moveEnabled, moveEnabledFlag, false, "Move the string into this job if it already belongs to another job for a locale.")
+	if err := addCmd.MarkFlagRequired(hashcodeFlag); err != nil {
+		rlog.Errorf("failed to mark --%s required: %s", hashcodeFlag, err)
+		os.Exit(1)
+	}
 
 	return addCmd
 }
