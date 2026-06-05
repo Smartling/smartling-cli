@@ -25,6 +25,10 @@ import (
 	joblocaleadd "github.com/Smartling/smartling-cli/cmd/jobs/locales/add"
 	joblocaleremove "github.com/Smartling/smartling-cli/cmd/jobs/locales/remove"
 	"github.com/Smartling/smartling-cli/cmd/jobs/progress"
+	jobstrings "github.com/Smartling/smartling-cli/cmd/jobs/strings"
+	jobstringadd "github.com/Smartling/smartling-cli/cmd/jobs/strings/add"
+	jobstringlist "github.com/Smartling/smartling-cli/cmd/jobs/strings/list"
+	jobstringremove "github.com/Smartling/smartling-cli/cmd/jobs/strings/remove"
 	jobview "github.com/Smartling/smartling-cli/cmd/jobs/view"
 	"github.com/Smartling/smartling-cli/cmd/mt"
 	"github.com/Smartling/smartling-cli/cmd/mt/detect"
@@ -87,6 +91,12 @@ func main() {
 	jobLocales.AddCommand(joblocaleadd.NewJobLocalesAddCmd(jobLocalesInitializer))
 	jobLocales.AddCommand(joblocaleremove.NewJobLocalesRemoveCmd(jobLocalesInitializer))
 	jobsCmd.AddCommand(jobLocales)
+	jobStrings := jobstrings.NewJobStringsCmd()
+	jobStringsInitializer := jobstrings.NewSrvInitializer()
+	jobStrings.AddCommand(jobstringadd.NewJobStringsAddCmd(jobStringsInitializer))
+	jobStrings.AddCommand(jobstringremove.NewJobStringsRemoveCmd(jobStringsInitializer))
+	jobStrings.AddCommand(jobstringlist.NewJobStringsListCmd(jobStringsInitializer))
+	jobsCmd.AddCommand(jobStrings)
 
 	glossariesCmd := glossaries.NewGlossariesCmd()
 	rootCmd.AddCommand(glossariesCmd)
