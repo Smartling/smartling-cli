@@ -1,4 +1,4 @@
-package jobfiles
+package list
 
 import (
 	"context"

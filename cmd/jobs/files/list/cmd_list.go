@@ -1,4 +1,4 @@
-package jobfiles
+package list
 
 import (
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
@@ -9,26 +9,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewFilesCmd builds the `jobs files` command.
-func NewFilesCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
+// NewListCmd builds the `jobs files list` command.
+func NewListCmd(initializer jobscmd.SrvInitializer) *cobra.Command {
 	var (
 		limit  uint32
 		offset uint32
 	)
 
 	filesCmd := &cobra.Command{
-		Use:   "files <translationJobUid|translationJobName>",
+		Use:   "list <translationJobUid|translationJobName>",
 		Short: "List source files attached to a translation job.",
 		Long:  `List the source files attached to a translation job, by UID or name.`,
 		Args:  cobra.ExactArgs(1),
 		Example: `
 # List files for a job by UID
 
-  smartling-cli jobs files aabbccdd1122
+  smartling-cli jobs files list aabbccdd1122
 
 # List files for a job by name in JSON
 
-  smartling-cli jobs files "Website Q1 2026" --output json
+  smartling-cli jobs files list "Website Q1 2026" --output json
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()

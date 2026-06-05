@@ -1,4 +1,4 @@
-package files
+package list
 
 import (
 	"os/exec"
@@ -8,7 +8,7 @@ import (
 )
 
 func TestJobsFiles(t *testing.T) {
-	relativeDir := "../../bin/"
+	relativeDir := "../../../bin/"
 	absDir, err := filepath.Abs(relativeDir)
 	if err != nil {
 		t.Fatalf("Failed to get abs path: %v", err)
@@ -24,37 +24,38 @@ func TestJobsFiles(t *testing.T) {
 		wantErr           bool
 	}{
 		{
-			name:              "help flag shows command description",
+			name:              "group help lists subcommands",
 			args:              []string{"jobs", "files", "--help"},
-			expectedOutputs:   []string{"source files", "output"},
+			expectedOutputs:   []string{"Add, remove, or list", "add", "list", "remove"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 		},
 		{
-			name:              "list files of a job by name",
-			args:              []string{"jobs", "files", jobName},
+			name:              "list files of a job by name includes the added file",
+			args:              []string{"jobs", "files", "list", jobName},
+			expectedOutputs:   []string{"test.json"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 		},
 		{
 			name:              "table output format shows column headers",
-			args:              []string{"jobs", "--output", "table", "files", jobName},
+			args:              []string{"jobs", "--output", "table", "files", "list", jobName},
 			expectedOutputs:   []string{"FILE URI", "LOCALES"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 		},
 		{
 			name:              "json output format contains field names",
-			args:              []string{"jobs", "--output", "json", "files", jobName},
+			args:              []string{"jobs", "--output", "json", "files", "list", jobName},
 			expectedOutputs:   []string{"fileUri", "localeIds"},
 			unexpectedOutputs: []string{"DEBUG", "ERROR"},
 		},
 		{
 			name:            "invalid output format is rejected",
-			args:            []string{"jobs", "--output", "invalid", "files", jobName},
+			args:            []string{"jobs", "--output", "invalid", "files", "list", jobName},
 			expectedOutputs: []string{"invalid output"},
 			wantErr:         true,
 		},
 		{
 			name:            "missing positional arg is rejected",
-			args:            []string{"jobs", "files"},
+			args:            []string{"jobs", "files", "list"},
 			expectedOutputs: []string{"accepts 1 arg(s), received 0"},
 			wantErr:         true,
 		},
