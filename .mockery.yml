@@ -40,6 +40,11 @@ packages:
       JobLocale:
         config:
           dir: services/jobs/locales/sdkmocks
+  github.com/Smartling/api-sdk-go/api/job/string:
+    interfaces:
+      JobString:
+        config:
+          dir: services/jobs/strings/sdkmocks
   github.com/Smartling/api-sdk-go/api/glossary:
     interfaces:
       Glossary:
