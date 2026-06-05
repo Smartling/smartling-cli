@@ -45,11 +45,19 @@ func run(ctx context.Context,
 
 	static.GetOutputFormat[srv.MutateOutput](outputParams.Format).FormatAndRender(removeOutput)
 
-	if failed := removeOutput.FailedFileURIs(); len(failed) > 0 {
+	failed := removeOutput.FailedFileURIs()
+	if len(failed) > 0 || len(removeOutput.Unmatched) > 0 {
+		var parts []string
+		if len(failed) > 0 {
+			parts = append(parts, fmt.Sprintf("failed to remove: %s", strings.Join(failed, ", ")))
+		}
+		if len(removeOutput.Unmatched) > 0 {
+			parts = append(parts, fmt.Sprintf("no files matched: %s", strings.Join(removeOutput.Unmatched, ", ")))
+		}
 		return clierror.UIError{
 			Operation:   "remove files",
-			Err:         fmt.Errorf("%d of %d file(s) failed to remove", len(failed), len(removeOutput.Files)),
-			Description: fmt.Sprintf("failed files: %s", strings.Join(failed, ", ")),
+			Err:         errors.New("some --file patterns did not fully apply"),
+			Description: strings.Join(parts, "; "),
 		}
 	}
 	return nil

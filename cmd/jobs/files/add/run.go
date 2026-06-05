@@ -45,11 +45,19 @@ func run(ctx context.Context,
 
 	static.GetOutputFormat[srv.MutateOutput](outputParams.Format).FormatAndRender(addOutput)
 
-	if failed := addOutput.FailedFileURIs(); len(failed) > 0 {
+	failed := addOutput.FailedFileURIs()
+	if len(failed) > 0 || len(addOutput.Unmatched) > 0 {
+		var parts []string
+		if len(failed) > 0 {
+			parts = append(parts, fmt.Sprintf("failed to add: %s", strings.Join(failed, ", ")))
+		}
+		if len(addOutput.Unmatched) > 0 {
+			parts = append(parts, fmt.Sprintf("no files matched: %s", strings.Join(addOutput.Unmatched, ", ")))
+		}
 		return clierror.UIError{
 			Operation:   "add files",
-			Err:         fmt.Errorf("%d of %d file(s) failed to add", len(failed), len(addOutput.Files)),
-			Description: fmt.Sprintf("failed files: %s", strings.Join(failed, ", ")),
+			Err:         errors.New("some --file patterns did not fully apply"),
+			Description: strings.Join(parts, "; "),
 		}
 	}
 	return nil
