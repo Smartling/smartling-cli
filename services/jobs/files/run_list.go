@@ -1,4 +1,4 @@
-package jobs
+package jobsfiles
 
 import (
 	"context"
@@ -6,24 +6,26 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/Smartling/smartling-cli/services/jobs/jobresolver"
 
 	smerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 )
 
-// FilesParams carries the jobs-files request.
-type FilesParams struct {
-	ProjectUID   string
+// DefaultListPageLimit is the default page size for listing a job's files.
+const DefaultListPageLimit = 500
+
+// ListParams carries the jobs-files-list request.
+type ListParams struct {
+	ProjectID    string
 	JobUIDOrName string
 	Limit        uint32
 	Offset       uint32
 }
 
 // Validate checks required fields.
-func (p FilesParams) Validate() error {
-	if p.ProjectUID == "" {
-		return smerror.ErrEmptyParam("ProjectUID")
+func (p ListParams) Validate() error {
+	if p.ProjectID == "" {
+		return smerror.ErrEmptyParam("ProjectID")
 	}
 	if p.JobUIDOrName == "" {
 		return smerror.ErrEmptyParam("JobUIDOrName")
@@ -37,8 +39,8 @@ type JobFileItem struct {
 	LocaleIDs []string `json:"localeIds"`
 }
 
-// FilesOutput is the result of listing a job's files.
-type FilesOutput struct {
+// ListOutput is the result of listing a job's files.
+type ListOutput struct {
 	Files      []JobFileItem
 	TotalCount int
 	Offset     uint32
@@ -46,12 +48,12 @@ type FilesOutput struct {
 }
 
 // truncated reports whether more files exist beyond the returned page.
-func (o FilesOutput) truncated() bool {
+func (o ListOutput) truncated() bool {
 	return int(o.Offset)+len(o.Files) < o.TotalCount
 }
 
 // truncationNote describes the visible-vs-total page when truncated.
-func (o FilesOutput) truncationNote() string {
+func (o ListOutput) truncationNote() string {
 	return fmt.Sprintf(
 		"Showing %d of %d files. Use --offset %d to see more.",
 		len(o.Files), o.TotalCount, o.Offset+uint32(len(o.Files)),
@@ -59,10 +61,10 @@ func (o FilesOutput) truncationNote() string {
 }
 
 // JSONBytes returns the raw JSON payload.
-func (o FilesOutput) JSONBytes() []byte { return o.JSON }
+func (o ListOutput) JSONBytes() []byte { return o.JSON }
 
 // SimpleLines returns a human-readable list.
-func (o FilesOutput) SimpleLines() []string {
+func (o ListOutput) SimpleLines() []string {
 	if len(o.Files) == 0 {
 		return []string{"No files found."}
 	}
@@ -77,7 +79,7 @@ func (o FilesOutput) SimpleLines() []string {
 }
 
 // TableData returns the files as a table.
-func (o FilesOutput) TableData() ([]string, [][]string) {
+func (o ListOutput) TableData() ([]string, [][]string) {
 	headers := []string{"FILE URI", "LOCALES"}
 	rows := make([][]string, 0, len(o.Files)+1)
 	for _, f := range o.Files {
@@ -89,16 +91,15 @@ func (o FilesOutput) TableData() ([]string, [][]string) {
 	return headers, rows
 }
 
-// RunFiles resolves the job by UID or name and lists its source files.
-func (s service) RunFiles(ctx context.Context, params FilesParams) (FilesOutput, error) {
+// RunList resolves the job by UID or name and lists its source files.
+func (s service) RunList(ctx context.Context, params ListParams) (ListOutput, error) {
 	if err := params.Validate(); err != nil {
-		return FilesOutput{}, fmt.Errorf("invalid files params: %w", err)
+		return ListOutput{}, fmt.Errorf("invalid list params: %w", err)
 	}
-	rlog.Debugf("running jobs files with params: %+v", params)
 
-	jobUID, err := jobresolver.GetJobUID(ctx, s.job, params.ProjectUID, params.JobUIDOrName)
+	jobUID, err := jobresolver.GetJobUID(ctx, s.job, params.ProjectID, params.JobUIDOrName)
 	if err != nil {
-		return FilesOutput{}, fmt.Errorf("resolve job UID: %w", err)
+		return ListOutput{}, fmt.Errorf("resolve job UID: %w", err)
 	}
 
 	limit := params.Limit
@@ -106,29 +107,29 @@ func (s service) RunFiles(ctx context.Context, params FilesParams) (FilesOutput,
 		limit = DefaultListPageLimit
 	}
 
-	page, err := s.job.ListFiles(ctx, params.ProjectUID, jobUID, limit, params.Offset)
+	page, err := s.jobFile.List(ctx, params.ProjectID, jobUID, limit, params.Offset)
 	if err != nil {
-		return FilesOutput{}, fmt.Errorf("list files for job %q: %w", jobUID, err)
+		return ListOutput{}, fmt.Errorf("list files for job %q: %w", jobUID, err)
 	}
 
 	files := make([]JobFileItem, len(page.Items))
 	for i, file := range page.Items {
 		files[i] = JobFileItem{FileURI: file.FileURI, LocaleIDs: file.LocaleIDs}
 	}
-	res := FilesOutput{Files: files, TotalCount: page.TotalCount, Offset: params.Offset}
+	res := ListOutput{Files: files, TotalCount: page.TotalCount, Offset: params.Offset}
 	b, err := json.Marshal(filesJSON{
 		Files:      files,
 		TotalCount: page.TotalCount,
 		Offset:     params.Offset,
 	})
 	if err != nil {
-		return FilesOutput{}, fmt.Errorf("marshal job files to JSON: %w", err)
+		return ListOutput{}, fmt.Errorf("marshal job files to JSON: %w", err)
 	}
 	res.JSON = b
 	return res, nil
 }
 
-// filesJSON is the JSON shape for jobs-files output, carrying pagination
+// filesJSON is the JSON shape for jobs-files-list output, carrying pagination
 // metadata so consumers can detect truncated pages.
 type filesJSON struct {
 	Files      []JobFileItem `json:"files"`

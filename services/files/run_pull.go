@@ -21,6 +21,7 @@ import (
 
 	sdk "github.com/Smartling/api-sdk-go"
 	sdkjob "github.com/Smartling/api-sdk-go/api/job"
+	jobfile "github.com/Smartling/api-sdk-go/api/job/file"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/gobwas/glob"
 	"github.com/reconquest/hierr-go"
@@ -299,7 +300,7 @@ func hasLocaleInList(locale string, locales []string) bool {
 func (s service) enumerateJobFiles(ctx context.Context, jobUID string) ([]sdkfile.File, []string, error) {
 	var (
 		job      sdkjob.GetJobResponse
-		jobFiles []sdkjob.JobFile
+		jobFiles []jobfile.File
 		group    errgroup.Group
 	)
 	projectID := s.Config.ProjectID
@@ -310,7 +311,7 @@ func (s service) enumerateJobFiles(ctx context.Context, jobUID string) ([]sdkfil
 	})
 	group.Go(func() error {
 		var err error
-		jobFiles, err = listAllJobFiles(ctx, s.JobApi, projectID, jobUID)
+		jobFiles, err = listAllJobFiles(ctx, s.ListJobFiles, projectID, jobUID)
 		return err
 	})
 	if err := group.Wait(); err != nil {
@@ -328,11 +329,11 @@ func (s service) enumerateJobFiles(ctx context.Context, jobUID string) ([]sdkfil
 }
 
 // listAllJobFiles walks every page of the Jobs API file listing and returns the aggregated list.
-func listAllJobFiles(ctx context.Context, api sdkjob.Job, projectID, jobUID string) ([]sdkjob.JobFile, error) {
-	var res []sdkjob.JobFile
+func listAllJobFiles(ctx context.Context, listFiles ListJobFilesFn, projectID, jobUID string) ([]jobfile.File, error) {
+	var res []jobfile.File
 	var offset uint32
 	for {
-		page, err := api.ListFiles(ctx, projectID, jobUID, jobFilesPageSize, offset)
+		page, err := listFiles(ctx, projectID, jobUID, jobFilesPageSize, offset)
 		if err != nil {
 			return nil, err
 		}

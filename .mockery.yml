@@ -45,6 +45,11 @@ packages:
       JobString:
         config:
           dir: services/jobs/strings/sdkmocks
+  github.com/Smartling/api-sdk-go/api/job/file:
+    interfaces:
+      JobFile:
+        config:
+          dir: services/jobs/files/sdkmocks
   github.com/Smartling/api-sdk-go/api/glossary:
     interfaces:
       Glossary:

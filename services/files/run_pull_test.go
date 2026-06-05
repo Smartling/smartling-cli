@@ -13,10 +13,10 @@ import (
 
 	sdk "github.com/Smartling/api-sdk-go"
 	sdkjob "github.com/Smartling/api-sdk-go/api/job"
+	jobfile "github.com/Smartling/api-sdk-go/api/job/file"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
-	srv "github.com/Smartling/smartling-cli/services/jobs"
 	jobmocks "github.com/Smartling/smartling-cli/services/jobs/sdkmocks"
 )
 
@@ -38,6 +38,13 @@ func (r *recordingAPIClient) DownloadTranslation(_ context.Context, _, _ string,
 	return io.NopCloser(strings.NewReader("translated content")), nil
 }
 
+// stubListJobFiles builds a ListJobFilesFn returning a single fixed page.
+func stubListJobFiles(resp jobfile.ListResponse, err error) ListJobFilesFn {
+	return func(context.Context, string, string, uint32, uint32) (jobfile.ListResponse, error) {
+		return resp, err
+	}
+}
+
 func newServiceWithJobAPI(t *testing.T, projectID string) (service, *jobmocks.MockJob) {
 	t.Helper()
 	mockJob := jobmocks.NewMockJob(t)
@@ -57,15 +64,13 @@ func TestEnumerateJobFiles_HappyPath(t *testing.T) {
 			TranslationJobUID: "job-1",
 			TargetLocaleIDs:   []string{"fr-FR", "de-DE"},
 		}, nil)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-1", uint32(srv.DefaultListPageLimit), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{
-			Items: []sdkjob.JobFile{
-				{FileURI: "/a.json"},
-				{FileURI: "/b.xml"},
-			},
-			TotalCount: 2,
-		}, nil)
+	s.ListJobFiles = stubListJobFiles(jobfile.ListResponse{
+		Items: []jobfile.File{
+			{FileURI: "/a.json"},
+			{FileURI: "/b.xml"},
+		},
+		TotalCount: 2,
+	}, nil)
 
 	files, locales, err := s.enumerateJobFiles(context.Background(), "job-1")
 	if err != nil {
@@ -91,9 +96,7 @@ func TestEnumerateJobFiles_NotFound(t *testing.T) {
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "missing").
 		Return(sdkjob.GetJobResponse{}, sdkjob.ErrNotFound)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "missing", uint32(500), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{}, sdkjob.ErrNotFound)
+	s.ListJobFiles = stubListJobFiles(jobfile.ListResponse{}, sdkjob.ErrNotFound)
 
 	_, _, err := s.enumerateJobFiles(context.Background(), "missing")
 	if err == nil {
@@ -114,9 +117,7 @@ func TestEnumerateJobFiles_EmptyFiles(t *testing.T) {
 			TranslationJobUID: "job-1",
 			TargetLocaleIDs:   []string{"fr-FR"},
 		}, nil)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-1", uint32(500), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{}, nil)
+	s.ListJobFiles = stubListJobFiles(jobfile.ListResponse{}, nil)
 
 	// enumerateJobFiles itself does not error on empty results — the
 	// centralized check in RunPull catches that case. See
@@ -146,14 +147,11 @@ func TestRunPull_JobWithNoFiles_ReturnsError(t *testing.T) {
 			TranslationJobUID: "job-empty-files-uid",
 			TargetLocaleIDs:   []string{"fr-FR"},
 		}, nil)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-empty-files-uid", uint32(500), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{}, nil)
-
 	s := service{
-		APIClient: nil,
-		JobApi:    mockJob,
-		Config:    config.Config{ProjectID: "proj-1"},
+		APIClient:    nil,
+		JobApi:       mockJob,
+		ListJobFiles: stubListJobFiles(jobfile.ListResponse{}, nil),
+		Config:       config.Config{ProjectID: "proj-1"},
 	}
 
 	err := s.RunPull(context.Background(), PullParams{ProjectUID: "proj-1", JobUIDOrName: "job-empty-files"})
@@ -168,9 +166,7 @@ func TestEnumerateJobFiles_ListFilesError(t *testing.T) {
 	mockJob.EXPECT().
 		GetJob(context.Background(), "proj-1", "job-1").
 		Return(sdkjob.GetJobResponse{TargetLocaleIDs: []string{"fr-FR"}}, nil)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-1", uint32(500), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{}, errors.New("network blew up"))
+	s.ListJobFiles = stubListJobFiles(jobfile.ListResponse{}, errors.New("network blew up"))
 
 	_, _, err := s.enumerateJobFiles(context.Background(), "job-1")
 	if err == nil {
@@ -196,17 +192,11 @@ func TestRunPull_DryRun_DoesNotCallAPIClient(t *testing.T) {
 			TranslationJobUID: "job-1",
 			TargetLocaleIDs:   []string{"fr-FR", "de-DE"},
 		}, nil)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-1", uint32(500), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{
-			Items:      []sdkjob.JobFile{{FileURI: "/a.json"}},
-			TotalCount: 1,
-		}, nil)
-
 	s := service{
-		APIClient: nil,
-		JobApi:    mockJob,
-		Config:    config.Config{ProjectID: "proj-1"},
+		APIClient:    nil,
+		JobApi:       mockJob,
+		ListJobFiles: stubListJobFiles(jobfile.ListResponse{Items: []jobfile.File{{FileURI: "/a.json"}}, TotalCount: 1}, nil),
+		Config:       config.Config{ProjectID: "proj-1"},
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
@@ -232,16 +222,10 @@ func TestRunPull_EmptyLocaleIntersection_Errors(t *testing.T) {
 			TranslationJobUID: "job-1",
 			TargetLocaleIDs:   []string{"fr-FR"},
 		}, nil)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-1", uint32(500), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{
-			Items:      []sdkjob.JobFile{{FileURI: "/a.json"}},
-			TotalCount: 1,
-		}, nil)
-
 	s := service{
-		JobApi: mockJob,
-		Config: config.Config{ProjectID: "proj-1"},
+		JobApi:       mockJob,
+		ListJobFiles: stubListJobFiles(jobfile.ListResponse{Items: []jobfile.File{{FileURI: "/a.json"}}, TotalCount: 1}, nil),
+		Config:       config.Config{ProjectID: "proj-1"},
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
@@ -271,21 +255,18 @@ func TestRunPull_JobUIDPlusURI_FiltersJobFiles(t *testing.T) {
 			TranslationJobUID: "job-1",
 			TargetLocaleIDs:   []string{"fr-FR"},
 		}, nil)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-1", uint32(500), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{
-			Items: []sdkjob.JobFile{
+	s := service{
+		APIClient: nil, // dry-run: APIClient is unused
+		JobApi:    mockJob,
+		ListJobFiles: stubListJobFiles(jobfile.ListResponse{
+			Items: []jobfile.File{
 				{FileURI: "a.json"},
 				{FileURI: "b.xml"},
 				{FileURI: "nested/c.json"},
 			},
 			TotalCount: 3,
-		}, nil)
-
-	s := service{
-		APIClient: nil, // dry-run: APIClient is unused
-		JobApi:    mockJob,
-		Config:    config.Config{ProjectID: "proj-1"},
+		}, nil),
+		Config: config.Config{ProjectID: "proj-1"},
 	}
 
 	// Capture dry-run output to assert exactly which files were selected.
@@ -331,17 +312,11 @@ func TestRunPull_JobWithNoLocales_ReturnsError(t *testing.T) {
 			TranslationJobUID: "job-empty",
 			TargetLocaleIDs:   nil,
 		}, nil)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-empty", uint32(500), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{
-			Items:      []sdkjob.JobFile{{FileURI: "/a.json"}},
-			TotalCount: 1,
-		}, nil)
-
 	s := service{
-		APIClient: nil,
-		JobApi:    mockJob,
-		Config:    config.Config{ProjectID: "proj-1"},
+		APIClient:    nil,
+		JobApi:       mockJob,
+		ListJobFiles: stubListJobFiles(jobfile.ListResponse{Items: []jobfile.File{{FileURI: "/a.json"}}, TotalCount: 1}, nil),
+		Config:       config.Config{ProjectID: "proj-1"},
 	}
 
 	err := s.RunPull(context.Background(), PullParams{ProjectUID: "proj-1", JobUIDOrName: "job-empty"})
@@ -366,20 +341,17 @@ func TestRunPull_JobUIDPlusURIWithNoMatch_ReturnsError(t *testing.T) {
 			TranslationJobUID: "job-1",
 			TargetLocaleIDs:   []string{"fr-FR"},
 		}, nil)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-1", uint32(500), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{
-			Items: []sdkjob.JobFile{
+	s := service{
+		APIClient: nil,
+		JobApi:    mockJob,
+		ListJobFiles: stubListJobFiles(jobfile.ListResponse{
+			Items: []jobfile.File{
 				{FileURI: "a.json"},
 				{FileURI: "b.xml"},
 			},
 			TotalCount: 2,
-		}, nil)
-
-	s := service{
-		APIClient: nil,
-		JobApi:    mockJob,
-		Config:    config.Config{ProjectID: "proj-1"},
+		}, nil),
+		Config: config.Config{ProjectID: "proj-1"},
 	}
 
 	err := s.RunPull(context.Background(), PullParams{
@@ -419,13 +391,6 @@ func TestRunPull_Resume_SkipsExistingFiles(t *testing.T) {
 			TranslationJobUID: "job-1",
 			TargetLocaleIDs:   []string{"fr-FR", "de-DE"},
 		}, nil)
-	mockJob.EXPECT().
-		ListFiles(context.Background(), "proj-1", "job-1", uint32(500), uint32(0)).
-		Return(sdkjob.ListJobFilesResponse{
-			Items:      []sdkjob.JobFile{{FileURI: "a.json"}},
-			TotalCount: 1,
-		}, nil)
-
 	// Pre-create one of the two target paths. The default job format is
 	// {{.JobUID}}/{{.Locale}}/{{.FileURI}}, with --directory tmpDir.
 	existing := filepath.Join(tmpDir, "job-1", "fr-FR", "a.json")
@@ -437,9 +402,10 @@ func TestRunPull_Resume_SkipsExistingFiles(t *testing.T) {
 	}
 
 	s := service{
-		APIClient: api,
-		JobApi:    mockJob,
-		Config:    config.Config{ProjectID: "proj-1", Threads: 1},
+		APIClient:    api,
+		JobApi:       mockJob,
+		ListJobFiles: stubListJobFiles(jobfile.ListResponse{Items: []jobfile.File{{FileURI: "a.json"}}, TotalCount: 1}, nil),
+		Config:       config.Config{ProjectID: "proj-1", Threads: 1},
 	}
 
 	err := s.RunPull(context.Background(), PullParams{

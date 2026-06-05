@@ -20,6 +20,9 @@ import (
 	initialize "github.com/Smartling/smartling-cli/cmd/init"
 	"github.com/Smartling/smartling-cli/cmd/jobs"
 	jobfiles "github.com/Smartling/smartling-cli/cmd/jobs/files"
+	jobfileadd "github.com/Smartling/smartling-cli/cmd/jobs/files/add"
+	jobfilelist "github.com/Smartling/smartling-cli/cmd/jobs/files/list"
+	jobfileremove "github.com/Smartling/smartling-cli/cmd/jobs/files/remove"
 	joblist "github.com/Smartling/smartling-cli/cmd/jobs/list"
 	joblocales "github.com/Smartling/smartling-cli/cmd/jobs/locales"
 	joblocaleadd "github.com/Smartling/smartling-cli/cmd/jobs/locales/add"
@@ -85,7 +88,12 @@ func main() {
 	jobsCmd.AddCommand(progress.NewProgressCmd(jobInitializer))
 	jobsCmd.AddCommand(joblist.NewListCmd(jobInitializer))
 	jobsCmd.AddCommand(jobview.NewViewCmd(jobInitializer))
-	jobsCmd.AddCommand(jobfiles.NewFilesCmd(jobInitializer))
+	jobFiles := jobfiles.NewJobFilesCmd()
+	jobFilesInitializer := jobfiles.NewSrvInitializer()
+	jobFiles.AddCommand(jobfilelist.NewListCmd(jobFilesInitializer))
+	jobFiles.AddCommand(jobfileadd.NewJobFilesAddCmd(jobFilesInitializer))
+	jobFiles.AddCommand(jobfileremove.NewJobFilesRemoveCmd(jobFilesInitializer))
+	jobsCmd.AddCommand(jobFiles)
 	jobLocales := joblocales.NewJobLocalesCmd()
 	jobLocalesInitializer := joblocales.NewSrvInitializer()
 	jobLocales.AddCommand(joblocaleadd.NewJobLocalesAddCmd(jobLocalesInitializer))
