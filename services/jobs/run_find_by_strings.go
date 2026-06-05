@@ -54,10 +54,12 @@ type FindByStringsMatch struct {
 }
 
 // FindByStringsOutput is the result of find-jobs-by-strings, flattened to one
-// row per hashcode+locale+job match.
+// row per hashcode+locale+job match. TotalCount is the number of matching jobs
+// reported by the API (distinct from the number of flattened rows).
 type FindByStringsOutput struct {
-	Matches []FindByStringsMatch
-	JSON    []byte `json:"-"`
+	Matches    []FindByStringsMatch
+	TotalCount int
+	JSON       []byte `json:"-"`
 }
 
 // JSONBytes returns the raw JSON payload.
@@ -68,11 +70,12 @@ func (o FindByStringsOutput) SimpleLines() []string {
 	if len(o.Matches) == 0 {
 		return []string{"No jobs found for the given strings."}
 	}
-	lines := make([]string, 0, len(o.Matches))
+	lines := make([]string, 0, len(o.Matches)+1)
 	for _, m := range o.Matches {
 		lines = append(lines, fmt.Sprintf("%s  %s  %s  %s  %s",
 			m.Hashcode, m.LocaleID, m.TranslationJobUID, m.JobName, m.DueDate))
 	}
+	lines = append(lines, fmt.Sprintf("%d job(s) matched.", o.TotalCount))
 	return lines
 }
 
@@ -108,7 +111,8 @@ func (s service) RunFindByStrings(ctx context.Context, params FindByStringsParam
 
 // findByStringsJSON is the JSON shape for find-by-strings output.
 type findByStringsJSON struct {
-	Matches []FindByStringsMatch `json:"matches"`
+	Matches    []FindByStringsMatch `json:"matches"`
+	TotalCount int                  `json:"totalCount"`
 }
 
 func toFindByStringsOutput(resp jobapi.FindJobsByStringsResponse) (FindByStringsOutput, error) {
@@ -128,9 +132,9 @@ func toFindByStringsOutput(resp jobapi.FindJobsByStringsResponse) (FindByStrings
 		}
 	}
 
-	b, err := json.Marshal(findByStringsJSON{Matches: matches})
+	b, err := json.Marshal(findByStringsJSON{Matches: matches, TotalCount: resp.TotalCount})
 	if err != nil {
 		return FindByStringsOutput{}, fmt.Errorf("marshal find-by-strings to JSON: %w", err)
 	}
-	return FindByStringsOutput{Matches: matches, JSON: b}, nil
+	return FindByStringsOutput{Matches: matches, TotalCount: resp.TotalCount, JSON: b}, nil
 }

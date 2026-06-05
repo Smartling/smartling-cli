@@ -5,6 +5,7 @@ dist: bin
 
 env:
   - CGO_ENABLED=0
+  - GOWORK=off
 
 before:
   hooks:

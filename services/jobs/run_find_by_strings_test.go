@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"testing"
+	"time"
 
 	jobapi "github.com/Smartling/api-sdk-go/api/job"
 	jobmocks "github.com/Smartling/smartling-cli/services/jobs/sdkmocks"
@@ -109,6 +110,58 @@ func TestFindByStringsParams_Validate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRunFindByStrings_RendersDueDateAndCount(t *testing.T) {
+	due := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	m := jobmocks.NewMockJob(t)
+	m.On("FindJobsByStrings", mock.Anything, "proj-1", mock.Anything).
+		Return(jobapi.FindJobsByStringsResponse{
+			TotalCount: 2,
+			Items: []jobapi.JobWithStrings{
+				{
+					TranslationJobUID: "u1",
+					JobName:           "Has due date",
+					DueDate:           due,
+					HashcodesByLocale: []jobapi.JobHashcodesByLocale{
+						{LocaleID: "fr-FR", Hashcodes: []string{"h1"}},
+					},
+				},
+				{
+					TranslationJobUID: "u2",
+					JobName:           "No due date",
+					// zero DueDate -> empty string
+					HashcodesByLocale: []jobapi.JobHashcodesByLocale{
+						{LocaleID: "de-DE", Hashcodes: []string{"h1"}},
+					},
+				},
+			},
+		}, nil)
+
+	s := NewService(m)
+	out, err := s.RunFindByStrings(context.Background(), FindByStringsParams{
+		ProjectUID: "proj-1",
+		Hashcodes:  []string{"h1"},
+	})
+	require.NoError(t, err)
+	require.Equal(t, 2, out.TotalCount)
+	require.Len(t, out.Matches, 2)
+
+	// DueDate is RFC3339 for the dated job, empty for the undated one.
+	require.Equal(t, "2026-01-02T03:04:05Z", out.Matches[0].DueDate)
+	require.Equal(t, "", out.Matches[1].DueDate)
+
+	// TableData mirrors the matches with a fixed header row.
+	headers, rows := out.TableData()
+	require.Equal(t, []string{"HASHCODE", "LOCALE", "TRANSLATION JOB UID", "JOB NAME", "DUE DATE"}, headers)
+	require.Equal(t, [][]string{
+		{"h1", "fr-FR", "u1", "Has due date", "2026-01-02T03:04:05Z"},
+		{"h1", "de-DE", "u2", "No due date", ""},
+	}, rows)
+
+	// SimpleLines ends with the job-count summary.
+	lines := out.SimpleLines()
+	require.Equal(t, "2 job(s) matched.", lines[len(lines)-1])
 }
 
 func makeStrings(n int) []string {
