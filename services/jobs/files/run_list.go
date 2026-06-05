@@ -107,7 +107,7 @@ func (s service) RunList(ctx context.Context, params ListParams) (ListOutput, er
 		limit = DefaultListPageLimit
 	}
 
-	page, err := s.job.ListFiles(ctx, params.ProjectID, jobUID, limit, params.Offset)
+	page, err := s.jobFile.List(ctx, params.ProjectID, jobUID, limit, params.Offset)
 	if err != nil {
 		return ListOutput{}, fmt.Errorf("list files for job %q: %w", jobUID, err)
 	}

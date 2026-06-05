@@ -116,6 +116,90 @@ func (_c *MockJobFile_Add_Call) RunAndReturn(run func(ctx context.Context, proje
 	return _c
 }
 
+// List provides a mock function for the type MockJobFile
+func (_mock *MockJobFile) List(ctx context.Context, projectID string, translationJobUID string, limit uint32, offset uint32) (jobfile.ListResponse, error) {
+	ret := _mock.Called(ctx, projectID, translationJobUID, limit, offset)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 jobfile.ListResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, uint32, uint32) (jobfile.ListResponse, error)); ok {
+		return returnFunc(ctx, projectID, translationJobUID, limit, offset)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, uint32, uint32) jobfile.ListResponse); ok {
+		r0 = returnFunc(ctx, projectID, translationJobUID, limit, offset)
+	} else {
+		r0 = ret.Get(0).(jobfile.ListResponse)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, uint32, uint32) error); ok {
+		r1 = returnFunc(ctx, projectID, translationJobUID, limit, offset)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockJobFile_List_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'List'
+type MockJobFile_List_Call struct {
+	*mock.Call
+}
+
+// List is a helper method to define mock.On call
+//   - ctx context.Context
+//   - projectID string
+//   - translationJobUID string
+//   - limit uint32
+//   - offset uint32
+func (_e *MockJobFile_Expecter) List(ctx interface{}, projectID interface{}, translationJobUID interface{}, limit interface{}, offset interface{}) *MockJobFile_List_Call {
+	return &MockJobFile_List_Call{Call: _e.mock.On("List", ctx, projectID, translationJobUID, limit, offset)}
+}
+
+func (_c *MockJobFile_List_Call) Run(run func(ctx context.Context, projectID string, translationJobUID string, limit uint32, offset uint32)) *MockJobFile_List_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 uint32
+		if args[3] != nil {
+			arg3 = args[3].(uint32)
+		}
+		var arg4 uint32
+		if args[4] != nil {
+			arg4 = args[4].(uint32)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockJobFile_List_Call) Return(listResponse jobfile.ListResponse, err error) *MockJobFile_List_Call {
+	_c.Call.Return(listResponse, err)
+	return _c
+}
+
+func (_c *MockJobFile_List_Call) RunAndReturn(run func(ctx context.Context, projectID string, translationJobUID string, limit uint32, offset uint32) (jobfile.ListResponse, error)) *MockJobFile_List_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Remove provides a mock function for the type MockJobFile
 func (_mock *MockJobFile) Remove(ctx context.Context, projectID string, translationJobUID string, req jobfile.RemoveRequest) (jobfile.Result, error) {
 	ret := _mock.Called(ctx, projectID, translationJobUID, req)

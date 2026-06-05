@@ -10,6 +10,7 @@ import (
 
 	batchapi "github.com/Smartling/api-sdk-go/api/batches"
 	jobapi "github.com/Smartling/api-sdk-go/api/job"
+	jobfile "github.com/Smartling/api-sdk-go/api/job/file"
 	"github.com/spf13/cobra"
 )
 
@@ -68,6 +69,7 @@ func (i srvInitializer) InitFilesSrv(ctx context.Context) (files.Service, error)
 	}
 	batchApi := batchapi.NewBatch(client.Client)
 	jobApi := jobapi.NewJob(client.Client)
-	srv := files.NewService(&client, batchApi, jobApi, cnf, fileConfig)
+	jobFileApi := jobfile.NewJobFile(client.Client)
+	srv := files.NewService(&client, batchApi, jobApi, jobFileApi.List, cnf, fileConfig)
 	return srv, nil
 }
