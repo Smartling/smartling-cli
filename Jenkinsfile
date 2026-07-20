@@ -10,12 +10,15 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh "docker pull goreleaser/goreleaser:v2.15.4"
+                sh "docker pull goreleaser/goreleaser:v2.17.0"
                 sh """
                   docker run -t --rm \\
                     -v "${WORKSPACE}:/go/src/cli" -w /go/src/cli \\
+                    -v smartling-cli-go-mod:/go/pkg \\
+                    -v smartling-cli-go-cache:/root/.cache \\
+                    -e GOTOOLCHAIN=auto \\
                     --entrypoint sh \\
-                    goreleaser/goreleaser:v2.15.4 \\
+                    goreleaser/goreleaser:v2.17.0 \\
                     -c 'apk add --no-cache make && make build'
                 """
             }
