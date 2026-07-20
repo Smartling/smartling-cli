@@ -14,6 +14,8 @@ pipeline {
                 sh """
                   docker run -t --rm \\
                     -v "${WORKSPACE}:/go/src/cli" -w /go/src/cli \\
+                    -v smartling-cli-go-mod:/go/pkg \\
+                    -v smartling-cli-go-cache:/root/.cache \\
                     -e GOTOOLCHAIN=auto \\
                     --entrypoint sh \\
                     goreleaser/goreleaser:v2.17.0 \\
