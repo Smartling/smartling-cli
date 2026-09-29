@@ -2,10 +2,8 @@ package files
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -165,10 +163,6 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 		jobName = jobNameResponse.JobName
 	}
 	if jobUID == "" {
-		timeZoneName, err := timeZoneName()
-		if err != nil {
-			return err
-		}
 		nameTemplate := params.JobIDOrName
 		if nameTemplate == "" {
 			nameTemplate = defaultJobNameTemplate
@@ -179,7 +173,7 @@ func (s service) runPushWithJob(ctx context.Context, params PushParams, files []
 			TargetLocaleIds: params.Locales,
 			Mode:            api.ReuseExistingMode,
 			Salt:            api.RandomAlphanumericSalt,
-			TimeZoneName:    timeZoneName,
+			TimeZoneName:    localTimeZoneName(),
 		}
 		createJobResponse, err := s.BatchApi.CreateJob(ctx, projectID, payload)
 		if err != nil {
@@ -565,30 +559,19 @@ func getFileUris(configPath string, params PushParams, files []string) ([]string
 	return res, nil
 }
 
-func timeZoneName() (string, error) {
-	location := time.Now().Location().String()
-	if location != time.Local.String() && strings.ToLower(location) != "" {
-		return location, nil
+// localTimeZoneName returns the IANA name of the local time zone. time.Local is
+// named after a valid $TZ; otherwise it is "Local" and the name comes from the
+// /etc/localtime symlink.
+func localTimeZoneName() string {
+	if name := time.Local.String(); name != "Local" {
+		return name
 	}
-	resp, err := http.Get("https://ipapi.co/json/")
-	if err != nil {
-		return "", err
-	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			rlog.Debugf("failed to close response body: %v", err)
+	if link, err := os.Readlink("/etc/localtime"); err == nil {
+		if _, name, ok := strings.Cut(link, "zoneinfo/"); ok {
+			return name
 		}
-	}()
-
-	type IPInfo struct {
-		Timezone string `json:"timezone"`
 	}
-	var info IPInfo
-	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
-		return "", err
-	}
-
-	return info.Timezone, nil
+	return "UTC"
 }
 
 func getJobURL(projectUID, jobUID string) string {

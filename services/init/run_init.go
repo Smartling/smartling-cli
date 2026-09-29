@@ -13,7 +13,6 @@ import (
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 
-	sdk "github.com/Smartling/api-sdk-go"
 	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	"github.com/reconquest/hierr-go"
 	"github.com/tcnksm/go-input"
@@ -125,8 +124,11 @@ func (s service) RunInit(ctx context.Context, dryRun bool) error {
 
 	fmt.Println("Testing connection to Smartling API...")
 
-	s.Client = sdk.NewHttpAPIClient(client.NewHTTPClient(), s.Config.UserID, s.Config.Secret)
-	err = s.Client.Authenticate(ctx)
+	apiClient, err := client.NewAPIClient(s.ClientConfig, s.Config, s.Verbose)
+	if err != nil {
+		return err
+	}
+	err = apiClient.Authenticate(ctx)
 	if err != nil {
 		if _, ok := err.(sdkerror.NotAuthorizedError); ok {
 			return clierror.NewError(

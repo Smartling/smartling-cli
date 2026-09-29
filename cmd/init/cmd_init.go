@@ -4,12 +4,10 @@ import (
 	"os"
 
 	rootcmd "github.com/Smartling/smartling-cli/cmd"
-	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/help"
 	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	initialize "github.com/Smartling/smartling-cli/services/init"
 
-	sdk "github.com/Smartling/api-sdk-go"
 	"github.com/spf13/cobra"
 )
 
@@ -104,7 +102,6 @@ func (s srvInitializer) InitSrv() (initialize.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	smClient := sdk.NewHttpAPIClient(client.NewHTTPClient(), cnf.UserID, cnf.Secret)
-	srv := initialize.NewService(smClient, cnf)
+	srv := initialize.NewService(rootcmd.CLIClientConfig(), cnf, rootcmd.Verbosity())
 	return srv, nil
 }
