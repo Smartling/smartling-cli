@@ -3,7 +3,6 @@ package helpers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -58,7 +57,7 @@ func DownloadFile(
 	}
 	defer func() {
 		if err := reader.Close(); err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			rlog.Error(err.Error())
 		}
 	}()
 
@@ -113,9 +112,9 @@ func writeFileAtomically(dir, path string, reader io.Reader) error {
 		)
 	}
 
-	mode := os.FileMode(0o644)
-	if info, err := os.Stat(path); err == nil {
-		mode = info.Mode().Perm()
+	mode, err := outputFileMode(path)
+	if err != nil {
+		return err
 	}
 	err = os.Chmod(writer.Name(), mode)
 	if err != nil {
@@ -136,4 +135,15 @@ func writeFileAtomically(dir, path string, reader io.Reader) error {
 	}
 
 	return nil
+}
+
+func outputFileMode(path string) (os.FileMode, error) {
+	info, err := os.Stat(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return 0o644, nil
+	}
+	if err != nil {
+		return 0, hierr.Errorf(err, `unable to stat output file "%s"`, path)
+	}
+	return info.Mode().Perm(), nil
 }

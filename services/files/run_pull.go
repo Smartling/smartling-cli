@@ -151,8 +151,14 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 	}
 
 	tasks, planFailed := s.planDownloads(ctx, params, files, progressThreshold)
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("pull interrupted: %w", err)
+	}
 	if planFailed > 0 {
 		return fmt.Errorf("%d file(s) failed to resolve; see log for details", planFailed)
+	}
+	if err := checkUniquePaths(tasks); err != nil {
+		return err
 	}
 
 	var failed atomic.Int32
@@ -170,6 +176,9 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 		})
 	}
 	_ = group.Wait()
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("pull interrupted: %w", err)
+	}
 	if n := failed.Load(); n > 0 {
 		return fmt.Errorf("%d download(s) failed; see log for details", n)
 	}
@@ -178,7 +187,8 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 
 // planDownloads resolves every file × locale pair up front so downloads can be
 // parallelized across locales, not only across files.
-func (s service) planDownloads(ctx context.Context,
+func (s service) planDownloads(
+	ctx context.Context,
 	params PullParams,
 	files []sdkfile.File,
 	progressThreshold int,
@@ -337,13 +347,9 @@ func (s service) download(ctx context.Context, params PullParams, task downloadT
 }
 
 func hasLocaleInList(locale string, locales []string) bool {
-	for _, filter := range locales {
-		if strings.EqualFold(strings.ToLower(filter), strings.ToLower(locale)) {
-			return true
-		}
-	}
-
-	return false
+	return slices.ContainsFunc(locales, func(filter string) bool {
+		return strings.EqualFold(filter, locale)
+	})
 }
 
 // enumerateJobFiles resolves the file × target-locale matrix for a job by
@@ -413,6 +419,22 @@ func listAllJobFiles(ctx context.Context, listFiles ListJobFilesFn, projectID, j
 		}
 	}
 	return res, nil
+}
+
+func checkUniquePaths(tasks []downloadTask) error {
+	seen := make(map[string]downloadTask, len(tasks))
+	for _, task := range tasks {
+		if prev, ok := seen[task.path]; ok {
+			return fmt.Errorf(
+				`file "%s" (locale "%s") and file "%s" (locale "%s") both resolve to "%s"; --format must produce a unique path per file and locale`,
+				prev.file.FileURI, prev.locale,
+				task.file.FileURI, task.locale,
+				task.path,
+			)
+		}
+		seen[task.path] = task
+	}
+	return nil
 }
 
 // filterFilesByGlob keeps only files whose FileURI matches the provided glob

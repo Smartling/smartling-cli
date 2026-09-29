@@ -202,8 +202,8 @@ Available options:
 	pullCmd.Flags().StringArrayVarP(&locales, "locale", "l", []string{}, `Authorize only specified locales.`)
 	pullCmd.Flags().BoolVar(&resume, "resume", false, `Resume a previously interrupted pull operation, skipping already downloaded files.`)
 	pullCmd.Flags().BoolVar(&dryRun, "dry-run", false, `Print the file × locale matrix that would be downloaded, then exit.`)
-	pullCmd.Flags().Uint32Var(&threads, threadsFlag, 20, `If command can be executed concurrently, it will be
-executed for at most <number> of threads.`)
+	pullCmd.Flags().Uint32Var(&threads, threadsFlag, 20, `Maximum number of concurrent downloads. Each file ×
+locale pair is downloaded separately.`)
 	pullCmd.Flags().StringVar(&formatPath, "format", "", `Can be used to format path to downloaded files.
                            Note, that single file can be translated in
                            different locales, so format should include locale
