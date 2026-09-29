@@ -72,8 +72,7 @@ func DownloadFile(
 		}
 	}()
 
-	dir := filepath.Dir(path)
-	err = os.MkdirAll(dir, 0o755)
+	err = os.MkdirAll(filepath.Dir(path), 0o755)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -87,8 +86,8 @@ func DownloadFile(
 	})
 	defer timer.Stop()
 
-	err = writeFileAtomically(dir, path, &idleTimeoutReader{reader: reader, timer: timer})
-	if errors.Is(context.Cause(ctx), errDownloadStalled) {
+	err = writeFileAtomically(path, &idleTimeoutReader{reader: reader, timer: timer})
+	if err != nil && errors.Is(context.Cause(ctx), errDownloadStalled) {
 		return fmt.Errorf(
 			`no data received for %s while downloading into "%s": %w`,
 			downloadIdleTimeout,
@@ -113,9 +112,15 @@ func (r *idleTimeoutReader) Read(p []byte) (int, error) {
 }
 
 // writeFileAtomically writes to a temp file and renames it into place, so an
-// interrupted download never leaves a truncated file at path.
-func writeFileAtomically(dir, path string, reader io.Reader) error {
-	writer, err := os.CreateTemp(dir, "."+filepath.Base(path)+".*.tmp")
+// interrupted download never leaves a truncated file at path. If path is a
+// symlink, its target is replaced and the link is kept.
+func writeFileAtomically(path string, reader io.Reader) error {
+	target, err := resolveSymlinks(path)
+	if err != nil {
+		return err
+	}
+
+	writer, err := os.CreateTemp(filepath.Dir(target), "."+filepath.Base(target)+".*.tmp")
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -150,7 +155,7 @@ func writeFileAtomically(dir, path string, reader io.Reader) error {
 		)
 	}
 
-	mode, err := outputFileMode(path)
+	mode, err := outputFileMode(target)
 	if err != nil {
 		return err
 	}
@@ -163,7 +168,7 @@ func writeFileAtomically(dir, path string, reader io.Reader) error {
 		)
 	}
 
-	err = os.Rename(writer.Name(), path)
+	err = os.Rename(writer.Name(), target)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -173,6 +178,17 @@ func writeFileAtomically(dir, path string, reader io.Reader) error {
 	}
 
 	return nil
+}
+
+func resolveSymlinks(path string) (string, error) {
+	resolved, err := filepath.EvalSymlinks(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return path, nil
+	}
+	if err != nil {
+		return "", hierr.Errorf(err, `unable to resolve output path "%s"`, path)
+	}
+	return resolved, nil
 }
 
 func outputFileMode(path string) (os.FileMode, error) {

@@ -3,6 +3,7 @@ package files
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 	sdk "github.com/Smartling/api-sdk-go"
 	sdkjob "github.com/Smartling/api-sdk-go/api/job"
 	jobfile "github.com/Smartling/api-sdk-go/api/job/file"
+	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
@@ -175,6 +177,66 @@ func TestRunPull_DuplicateOutputPaths_StopsBeforeDownloads(t *testing.T) {
 	}
 	if got := atomic.LoadInt32(&api.downloadTranslation); got != 0 {
 		t.Errorf("DownloadTranslation calls = %d, want 0", got)
+	}
+}
+
+func TestRunPull_DryRunDuplicateOutputPaths_ReturnsError(t *testing.T) {
+	api := &recordingAPIClient{files: []sdkfile.File{{FileURI: "a.json"}}}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{
+		URI:       "a.json",
+		Directory: t.TempDir(),
+		Format:    "out.json",
+		Locales:   []string{"fr-FR", "de-DE"},
+		DryRun:    true,
+	})
+	if err == nil {
+		t.Fatal("expected dry-run error for duplicate output paths, got nil")
+	}
+	if !strings.Contains(err.Error(), "both resolve to") {
+		t.Errorf("err = %q, want duplicate path error", err)
+	}
+}
+
+func TestRunPull_FileDeletedAfterListing_IsSkipped(t *testing.T) {
+	api := &recordingAPIClient{
+		files:     []sdkfile.File{{FileURI: "a.json"}, {FileURI: "b.json"}},
+		getStatus: statusMissingFor("b.json", "fr-FR", "de-DE"),
+	}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{URI: "*.json", Directory: t.TempDir()})
+	if err != nil {
+		t.Fatalf("RunPull error: %v", err)
+	}
+	if got := atomic.LoadInt32(&api.downloadTranslation); got != 2 {
+		t.Errorf("DownloadTranslation calls = %d, want 2 (a.json locales only)", got)
+	}
+}
+
+func TestRunPull_MissingFileFromStdin_Fails(t *testing.T) {
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("pipe: %v", err)
+	}
+	if _, err := w.WriteString("b.json\n"); err != nil {
+		t.Fatalf("write stdin: %v", err)
+	}
+	_ = w.Close()
+	stdin := os.Stdin
+	os.Stdin = r
+	t.Cleanup(func() { os.Stdin = stdin })
+
+	api := &recordingAPIClient{getStatus: statusMissingFor("b.json", "fr-FR")}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err = s.RunPull(context.Background(), PullParams{URI: "-", Directory: t.TempDir()})
+	if err == nil {
+		t.Fatal("expected error for explicitly named missing file, got nil")
+	}
+	if !strings.Contains(err.Error(), "1 file(s) failed to resolve") {
+		t.Errorf("err = %q, want planning failure count", err)
 	}
 }
 
@@ -786,5 +848,15 @@ func TestPullParams_setDefaultFormatIfEmpty(t *testing.T) {
 				t.Errorf("Format = %q, want %q", tt.params.Format, tt.wantFormat)
 			}
 		})
+	}
+}
+
+func statusMissingFor(missingURI string, locales ...string) func(string) (*sdkfile.FileStatus, error) {
+	ok := statusWithLocales(locales...)
+	return func(fileURI string) (*sdkfile.FileStatus, error) {
+		if fileURI == missingURI {
+			return nil, fmt.Errorf("failed to get files list: %w", sdkerror.NotFoundError{})
+		}
+		return ok(fileURI)
 	}
 }

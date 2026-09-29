@@ -76,6 +76,43 @@ func downloadStream(t *testing.T, stream func(ctx context.Context) io.Reader, pa
 	)
 }
 
+func TestDownloadFile_SymlinkKeepsLinkAndUpdatesTarget(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlinks require elevated privileges on Windows")
+	}
+	targetDir := t.TempDir()
+	target := filepath.Join(targetDir, "real.json")
+	if err := os.WriteFile(target, []byte("old"), 0o644); err != nil {
+		t.Fatalf("setup: %v", err)
+	}
+	linkDir := t.TempDir()
+	link := filepath.Join(linkDir, "a_fr-FR.json")
+	if err := os.Symlink(target, link); err != nil {
+		t.Fatalf("setup: %v", err)
+	}
+
+	if err := download(t, strings.NewReader("new"), link); err != nil {
+		t.Fatalf("DownloadFile error: %v", err)
+	}
+
+	info, err := os.Lstat(link)
+	if err != nil {
+		t.Fatalf("lstat link: %v", err)
+	}
+	if info.Mode()&os.ModeSymlink == 0 {
+		t.Errorf("symlink at %s was replaced by a regular file", link)
+	}
+	body, err := os.ReadFile(target)
+	if err != nil {
+		t.Fatalf("read target: %v", err)
+	}
+	if string(body) != "new" {
+		t.Errorf("target content = %q, want %q", body, "new")
+	}
+	assertNoTempFiles(t, targetDir)
+	assertNoTempFiles(t, linkDir)
+}
+
 func TestDownloadFile_StalledBodyTimesOut(t *testing.T) {
 	setIdleTimeout(t, 50*time.Millisecond)
 	dir := t.TempDir()
@@ -103,21 +140,30 @@ func TestDownloadFile_StalledBodyTimesOut(t *testing.T) {
 }
 
 func TestDownloadFile_SteadySlowBodyDoesNotTimeOut(t *testing.T) {
-	setIdleTimeout(t, 50*time.Millisecond)
+	const (
+		timeout = 200 * time.Millisecond
+		delay   = 20 * time.Millisecond
+		chunks  = 20
+	)
+	setIdleTimeout(t, timeout)
 	path := filepath.Join(t.TempDir(), "a_fr-FR.json")
 
+	start := time.Now()
 	err := downloadStream(t, func(context.Context) io.Reader {
-		return &trickleReader{chunks: 6, delay: 20 * time.Millisecond}
+		return &trickleReader{chunks: chunks, delay: delay}
 	}, path)
 	if err != nil {
 		t.Fatalf("DownloadFile error: %v", err)
+	}
+	if elapsed := time.Since(start); elapsed <= timeout {
+		t.Fatalf("download took %s, must exceed idle timeout %s to prove the timer resets", elapsed, timeout)
 	}
 	body, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read result: %v", err)
 	}
-	if string(body) != "xxxxxx" {
-		t.Errorf("content = %q, want %q", body, "xxxxxx")
+	if want := strings.Repeat("x", chunks); string(body) != want {
+		t.Errorf("content = %q, want %q", body, want)
 	}
 }
 

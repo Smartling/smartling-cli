@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync/atomic"
 
+	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	"github.com/Smartling/smartling-cli/services/helpers"
 	clierror "github.com/Smartling/smartling-cli/services/helpers/cli_error"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
@@ -48,6 +49,9 @@ type PullParams struct {
 	Retrieve     string
 	Threads      uint32
 	jobUID       string
+	// skipMissingFiles is set when files come from an API listing, where a
+	// file can be deleted between listing and status lookup.
+	skipMissingFiles bool
 }
 
 func (p *PullParams) setDefaultFormatIfEmpty() {
@@ -106,10 +110,12 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 	switch {
 	case params.jobUID != "":
 		files, jobLocales, err = s.enumerateJobFiles(ctx, params.jobUID)
+		params.skipMissingFiles = true
 	case params.URI == "-":
 		files, err = reader.ReadFilesFromStdin()
 	default:
 		files, err = globfiles.Remote(ctx, s.APIClient.ListAllFiles, s.Config.ProjectID, params.URI)
+		params.skipMissingFiles = true
 	}
 	if err != nil {
 		return err
@@ -170,7 +176,9 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 			}
 			if err := s.download(groupCtx, params, task); err != nil {
 				failed.Add(1)
-				rlog.Error(err)
+				if groupCtx.Err() == nil {
+					rlog.Error(err)
+				}
 			}
 			return nil
 		})
@@ -204,7 +212,9 @@ func (s service) planDownloads(
 			tasks, err := s.fileDownloadTasks(groupCtx, params, file, progressThreshold)
 			if err != nil {
 				failed.Add(1)
-				rlog.Error(err)
+				if groupCtx.Err() == nil {
+					rlog.Error(err)
+				}
 				return nil
 			}
 			perFile[i] = tasks
@@ -218,6 +228,7 @@ func (s service) planDownloads(
 // printDryRun writes the resolved file × locale matrix to stdout without
 // calling GetFileStatus or downloading anything.
 func (s service) printDryRun(files []sdkfile.File, params PullParams) error {
+	var tasks []downloadTask
 	for _, file := range files {
 		locales := params.Locales
 		if params.Source {
@@ -228,8 +239,18 @@ func (s service) printDryRun(files []sdkfile.File, params PullParams) error {
 			if err != nil {
 				return err
 			}
-			fmt.Println(filepath.Join(params.Directory, path))
+			tasks = append(tasks, downloadTask{
+				file:   file,
+				locale: locale,
+				path:   filepath.Join(params.Directory, path),
+			})
 		}
+	}
+	if err := checkUniquePaths(tasks); err != nil {
+		return err
+	}
+	for _, task := range tasks {
+		fmt.Println(task.path)
 	}
 	return nil
 }
@@ -264,6 +285,10 @@ func (s service) fileDownloadTasks(
 ) ([]downloadTask, error) {
 	projectID := s.Config.ProjectID
 	status, err := s.APIClient.GetFileStatus(ctx, projectID, file.FileURI)
+	if params.skipMissingFiles && errors.Is(err, sdkerror.NotFoundError{}) {
+		fmt.Printf("skipped %s (no longer exists in project)\n", file.FileURI)
+		return nil, nil
+	}
 	if err != nil {
 		return nil, hierr.Errorf(
 			err,
