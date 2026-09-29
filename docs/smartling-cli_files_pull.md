@@ -162,7 +162,7 @@ smartling-cli files pull <uri> [flags]
       --retrieve string      Retrieval type: pending, published, pseudo or contextMatchingInstrumented.
       --source               Pulls source file as well.
       --threads uint32       Maximum number of concurrent downloads. Each file ×
-                             locale pair is downloaded separately. (default 20)
+                             locale pair is downloaded separately. 0 uses the default. (default 20)
 ```
 
 ### Options inherited from parent commands
