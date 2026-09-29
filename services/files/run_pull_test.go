@@ -268,26 +268,40 @@ func TestRunPull_PlanFailure_StopsBeforeDownloads(t *testing.T) {
 	}
 }
 
+func TestRunPull_ZeroThreadsUsesDefaultLimit(t *testing.T) {
+	locales := make([]string, DefaultPullThreads+10)
+	for i := range locales {
+		locales[i] = fmt.Sprintf("xx-%02d", i)
+	}
+	var maxInFlight atomic.Int32
+	api := &recordingAPIClient{
+		files:      []sdkfile.File{{FileURI: "a.json"}},
+		getStatus:  statusWithLocales(locales...),
+		onDownload: trackConcurrency(&maxInFlight),
+	}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{URI: "a.json", Directory: t.TempDir(), Threads: 0})
+	if err != nil {
+		t.Fatalf("RunPull error: %v", err)
+	}
+	if got := atomic.LoadInt32(&api.downloadTranslation); got != int32(len(locales)) {
+		t.Errorf("DownloadTranslation calls = %d, want %d", got, len(locales))
+	}
+	if got := maxInFlight.Load(); got > DefaultPullThreads {
+		t.Errorf("max concurrent downloads = %d, want <= %d", got, DefaultPullThreads)
+	}
+}
+
 func TestRunPull_LocaleDownloadsRespectThreadsLimit(t *testing.T) {
 	const threads = 2
 	locales := []string{"fr-FR", "de-DE", "es-ES", "ja-JP", "ko-KR", "pl-PL"}
-	var inFlight, maxInFlight atomic.Int32
+	var maxInFlight atomic.Int32
 
 	api := &recordingAPIClient{
-		files:     []sdkfile.File{{FileURI: "a.json"}, {FileURI: "b.json"}},
-		getStatus: statusWithLocales(locales...),
-		onDownload: func(string) error {
-			n := inFlight.Add(1)
-			for {
-				m := maxInFlight.Load()
-				if n <= m || maxInFlight.CompareAndSwap(m, n) {
-					break
-				}
-			}
-			time.Sleep(10 * time.Millisecond)
-			inFlight.Add(-1)
-			return nil
-		},
+		files:      []sdkfile.File{{FileURI: "a.json"}, {FileURI: "b.json"}},
+		getStatus:  statusWithLocales(locales...),
+		onDownload: trackConcurrency(&maxInFlight),
 	}
 	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
 
@@ -858,5 +872,23 @@ func statusMissingFor(missingURI string, locales ...string) func(string) (*sdkfi
 			return nil, fmt.Errorf("failed to get files list: %w", sdkerror.NotFoundError{})
 		}
 		return ok(fileURI)
+	}
+}
+
+// trackConcurrency returns a download hook that records the peak number of
+// concurrent downloads in maxInFlight.
+func trackConcurrency(maxInFlight *atomic.Int32) func(string) error {
+	var inFlight atomic.Int32
+	return func(string) error {
+		n := inFlight.Add(1)
+		for {
+			m := maxInFlight.Load()
+			if n <= m || maxInFlight.CompareAndSwap(m, n) {
+				break
+			}
+		}
+		time.Sleep(10 * time.Millisecond)
+		inFlight.Add(-1)
+		return nil
 	}
 }

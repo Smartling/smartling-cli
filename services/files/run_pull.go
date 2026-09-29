@@ -30,8 +30,12 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// jobFilesPageSize is the per-request page size.
-const jobFilesPageSize = 500
+const (
+	// DefaultPullThreads is the pull concurrency used when --threads is 0 or unset.
+	DefaultPullThreads = 20
+	// jobFilesPageSize is the per-request page size.
+	jobFilesPageSize = 500
+)
 
 // PullParams is the parameters for the RunPull method.
 type PullParams struct {
@@ -418,10 +422,11 @@ type downloadTask struct {
 }
 
 func newLimitedGroup(ctx context.Context, threads uint32) (*errgroup.Group, context.Context) {
-	group, groupCtx := errgroup.WithContext(ctx)
-	if threads > 0 {
-		group.SetLimit(int(threads))
+	if threads == 0 {
+		threads = DefaultPullThreads
 	}
+	group, groupCtx := errgroup.WithContext(ctx)
+	group.SetLimit(int(threads))
 	return group, groupCtx
 }
 
@@ -451,7 +456,7 @@ func checkUniquePaths(tasks []downloadTask) error {
 	for _, task := range tasks {
 		if prev, ok := seen[task.path]; ok {
 			return fmt.Errorf(
-				`file "%s" (locale "%s") and file "%s" (locale "%s") both resolve to "%s"; --format must produce a unique path per file and locale`,
+				`file "%s" (locale "%s") and file "%s" (locale "%s") both resolve to "%s"; the pull format (--format or config) must produce a unique path per file and locale`,
 				prev.file.FileURI, prev.locale,
 				task.file.FileURI, task.locale,
 				task.path,
