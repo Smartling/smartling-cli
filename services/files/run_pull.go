@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -70,6 +71,19 @@ func (p *PullParams) validate() error {
 	return nil
 }
 
+func (p PullParams) progressThreshold() (int, error) {
+	progress := strings.TrimSpace(p.Progress)
+	progress = strings.TrimSpace(strings.TrimSuffix(progress, "%"))
+	if progress == "" {
+		return 0, nil
+	}
+	threshold, err := strconv.Atoi(progress)
+	if err != nil {
+		return 0, hierr.Errorf(err, "unable to parse --progress as integer")
+	}
+	return threshold, nil
+}
+
 // RunPull pulls translations for files from the Smartling based on the provided parameters.
 func (s service) RunPull(ctx context.Context, params PullParams) error {
 	if err := params.validate(); err != nil {
@@ -131,17 +145,24 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 		return s.printDryRun(files, params)
 	}
 
-	group, groupCtx := errgroup.WithContext(ctx)
-	if params.Threads > 0 {
-		group.SetLimit(int(params.Threads))
+	progressThreshold, err := params.progressThreshold()
+	if err != nil {
+		return err
 	}
+
+	tasks, planFailed := s.planDownloads(ctx, params, files, progressThreshold)
+	if planFailed > 0 {
+		return fmt.Errorf("%d file(s) failed to resolve; see log for details", planFailed)
+	}
+
 	var failed atomic.Int32
-	for _, file := range files {
+	group, groupCtx := newLimitedGroup(ctx, params.Threads)
+	for _, task := range tasks {
 		group.Go(func() error {
 			if err := groupCtx.Err(); err != nil {
 				return nil
 			}
-			if err := s.downloadFileTranslations(groupCtx, params, file); err != nil {
+			if err := s.download(groupCtx, params, task); err != nil {
 				failed.Add(1)
 				rlog.Error(err)
 			}
@@ -150,9 +171,38 @@ func (s service) RunPull(ctx context.Context, params PullParams) error {
 	}
 	_ = group.Wait()
 	if n := failed.Load(); n > 0 {
-		return fmt.Errorf("%d file(s) failed to download; see log for details", n)
+		return fmt.Errorf("%d download(s) failed; see log for details", n)
 	}
 	return nil
+}
+
+// planDownloads resolves every file × locale pair up front so downloads can be
+// parallelized across locales, not only across files.
+func (s service) planDownloads(ctx context.Context,
+	params PullParams,
+	files []sdkfile.File,
+	progressThreshold int,
+) ([]downloadTask, int32) {
+	var failed atomic.Int32
+	perFile := make([][]downloadTask, len(files))
+	group, groupCtx := newLimitedGroup(ctx, params.Threads)
+	for i, file := range files {
+		group.Go(func() error {
+			if err := groupCtx.Err(); err != nil {
+				return nil
+			}
+			tasks, err := s.fileDownloadTasks(groupCtx, params, file, progressThreshold)
+			if err != nil {
+				failed.Add(1)
+				rlog.Error(err)
+				return nil
+			}
+			perFile[i] = tasks
+			return nil
+		})
+	}
+	_ = group.Wait()
+	return slices.Concat(perFile...), failed.Load()
 }
 
 // printDryRun writes the resolved file × locale matrix to stdout without
@@ -196,26 +246,16 @@ func (s service) renderPullPath(file sdkfile.File, locale string, params PullPar
 	)
 }
 
-func (s service) downloadFileTranslations(ctx context.Context, params PullParams, file sdkfile.File) error {
-	progress := strings.TrimSpace(params.Progress)
-	progress = strings.TrimSpace(strings.TrimSuffix(progress, "%"))
-	if progress == "" {
-		progress = "0"
-	}
-	progressThreshold, err := strconv.ParseInt(progress, 10, 0)
-	if err != nil {
-		return hierr.Errorf(
-			err,
-			"unable to parse --progress as integer",
-		)
-	}
-
-	retrievalType := sdk.RetrievalType(params.Retrieve)
-
+func (s service) fileDownloadTasks(
+	ctx context.Context,
+	params PullParams,
+	file sdkfile.File,
+	progressThreshold int,
+) ([]downloadTask, error) {
 	projectID := s.Config.ProjectID
 	status, err := s.APIClient.GetFileStatus(ctx, projectID, file.FileURI)
 	if err != nil {
-		return hierr.Errorf(
+		return nil, hierr.Errorf(
 			err,
 			`unable to retrieve file "%s" locales from project "%s"`,
 			file.FileURI,
@@ -233,6 +273,7 @@ func (s service) downloadFileTranslations(ctx context.Context, params PullParams
 		translations = status.Items
 	}
 
+	var tasks []downloadTask
 	for _, locale := range translations {
 		if len(params.Locales) > 0 {
 			if !hasLocaleInList(locale.LocaleID, params.Locales) {
@@ -242,15 +283,15 @@ func (s service) downloadFileTranslations(ctx context.Context, params PullParams
 
 		path, err := s.renderPullPath(file, locale.LocaleID, params)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		progressPercent, err := locale.ProgressPercent(status.TotalStringCount)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		path = filepath.Join(params.Directory, path)
-		if progressThreshold > 0 && progressPercent < int(progressThreshold) {
+		if progressThreshold > 0 && progressPercent < progressThreshold {
 			fmt.Printf("skipped %s %d%% (threshold: %s%%)\n", path, progressPercent, params.Progress)
 			continue
 		}
@@ -262,27 +303,37 @@ func (s service) downloadFileTranslations(ctx context.Context, params PullParams
 			}
 		}
 
-		err = helpers.DownloadFile(
-			ctx,
-			s.APIClient,
-			projectID,
-			file,
-			locale.LocaleID,
-			path,
-			retrievalType,
-		)
-		if err != nil {
-			return err
-		}
-
-		if params.Source {
-			fmt.Printf("downloaded %s\n", path)
-		} else {
-			fmt.Printf("downloaded %s %d%%\n", path, progressPercent)
-		}
+		tasks = append(tasks, downloadTask{
+			file:            file,
+			locale:          locale.LocaleID,
+			path:            path,
+			progressPercent: progressPercent,
+		})
 	}
 
-	return err
+	return tasks, nil
+}
+
+func (s service) download(ctx context.Context, params PullParams, task downloadTask) error {
+	err := helpers.DownloadFile(
+		ctx,
+		s.APIClient,
+		s.Config.ProjectID,
+		task.file,
+		task.locale,
+		task.path,
+		sdk.RetrievalType(params.Retrieve),
+	)
+	if err != nil {
+		return err
+	}
+
+	if params.Source {
+		fmt.Printf("downloaded %s\n", task.path)
+	} else {
+		fmt.Printf("downloaded %s %d%%\n", task.path, task.progressPercent)
+	}
+	return nil
 }
 
 func hasLocaleInList(locale string, locales []string) bool {
@@ -326,6 +377,21 @@ func (s service) enumerateJobFiles(ctx context.Context, jobUID string) ([]sdkfil
 		files = append(files, sdkfile.File{FileURI: jf.FileURI})
 	}
 	return files, job.TargetLocaleIDs, nil
+}
+
+type downloadTask struct {
+	file            sdkfile.File
+	locale          string
+	path            string
+	progressPercent int
+}
+
+func newLimitedGroup(ctx context.Context, threads uint32) (*errgroup.Group, context.Context) {
+	group, groupCtx := errgroup.WithContext(ctx)
+	if threads > 0 {
+		group.SetLimit(int(threads))
+	}
+	return group, groupCtx
 }
 
 // listAllJobFiles walks every page of the Jobs API file listing and returns the aggregated list.
