@@ -2,13 +2,16 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
+	"github.com/Smartling/smartling-cli/services/helpers/rlog"
 	"github.com/reconquest/hierr-go"
 )
 
@@ -59,7 +62,8 @@ func DownloadFile(
 		}
 	}()
 
-	err = os.MkdirAll(filepath.Dir(path), 0o755)
+	dir := filepath.Dir(path)
+	err = os.MkdirAll(dir, 0o755)
 	if err != nil {
 		return hierr.Errorf(
 			err,
@@ -68,26 +72,65 @@ func DownloadFile(
 		)
 	}
 
-	writer, err := os.Create(path)
+	return writeFileAtomically(dir, path, reader)
+}
+
+// writeFileAtomically writes to a temp file and renames it into place, so an
+// interrupted download never leaves a truncated file at path.
+func writeFileAtomically(dir, path string, reader io.Reader) error {
+	writer, err := os.CreateTemp(dir, "."+filepath.Base(path)+".*.tmp")
 	if err != nil {
 		return hierr.Errorf(
 			err,
-			`unable to create output file "%s"`,
+			`unable to create temporary file for "%s"`,
 			path,
 		)
 	}
-
 	defer func() {
-		if err := writer.Close(); err != nil {
-			fmt.Printf("unable to close output file: %s\n", err)
+		if err := os.Remove(writer.Name()); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			rlog.Error(err.Error())
 		}
 	}()
 
 	_, err = io.Copy(writer, reader)
 	if err != nil {
+		if err := writer.Close(); err != nil {
+			rlog.Error(err.Error())
+		}
 		return hierr.Errorf(
 			err,
 			`unable to write file contents into "%s"`,
+			path,
+		)
+	}
+
+	err = writer.Close()
+	if err != nil {
+		return hierr.Errorf(
+			err,
+			`unable to close output file "%s"`,
+			path,
+		)
+	}
+
+	mode := os.FileMode(0o644)
+	if info, err := os.Stat(path); err == nil {
+		mode = info.Mode().Perm()
+	}
+	err = os.Chmod(writer.Name(), mode)
+	if err != nil {
+		return hierr.Errorf(
+			err,
+			`unable to set permissions on output file "%s"`,
+			path,
+		)
+	}
+
+	err = os.Rename(writer.Name(), path)
+	if err != nil {
+		return hierr.Errorf(
+			err,
+			`unable to move downloaded file into "%s"`,
 			path,
 		)
 	}
