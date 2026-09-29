@@ -11,12 +11,12 @@ import (
 // callers can mutate it (e.g. to set a proxy or TLS settings) without affecting
 // other consumers.
 //
-// Per-stage timeouts cover connect/TLS/response-header so a hung remote can
-// never block forever. The overall Client.Timeout is left unset on purpose:
-// file upload and download can legitimately take minutes, and request lifetime
-// is controlled by the caller's context.Context.
+// Per-stage timeouts cover connect/TLS/response-header. The overall
+// Client.Timeout is left unset on purpose: file upload and download can
+// legitimately take minutes.
 func NewHTTPClient() *http.Client {
 	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
 			Timeout:   10 * time.Second,
 			KeepAlive: 30 * time.Second,
@@ -25,7 +25,7 @@ func NewHTTPClient() *http.Client {
 		ResponseHeaderTimeout: 5 * time.Minute,
 		ExpectContinueTimeout: 1 * time.Second,
 		MaxIdleConns:          100,
-		MaxIdleConnsPerHost:   10,
+		MaxIdleConnsPerHost:   100,
 		MaxConnsPerHost:       100,
 		IdleConnTimeout:       90 * time.Second,
 	}

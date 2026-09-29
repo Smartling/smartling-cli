@@ -3,10 +3,12 @@ package helpers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
@@ -14,7 +16,13 @@ import (
 	"github.com/reconquest/hierr-go"
 )
 
-// DownloadFile downloads a file.
+var (
+	downloadIdleTimeout = 2 * time.Minute
+	errDownloadStalled  = errors.New("download stalled")
+)
+
+// DownloadFile downloads a file. The download is aborted if the response body
+// delivers no data for downloadIdleTimeout.
 func DownloadFile(
 	ctx context.Context,
 	client sdk.APIClient,
@@ -28,6 +36,9 @@ func DownloadFile(
 		reader io.ReadCloser
 		err    error
 	)
+
+	ctx, cancel := context.WithCancelCause(ctx)
+	defer cancel(nil)
 
 	if locale == "" {
 		reader, err = client.DownloadFile(ctx, project, file.FileURI)
@@ -71,7 +82,34 @@ func DownloadFile(
 		)
 	}
 
-	return writeFileAtomically(dir, path, reader)
+	timer := time.AfterFunc(downloadIdleTimeout, func() {
+		cancel(errDownloadStalled)
+	})
+	defer timer.Stop()
+
+	err = writeFileAtomically(dir, path, &idleTimeoutReader{reader: reader, timer: timer})
+	if errors.Is(context.Cause(ctx), errDownloadStalled) {
+		return fmt.Errorf(
+			`no data received for %s while downloading into "%s": %w`,
+			downloadIdleTimeout,
+			path,
+			errDownloadStalled,
+		)
+	}
+	return err
+}
+
+type idleTimeoutReader struct {
+	reader io.Reader
+	timer  *time.Timer
+}
+
+func (r *idleTimeoutReader) Read(p []byte) (int, error) {
+	n, err := r.reader.Read(p)
+	if n > 0 {
+		r.timer.Reset(downloadIdleTimeout)
+	}
+	return n, err
 }
 
 // writeFileAtomically writes to a temp file and renames it into place, so an
