@@ -62,7 +62,7 @@ type MockService_RunInit_Call struct {
 // RunInit is a helper method to define mock.On call
 //   - ctx context.Context
 //   - dryRun bool
-func (_e *MockService_Expecter) RunInit(ctx interface{}, dryRun interface{}) *MockService_RunInit_Call {
+func (_e *MockService_Expecter) RunInit(ctx any, dryRun any) *MockService_RunInit_Call {
 	return &MockService_RunInit_Call{Call: _e.mock.On("RunInit", ctx, dryRun)}
 }
 

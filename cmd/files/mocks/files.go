@@ -73,7 +73,7 @@ type MockSrvInitializer_InitFilesSrv_Call struct {
 
 // InitFilesSrv is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockSrvInitializer_Expecter) InitFilesSrv(ctx interface{}) *MockSrvInitializer_InitFilesSrv_Call {
+func (_e *MockSrvInitializer_Expecter) InitFilesSrv(ctx any) *MockSrvInitializer_InitFilesSrv_Call {
 	return &MockSrvInitializer_InitFilesSrv_Call{Call: _e.mock.On("InitFilesSrv", ctx)}
 }
 

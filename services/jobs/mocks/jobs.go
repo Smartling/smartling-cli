@@ -72,7 +72,7 @@ type MockService_RunFindByStrings_Call struct {
 // RunFindByStrings is a helper method to define mock.On call
 //   - ctx context.Context
 //   - p jobs.FindByStringsParams
-func (_e *MockService_Expecter) RunFindByStrings(ctx interface{}, p interface{}) *MockService_RunFindByStrings_Call {
+func (_e *MockService_Expecter) RunFindByStrings(ctx any, p any) *MockService_RunFindByStrings_Call {
 	return &MockService_RunFindByStrings_Call{Call: _e.mock.On("RunFindByStrings", ctx, p)}
 }
 
@@ -138,7 +138,7 @@ type MockService_RunList_Call struct {
 // RunList is a helper method to define mock.On call
 //   - ctx context.Context
 //   - p jobs.ListParams
-func (_e *MockService_Expecter) RunList(ctx interface{}, p interface{}) *MockService_RunList_Call {
+func (_e *MockService_Expecter) RunList(ctx any, p any) *MockService_RunList_Call {
 	return &MockService_RunList_Call{Call: _e.mock.On("RunList", ctx, p)}
 }
 
@@ -204,7 +204,7 @@ type MockService_RunProgress_Call struct {
 // RunProgress is a helper method to define mock.On call
 //   - ctx context.Context
 //   - p jobs.ProgressParams
-func (_e *MockService_Expecter) RunProgress(ctx interface{}, p interface{}) *MockService_RunProgress_Call {
+func (_e *MockService_Expecter) RunProgress(ctx any, p any) *MockService_RunProgress_Call {
 	return &MockService_RunProgress_Call{Call: _e.mock.On("RunProgress", ctx, p)}
 }
 
@@ -270,7 +270,7 @@ type MockService_RunView_Call struct {
 // RunView is a helper method to define mock.On call
 //   - ctx context.Context
 //   - p jobs.ViewParams
-func (_e *MockService_Expecter) RunView(ctx interface{}, p interface{}) *MockService_RunView_Call {
+func (_e *MockService_Expecter) RunView(ctx any, p any) *MockService_RunView_Call {
 	return &MockService_RunView_Call{Call: _e.mock.On("RunView", ctx, p)}
 }
 

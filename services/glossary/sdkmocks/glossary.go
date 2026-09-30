@@ -74,7 +74,7 @@ type MockGlossary_Create_Call struct {
 //   - ctx context.Context
 //   - accountUID uid.AccountUID
 //   - req glossary.CreateGlossaryRequest
-func (_e *MockGlossary_Expecter) Create(ctx interface{}, accountUID interface{}, req interface{}) *MockGlossary_Create_Call {
+func (_e *MockGlossary_Expecter) Create(ctx any, accountUID any, req any) *MockGlossary_Create_Call {
 	return &MockGlossary_Create_Call{Call: _e.mock.On("Create", ctx, accountUID, req)}
 }
 
@@ -147,7 +147,7 @@ type MockGlossary_Export_Call struct {
 //   - accountUID uid.AccountUID
 //   - glossaryUID string
 //   - req glossary.ExportGlossaryRequest
-func (_e *MockGlossary_Expecter) Export(ctx interface{}, accountUID interface{}, glossaryUID interface{}, req interface{}) *MockGlossary_Export_Call {
+func (_e *MockGlossary_Expecter) Export(ctx any, accountUID any, glossaryUID any, req any) *MockGlossary_Export_Call {
 	return &MockGlossary_Export_Call{Call: _e.mock.On("Export", ctx, accountUID, glossaryUID, req)}
 }
 
@@ -224,7 +224,7 @@ type MockGlossary_Get_Call struct {
 //   - ctx context.Context
 //   - accountUID uid.AccountUID
 //   - glossaryUID string
-func (_e *MockGlossary_Expecter) Get(ctx interface{}, accountUID interface{}, glossaryUID interface{}) *MockGlossary_Get_Call {
+func (_e *MockGlossary_Expecter) Get(ctx any, accountUID any, glossaryUID any) *MockGlossary_Get_Call {
 	return &MockGlossary_Get_Call{Call: _e.mock.On("Get", ctx, accountUID, glossaryUID)}
 }
 
@@ -298,7 +298,7 @@ type MockGlossary_GetByName_Call struct {
 //   - ctx context.Context
 //   - accountUID uid.AccountUID
 //   - name string
-func (_e *MockGlossary_Expecter) GetByName(ctx interface{}, accountUID interface{}, name interface{}) *MockGlossary_GetByName_Call {
+func (_e *MockGlossary_Expecter) GetByName(ctx any, accountUID any, name any) *MockGlossary_GetByName_Call {
 	return &MockGlossary_GetByName_Call{Call: _e.mock.On("GetByName", ctx, accountUID, name)}
 }
 
@@ -371,7 +371,7 @@ type MockGlossary_Import_Call struct {
 //   - accountUID uid.AccountUID
 //   - glossaryUID string
 //   - req glossary.ImportGlossaryRequest
-func (_e *MockGlossary_Expecter) Import(ctx interface{}, accountUID interface{}, glossaryUID interface{}, req interface{}) *MockGlossary_Import_Call {
+func (_e *MockGlossary_Expecter) Import(ctx any, accountUID any, glossaryUID any, req any) *MockGlossary_Import_Call {
 	return &MockGlossary_Import_Call{Call: _e.mock.On("Import", ctx, accountUID, glossaryUID, req)}
 }
 
@@ -449,7 +449,7 @@ type MockGlossary_ImportConfirm_Call struct {
 //   - accountUID uid.AccountUID
 //   - glossaryUID string
 //   - importUID string
-func (_e *MockGlossary_Expecter) ImportConfirm(ctx interface{}, accountUID interface{}, glossaryUID interface{}, importUID interface{}) *MockGlossary_ImportConfirm_Call {
+func (_e *MockGlossary_Expecter) ImportConfirm(ctx any, accountUID any, glossaryUID any, importUID any) *MockGlossary_ImportConfirm_Call {
 	return &MockGlossary_ImportConfirm_Call{Call: _e.mock.On("ImportConfirm", ctx, accountUID, glossaryUID, importUID)}
 }
 
@@ -527,7 +527,7 @@ type MockGlossary_ImportStatus_Call struct {
 //   - accountUID uid.AccountUID
 //   - glossaryUID string
 //   - importUID string
-func (_e *MockGlossary_Expecter) ImportStatus(ctx interface{}, accountUID interface{}, glossaryUID interface{}, importUID interface{}) *MockGlossary_ImportStatus_Call {
+func (_e *MockGlossary_Expecter) ImportStatus(ctx any, accountUID any, glossaryUID any, importUID any) *MockGlossary_ImportStatus_Call {
 	return &MockGlossary_ImportStatus_Call{Call: _e.mock.On("ImportStatus", ctx, accountUID, glossaryUID, importUID)}
 }
 

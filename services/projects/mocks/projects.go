@@ -72,7 +72,7 @@ type MockService_RunInfo_Call struct {
 
 // RunInfo is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockService_Expecter) RunInfo(ctx interface{}) *MockService_RunInfo_Call {
+func (_e *MockService_Expecter) RunInfo(ctx any) *MockService_RunInfo_Call {
 	return &MockService_RunInfo_Call{Call: _e.mock.On("RunInfo", ctx)}
 }
 
@@ -124,7 +124,7 @@ type MockService_RunList_Call struct {
 // RunList is a helper method to define mock.On call
 //   - ctx context.Context
 //   - short bool
-func (_e *MockService_Expecter) RunList(ctx interface{}, short interface{}) *MockService_RunList_Call {
+func (_e *MockService_Expecter) RunList(ctx any, short any) *MockService_RunList_Call {
 	return &MockService_RunList_Call{Call: _e.mock.On("RunList", ctx, short)}
 }
 
@@ -181,7 +181,7 @@ type MockService_RunLocales_Call struct {
 // RunLocales is a helper method to define mock.On call
 //   - ctx context.Context
 //   - params projects.LocalesParams
-func (_e *MockService_Expecter) RunLocales(ctx interface{}, params interface{}) *MockService_RunLocales_Call {
+func (_e *MockService_Expecter) RunLocales(ctx any, params any) *MockService_RunLocales_Call {
 	return &MockService_RunLocales_Call{Call: _e.mock.On("RunLocales", ctx, params)}
 }
 
