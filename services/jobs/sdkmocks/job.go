@@ -73,7 +73,7 @@ type MockJob_FindJobsByStrings_Call struct {
 //   - ctx context.Context
 //   - projectID string
 //   - req job.FindJobsByStringsRequest
-func (_e *MockJob_Expecter) FindJobsByStrings(ctx interface{}, projectID interface{}, req interface{}) *MockJob_FindJobsByStrings_Call {
+func (_e *MockJob_Expecter) FindJobsByStrings(ctx any, projectID any, req any) *MockJob_FindJobsByStrings_Call {
 	return &MockJob_FindJobsByStrings_Call{Call: _e.mock.On("FindJobsByStrings", ctx, projectID, req)}
 }
 
@@ -145,7 +145,7 @@ type MockJob_GetJob_Call struct {
 //   - ctx context.Context
 //   - projectID string
 //   - jobUID string
-func (_e *MockJob_Expecter) GetJob(ctx interface{}, projectID interface{}, jobUID interface{}) *MockJob_GetJob_Call {
+func (_e *MockJob_Expecter) GetJob(ctx any, projectID any, jobUID any) *MockJob_GetJob_Call {
 	return &MockJob_GetJob_Call{Call: _e.mock.On("GetJob", ctx, projectID, jobUID)}
 }
 
@@ -217,7 +217,7 @@ type MockJob_ListAccountJobs_Call struct {
 //   - ctx context.Context
 //   - accountUID string
 //   - params job.ListAccountJobsParams
-func (_e *MockJob_Expecter) ListAccountJobs(ctx interface{}, accountUID interface{}, params interface{}) *MockJob_ListAccountJobs_Call {
+func (_e *MockJob_Expecter) ListAccountJobs(ctx any, accountUID any, params any) *MockJob_ListAccountJobs_Call {
 	return &MockJob_ListAccountJobs_Call{Call: _e.mock.On("ListAccountJobs", ctx, accountUID, params)}
 }
 
@@ -289,7 +289,7 @@ type MockJob_ListProjectJobs_Call struct {
 //   - ctx context.Context
 //   - projectID string
 //   - params job.ListProjectJobsParams
-func (_e *MockJob_Expecter) ListProjectJobs(ctx interface{}, projectID interface{}, params interface{}) *MockJob_ListProjectJobs_Call {
+func (_e *MockJob_Expecter) ListProjectJobs(ctx any, projectID any, params any) *MockJob_ListProjectJobs_Call {
 	return &MockJob_ListProjectJobs_Call{Call: _e.mock.On("ListProjectJobs", ctx, projectID, params)}
 }
 
@@ -361,7 +361,7 @@ type MockJob_Progress_Call struct {
 //   - ctx context.Context
 //   - projectID string
 //   - jobUID string
-func (_e *MockJob_Expecter) Progress(ctx interface{}, projectID interface{}, jobUID interface{}) *MockJob_Progress_Call {
+func (_e *MockJob_Expecter) Progress(ctx any, projectID any, jobUID any) *MockJob_Progress_Call {
 	return &MockJob_Progress_Call{Call: _e.mock.On("Progress", ctx, projectID, jobUID)}
 }
 
@@ -433,7 +433,7 @@ type MockJob_SearchJobs_Call struct {
 //   - ctx context.Context
 //   - projectID string
 //   - req job.SearchJobsRequest
-func (_e *MockJob_Expecter) SearchJobs(ctx interface{}, projectID interface{}, req interface{}) *MockJob_SearchJobs_Call {
+func (_e *MockJob_Expecter) SearchJobs(ctx any, projectID any, req any) *MockJob_SearchJobs_Call {
 	return &MockJob_SearchJobs_Call{Call: _e.mock.On("SearchJobs", ctx, projectID, req)}
 }
 

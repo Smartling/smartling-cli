@@ -64,7 +64,7 @@ type MockJobLocale_Add_Call struct {
 //   - projectID string
 //   - jobUID string
 //   - targetLocaleID string
-func (_e *MockJobLocale_Expecter) Add(ctx interface{}, projectID interface{}, jobUID interface{}, targetLocaleID interface{}) *MockJobLocale_Add_Call {
+func (_e *MockJobLocale_Expecter) Add(ctx any, projectID any, jobUID any, targetLocaleID any) *MockJobLocale_Add_Call {
 	return &MockJobLocale_Add_Call{Call: _e.mock.On("Add", ctx, projectID, jobUID, targetLocaleID)}
 }
 
@@ -133,7 +133,7 @@ type MockJobLocale_Remove_Call struct {
 //   - projectID string
 //   - jobUID string
 //   - targetLocaleID string
-func (_e *MockJobLocale_Expecter) Remove(ctx interface{}, projectID interface{}, jobUID interface{}, targetLocaleID interface{}) *MockJobLocale_Remove_Call {
+func (_e *MockJobLocale_Expecter) Remove(ctx any, projectID any, jobUID any, targetLocaleID any) *MockJobLocale_Remove_Call {
 	return &MockJobLocale_Remove_Call{Call: _e.mock.On("Remove", ctx, projectID, jobUID, targetLocaleID)}
 }
 

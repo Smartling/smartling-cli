@@ -73,7 +73,7 @@ type MockSrvInitializer_InitProjectsSrv_Call struct {
 
 // InitProjectsSrv is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockSrvInitializer_Expecter) InitProjectsSrv(ctx interface{}) *MockSrvInitializer_InitProjectsSrv_Call {
+func (_e *MockSrvInitializer_Expecter) InitProjectsSrv(ctx any) *MockSrvInitializer_InitProjectsSrv_Call {
 	return &MockSrvInitializer_InitProjectsSrv_Call{Call: _e.mock.On("InitProjectsSrv", ctx)}
 }
 

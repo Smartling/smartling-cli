@@ -74,7 +74,7 @@ type MockJobFile_Add_Call struct {
 //   - projectID string
 //   - translationJobUID string
 //   - req jobfile.AddRequest
-func (_e *MockJobFile_Expecter) Add(ctx interface{}, projectID interface{}, translationJobUID interface{}, req interface{}) *MockJobFile_Add_Call {
+func (_e *MockJobFile_Expecter) Add(ctx any, projectID any, translationJobUID any, req any) *MockJobFile_Add_Call {
 	return &MockJobFile_Add_Call{Call: _e.mock.On("Add", ctx, projectID, translationJobUID, req)}
 }
 
@@ -153,7 +153,7 @@ type MockJobFile_List_Call struct {
 //   - translationJobUID string
 //   - limit uint32
 //   - offset uint32
-func (_e *MockJobFile_Expecter) List(ctx interface{}, projectID interface{}, translationJobUID interface{}, limit interface{}, offset interface{}) *MockJobFile_List_Call {
+func (_e *MockJobFile_Expecter) List(ctx any, projectID any, translationJobUID any, limit any, offset any) *MockJobFile_List_Call {
 	return &MockJobFile_List_Call{Call: _e.mock.On("List", ctx, projectID, translationJobUID, limit, offset)}
 }
 
@@ -236,7 +236,7 @@ type MockJobFile_Remove_Call struct {
 //   - projectID string
 //   - translationJobUID string
 //   - req jobfile.RemoveRequest
-func (_e *MockJobFile_Expecter) Remove(ctx interface{}, projectID interface{}, translationJobUID interface{}, req interface{}) *MockJobFile_Remove_Call {
+func (_e *MockJobFile_Expecter) Remove(ctx any, projectID any, translationJobUID any, req any) *MockJobFile_Remove_Call {
 	return &MockJobFile_Remove_Call{Call: _e.mock.On("Remove", ctx, projectID, translationJobUID, req)}
 }
 

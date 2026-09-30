@@ -63,7 +63,7 @@ type MockService_RunDelete_Call struct {
 // RunDelete is a helper method to define mock.On call
 //   - ctx context.Context
 //   - uri string
-func (_e *MockService_Expecter) RunDelete(ctx interface{}, uri interface{}) *MockService_RunDelete_Call {
+func (_e *MockService_Expecter) RunDelete(ctx any, uri any) *MockService_RunDelete_Call {
 	return &MockService_RunDelete_Call{Call: _e.mock.On("RunDelete", ctx, uri)}
 }
 
@@ -120,7 +120,7 @@ type MockService_RunImport_Call struct {
 // RunImport is a helper method to define mock.On call
 //   - ctx context.Context
 //   - params files.ImportParams
-func (_e *MockService_Expecter) RunImport(ctx interface{}, params interface{}) *MockService_RunImport_Call {
+func (_e *MockService_Expecter) RunImport(ctx any, params any) *MockService_RunImport_Call {
 	return &MockService_RunImport_Call{Call: _e.mock.On("RunImport", ctx, params)}
 }
 
@@ -179,7 +179,7 @@ type MockService_RunList_Call struct {
 //   - formatType string
 //   - short bool
 //   - uri string
-func (_e *MockService_Expecter) RunList(ctx interface{}, formatType interface{}, short interface{}, uri interface{}) *MockService_RunList_Call {
+func (_e *MockService_Expecter) RunList(ctx any, formatType any, short any, uri any) *MockService_RunList_Call {
 	return &MockService_RunList_Call{Call: _e.mock.On("RunList", ctx, formatType, short, uri)}
 }
 
@@ -246,7 +246,7 @@ type MockService_RunPull_Call struct {
 // RunPull is a helper method to define mock.On call
 //   - ctx context.Context
 //   - params files.PullParams
-func (_e *MockService_Expecter) RunPull(ctx interface{}, params interface{}) *MockService_RunPull_Call {
+func (_e *MockService_Expecter) RunPull(ctx any, params any) *MockService_RunPull_Call {
 	return &MockService_RunPull_Call{Call: _e.mock.On("RunPull", ctx, params)}
 }
 
@@ -303,7 +303,7 @@ type MockService_RunPush_Call struct {
 // RunPush is a helper method to define mock.On call
 //   - ctx context.Context
 //   - params files.PushParams
-func (_e *MockService_Expecter) RunPush(ctx interface{}, params interface{}) *MockService_RunPush_Call {
+func (_e *MockService_Expecter) RunPush(ctx any, params any) *MockService_RunPush_Call {
 	return &MockService_RunPush_Call{Call: _e.mock.On("RunPush", ctx, params)}
 }
 
@@ -361,7 +361,7 @@ type MockService_RunRename_Call struct {
 //   - ctx context.Context
 //   - oldURI string
 //   - newURI string
-func (_e *MockService_Expecter) RunRename(ctx interface{}, oldURI interface{}, newURI interface{}) *MockService_RunRename_Call {
+func (_e *MockService_Expecter) RunRename(ctx any, oldURI any, newURI any) *MockService_RunRename_Call {
 	return &MockService_RunRename_Call{Call: _e.mock.On("RunRename", ctx, oldURI, newURI)}
 }
 
@@ -423,7 +423,7 @@ type MockService_RunStatus_Call struct {
 // RunStatus is a helper method to define mock.On call
 //   - ctx context.Context
 //   - params files.StatusParams
-func (_e *MockService_Expecter) RunStatus(ctx interface{}, params interface{}) *MockService_RunStatus_Call {
+func (_e *MockService_Expecter) RunStatus(ctx any, params any) *MockService_RunStatus_Call {
 	return &MockService_RunStatus_Call{Call: _e.mock.On("RunStatus", ctx, params)}
 }
 

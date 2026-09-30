@@ -73,7 +73,7 @@ type MockSrvInitializer_InitMTSrv_Call struct {
 
 // InitMTSrv is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockSrvInitializer_Expecter) InitMTSrv(ctx interface{}) *MockSrvInitializer_InitMTSrv_Call {
+func (_e *MockSrvInitializer_Expecter) InitMTSrv(ctx any) *MockSrvInitializer_InitMTSrv_Call {
 	return &MockSrvInitializer_InitMTSrv_Call{Call: _e.mock.On("InitMTSrv", ctx)}
 }
 

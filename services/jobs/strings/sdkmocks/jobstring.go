@@ -74,7 +74,7 @@ type MockJobString_Add_Call struct {
 //   - projectID string
 //   - translationJobUID string
 //   - req jobstring.AddRequest
-func (_e *MockJobString_Expecter) Add(ctx interface{}, projectID interface{}, translationJobUID interface{}, req interface{}) *MockJobString_Add_Call {
+func (_e *MockJobString_Expecter) Add(ctx any, projectID any, translationJobUID any, req any) *MockJobString_Add_Call {
 	return &MockJobString_Add_Call{Call: _e.mock.On("Add", ctx, projectID, translationJobUID, req)}
 }
 
@@ -152,7 +152,7 @@ type MockJobString_List_Call struct {
 //   - projectID string
 //   - translationJobUID string
 //   - params jobstring.ListParams
-func (_e *MockJobString_Expecter) List(ctx interface{}, projectID interface{}, translationJobUID interface{}, params interface{}) *MockJobString_List_Call {
+func (_e *MockJobString_Expecter) List(ctx any, projectID any, translationJobUID any, params any) *MockJobString_List_Call {
 	return &MockJobString_List_Call{Call: _e.mock.On("List", ctx, projectID, translationJobUID, params)}
 }
 
@@ -230,7 +230,7 @@ type MockJobString_Remove_Call struct {
 //   - projectID string
 //   - translationJobUID string
 //   - req jobstring.RemoveRequest
-func (_e *MockJobString_Expecter) Remove(ctx interface{}, projectID interface{}, translationJobUID interface{}, req interface{}) *MockJobString_Remove_Call {
+func (_e *MockJobString_Expecter) Remove(ctx any, projectID any, translationJobUID any, req any) *MockJobString_Remove_Call {
 	return &MockJobString_Remove_Call{Call: _e.mock.On("Remove", ctx, projectID, translationJobUID, req)}
 }
 

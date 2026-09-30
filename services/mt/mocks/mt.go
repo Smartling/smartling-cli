@@ -74,7 +74,7 @@ type MockService_GetFiles_Call struct {
 // GetFiles is a helper method to define mock.On call
 //   - inputDirectory string
 //   - fileOrPattern string
-func (_e *MockService_Expecter) GetFiles(inputDirectory interface{}, fileOrPattern interface{}) *MockService_GetFiles_Call {
+func (_e *MockService_Expecter) GetFiles(inputDirectory any, fileOrPattern any) *MockService_GetFiles_Call {
 	return &MockService_GetFiles_Call{Call: _e.mock.On("GetFiles", inputDirectory, fileOrPattern)}
 }
 
@@ -144,7 +144,7 @@ type MockService_RunDetect_Call struct {
 //   - p mt.DetectParams
 //   - files []string
 //   - updates chan any
-func (_e *MockService_Expecter) RunDetect(ctx interface{}, p interface{}, files interface{}, updates interface{}) *MockService_RunDetect_Call {
+func (_e *MockService_Expecter) RunDetect(ctx any, p any, files any, updates any) *MockService_RunDetect_Call {
 	return &MockService_RunDetect_Call{Call: _e.mock.On("RunDetect", ctx, p, files, updates)}
 }
 
@@ -224,7 +224,7 @@ type MockService_RunTranslate_Call struct {
 //   - p mt.TranslateParams
 //   - files []string
 //   - updates chan any
-func (_e *MockService_Expecter) RunTranslate(ctx interface{}, p interface{}, files interface{}, updates interface{}) *MockService_RunTranslate_Call {
+func (_e *MockService_Expecter) RunTranslate(ctx any, p any, files any, updates any) *MockService_RunTranslate_Call {
 	return &MockService_RunTranslate_Call{Call: _e.mock.On("RunTranslate", ctx, p, files, updates)}
 }
 
