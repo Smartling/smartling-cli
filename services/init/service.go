@@ -3,9 +3,8 @@ package initialize
 import (
 	"context"
 
+	"github.com/Smartling/smartling-cli/services/helpers/client"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
-
-	sdk "github.com/Smartling/api-sdk-go"
 )
 
 // Service defines behavior for initializing the Smartling CLI.
@@ -15,11 +14,12 @@ type Service interface {
 
 // service provides methods to init Smartling CLI.
 type service struct {
-	Client sdk.APIClient
-	Config config.Config
+	ClientConfig client.Config
+	Config       config.Config
+	Verbose      uint8
 }
 
-// NewService creates a new instance of the Service with the provided client and configuration.
-func NewService(client sdk.APIClient, config config.Config) Service {
-	return &service{Client: client, Config: config}
+// NewService creates a new instance of the Service with the provided client settings and configuration.
+func NewService(clientConfig client.Config, config config.Config, verbose uint8) Service {
+	return &service{ClientConfig: clientConfig, Config: config, Verbose: verbose}
 }

@@ -56,11 +56,16 @@ func Client(ctx context.Context) (sdk.HttpAPIClient, error) {
 	if err != nil {
 		return sdk.HttpAPIClient{}, err
 	}
-	client, err := client.CreateClient(ctx, CLIClientConfig(), cnf, uint8(verbose))
+	client, err := client.NewAPIClientWithAuthenticate(ctx, CLIClientConfig(), cnf, Verbosity())
 	if err != nil {
 		return sdk.HttpAPIClient{}, err
 	}
 	return client, nil
+}
+
+// Verbosity returns the verbosity level set by the -v flags.
+func Verbosity() uint8 {
+	return uint8(verbose)
 }
 
 // ConfigFile returns the path to the configuration file.

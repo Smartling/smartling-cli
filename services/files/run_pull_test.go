@@ -3,17 +3,21 @@ package files
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	sdk "github.com/Smartling/api-sdk-go"
 	sdkjob "github.com/Smartling/api-sdk-go/api/job"
 	jobfile "github.com/Smartling/api-sdk-go/api/job/file"
+	sdkerror "github.com/Smartling/api-sdk-go/helpers/sm_error"
 	sdkfile "github.com/Smartling/api-sdk-go/helpers/sm_file"
 	"github.com/Smartling/smartling-cli/services/helpers/config"
 	"github.com/Smartling/smartling-cli/services/helpers/format"
@@ -25,17 +29,296 @@ import (
 // exactly what we want so unexpected calls show up as test failures.
 type recordingAPIClient struct {
 	sdk.APIClient
+	files               []sdkfile.File
 	getStatus           func(fileURI string) (*sdkfile.FileStatus, error)
+	onDownload          func(localeID string) error
 	downloadTranslation int32
+}
+
+func (r *recordingAPIClient) ListAllFiles(context.Context, string, sdkfile.FilesListRequest) ([]sdkfile.File, error) {
+	return r.files, nil
 }
 
 func (r *recordingAPIClient) GetFileStatus(_ context.Context, _, fileURI string) (*sdkfile.FileStatus, error) {
 	return r.getStatus(fileURI)
 }
 
-func (r *recordingAPIClient) DownloadTranslation(_ context.Context, _, _ string, _ sdk.FileDownloadRequest) (io.ReadCloser, error) {
+func (r *recordingAPIClient) DownloadTranslation(_ context.Context, _, localeID string, _ sdk.FileDownloadRequest) (io.ReadCloser, error) {
 	atomic.AddInt32(&r.downloadTranslation, 1)
+	if r.onDownload != nil {
+		if err := r.onDownload(localeID); err != nil {
+			return nil, err
+		}
+	}
 	return io.NopCloser(strings.NewReader("translated content")), nil
+}
+
+func statusWithLocales(locales ...string) func(string) (*sdkfile.FileStatus, error) {
+	return func(string) (*sdkfile.FileStatus, error) {
+		items := make([]sdkfile.FileStatusTranslation, 0, len(locales))
+		for _, l := range locales {
+			items = append(items, sdkfile.FileStatusTranslation{LocaleID: l, CompletedStringCount: 100})
+		}
+		return &sdkfile.FileStatus{TotalStringCount: 100, Items: items}, nil
+	}
+}
+
+func TestRunPull_LocalesOfSingleFileDownloadConcurrently(t *testing.T) {
+	locales := []string{"fr-FR", "de-DE", "es-ES", "ja-JP"}
+	var started sync.WaitGroup
+	started.Add(len(locales))
+	allStarted := make(chan struct{})
+	go func() {
+		started.Wait()
+		close(allStarted)
+	}()
+
+	api := &recordingAPIClient{
+		files:     []sdkfile.File{{FileURI: "a.json"}},
+		getStatus: statusWithLocales(locales...),
+		onDownload: func(string) error {
+			started.Done()
+			select {
+			case <-allStarted:
+			case <-time.After(5 * time.Second):
+				t.Error("locale downloads of one file did not run concurrently")
+			}
+			return nil
+		},
+	}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{
+		URI:       "a.json",
+		Directory: t.TempDir(),
+		Threads:   uint32(len(locales)),
+	})
+	if err != nil {
+		t.Fatalf("RunPull error: %v", err)
+	}
+	if got := atomic.LoadInt32(&api.downloadTranslation); got != int32(len(locales)) {
+		t.Errorf("DownloadTranslation calls = %d, want %d", got, len(locales))
+	}
+}
+
+func TestRunPull_DownloadFailure_OtherLocalesContinue(t *testing.T) {
+	dir := t.TempDir()
+	api := &recordingAPIClient{
+		files:     []sdkfile.File{{FileURI: "a.json"}},
+		getStatus: statusWithLocales("fr-FR", "de-DE", "es-ES"),
+		onDownload: func(localeID string) error {
+			if localeID == "de-DE" {
+				return errors.New("gateway timeout")
+			}
+			return nil
+		},
+	}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{URI: "a.json", Directory: dir})
+	if err == nil {
+		t.Fatal("expected error when a locale download fails, got nil")
+	}
+	if !strings.Contains(err.Error(), "1 download(s) failed") {
+		t.Errorf("err = %q, want download failure count", err)
+	}
+	if got := atomic.LoadInt32(&api.downloadTranslation); got != 3 {
+		t.Errorf("DownloadTranslation calls = %d, want 3", got)
+	}
+	for _, name := range []string{"a_fr-FR.json", "a_es-ES.json"} {
+		if _, err := os.Stat(filepath.Join(dir, name)); err != nil {
+			t.Errorf("%s not downloaded: %v", name, err)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(dir, "a_de-DE.json")); !os.IsNotExist(err) {
+		t.Errorf("a_de-DE.json exists after failed download (stat err: %v)", err)
+	}
+}
+
+func TestRunPull_CancelledDuringDownloads_ReturnsError(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	api := &recordingAPIClient{
+		files:     []sdkfile.File{{FileURI: "a.json"}},
+		getStatus: statusWithLocales("fr-FR", "de-DE", "es-ES"),
+		onDownload: func(string) error {
+			cancel()
+			return nil
+		},
+	}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(ctx, PullParams{URI: "a.json", Directory: t.TempDir(), Threads: 1})
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("err = %v, want context.Canceled", err)
+	}
+	if got := atomic.LoadInt32(&api.downloadTranslation); got != 1 {
+		t.Errorf("DownloadTranslation calls = %d, want 1 (rest skipped after cancel)", got)
+	}
+}
+
+func TestRunPull_DuplicateOutputPaths_StopsBeforeDownloads(t *testing.T) {
+	api := &recordingAPIClient{
+		files:     []sdkfile.File{{FileURI: "a.json"}},
+		getStatus: statusWithLocales("fr-FR", "de-DE"),
+	}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{
+		URI:       "a.json",
+		Directory: t.TempDir(),
+		Format:    "out.json",
+	})
+	if err == nil {
+		t.Fatal("expected error for duplicate output paths, got nil")
+	}
+	if !strings.Contains(err.Error(), "both resolve to") {
+		t.Errorf("err = %q, want duplicate path error", err)
+	}
+	if got := atomic.LoadInt32(&api.downloadTranslation); got != 0 {
+		t.Errorf("DownloadTranslation calls = %d, want 0", got)
+	}
+}
+
+func TestRunPull_DryRunDuplicateOutputPaths_ReturnsError(t *testing.T) {
+	api := &recordingAPIClient{files: []sdkfile.File{{FileURI: "a.json"}}}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{
+		URI:       "a.json",
+		Directory: t.TempDir(),
+		Format:    "out.json",
+		Locales:   []string{"fr-FR", "de-DE"},
+		DryRun:    true,
+	})
+	if err == nil {
+		t.Fatal("expected dry-run error for duplicate output paths, got nil")
+	}
+	if !strings.Contains(err.Error(), "both resolve to") {
+		t.Errorf("err = %q, want duplicate path error", err)
+	}
+}
+
+func TestRunPull_FileDeletedAfterListing_IsSkipped(t *testing.T) {
+	api := &recordingAPIClient{
+		files:     []sdkfile.File{{FileURI: "a.json"}, {FileURI: "b.json"}},
+		getStatus: statusMissingFor("b.json", "fr-FR", "de-DE"),
+	}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{URI: "*.json", Directory: t.TempDir()})
+	if err != nil {
+		t.Fatalf("RunPull error: %v", err)
+	}
+	if got := atomic.LoadInt32(&api.downloadTranslation); got != 2 {
+		t.Errorf("DownloadTranslation calls = %d, want 2 (a.json locales only)", got)
+	}
+}
+
+func TestRunPull_MissingFileFromStdin_Fails(t *testing.T) {
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("pipe: %v", err)
+	}
+	if _, err := w.WriteString("b.json\n"); err != nil {
+		t.Fatalf("write stdin: %v", err)
+	}
+	_ = w.Close()
+	stdin := os.Stdin
+	os.Stdin = r
+	t.Cleanup(func() { os.Stdin = stdin })
+
+	api := &recordingAPIClient{getStatus: statusMissingFor("b.json", "fr-FR")}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err = s.RunPull(context.Background(), PullParams{URI: "-", Directory: t.TempDir()})
+	if err == nil {
+		t.Fatal("expected error for explicitly named missing file, got nil")
+	}
+	if !strings.Contains(err.Error(), "1 file(s) failed to resolve") {
+		t.Errorf("err = %q, want planning failure count", err)
+	}
+}
+
+func TestRunPull_PlanFailure_StopsBeforeDownloads(t *testing.T) {
+	okStatus := statusWithLocales("fr-FR", "de-DE")
+	api := &recordingAPIClient{
+		files: []sdkfile.File{{FileURI: "a.json"}, {FileURI: "b.json"}},
+		getStatus: func(fileURI string) (*sdkfile.FileStatus, error) {
+			if fileURI == "b.json" {
+				return nil, errors.New("status unavailable")
+			}
+			return okStatus(fileURI)
+		},
+	}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{
+		URI:       "*.json",
+		Directory: t.TempDir(),
+	})
+	if err == nil {
+		t.Fatal("expected error when a file fails to resolve, got nil")
+	}
+	if !strings.Contains(err.Error(), "1 file(s) failed to resolve") {
+		t.Errorf("err = %q, want planning failure count", err)
+	}
+	if got := atomic.LoadInt32(&api.downloadTranslation); got != 0 {
+		t.Errorf("DownloadTranslation calls = %d, want 0", got)
+	}
+}
+
+func TestRunPull_ZeroThreadsUsesDefaultLimit(t *testing.T) {
+	locales := make([]string, DefaultPullThreads+10)
+	for i := range locales {
+		locales[i] = fmt.Sprintf("xx-%02d", i)
+	}
+	var maxInFlight atomic.Int32
+	api := &recordingAPIClient{
+		files:      []sdkfile.File{{FileURI: "a.json"}},
+		getStatus:  statusWithLocales(locales...),
+		onDownload: trackConcurrency(&maxInFlight),
+	}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{URI: "a.json", Directory: t.TempDir(), Threads: 0})
+	if err != nil {
+		t.Fatalf("RunPull error: %v", err)
+	}
+	if got := atomic.LoadInt32(&api.downloadTranslation); got != int32(len(locales)) {
+		t.Errorf("DownloadTranslation calls = %d, want %d", got, len(locales))
+	}
+	if got := maxInFlight.Load(); got > DefaultPullThreads {
+		t.Errorf("max concurrent downloads = %d, want <= %d", got, DefaultPullThreads)
+	}
+}
+
+func TestRunPull_LocaleDownloadsRespectThreadsLimit(t *testing.T) {
+	const threads = 2
+	locales := []string{"fr-FR", "de-DE", "es-ES", "ja-JP", "ko-KR", "pl-PL"}
+	var maxInFlight atomic.Int32
+
+	api := &recordingAPIClient{
+		files:      []sdkfile.File{{FileURI: "a.json"}, {FileURI: "b.json"}},
+		getStatus:  statusWithLocales(locales...),
+		onDownload: trackConcurrency(&maxInFlight),
+	}
+	s := service{APIClient: api, Config: config.Config{ProjectID: "proj-1"}}
+
+	err := s.RunPull(context.Background(), PullParams{
+		URI:       "*.json",
+		Directory: t.TempDir(),
+		Threads:   threads,
+	})
+	if err != nil {
+		t.Fatalf("RunPull error: %v", err)
+	}
+	if got, want := atomic.LoadInt32(&api.downloadTranslation), int32(2*len(locales)); got != want {
+		t.Errorf("DownloadTranslation calls = %d, want %d", got, want)
+	}
+	if got := maxInFlight.Load(); got > threads {
+		t.Errorf("max concurrent downloads = %d, want <= %d", got, threads)
+	}
 }
 
 // stubListJobFiles builds a ListJobFilesFn returning a single fixed page.
@@ -579,5 +862,33 @@ func TestPullParams_setDefaultFormatIfEmpty(t *testing.T) {
 				t.Errorf("Format = %q, want %q", tt.params.Format, tt.wantFormat)
 			}
 		})
+	}
+}
+
+func statusMissingFor(missingURI string, locales ...string) func(string) (*sdkfile.FileStatus, error) {
+	ok := statusWithLocales(locales...)
+	return func(fileURI string) (*sdkfile.FileStatus, error) {
+		if fileURI == missingURI {
+			return nil, fmt.Errorf("failed to get files list: %w", sdkerror.NotFoundError{})
+		}
+		return ok(fileURI)
+	}
+}
+
+// trackConcurrency returns a download hook that records the peak number of
+// concurrent downloads in maxInFlight.
+func trackConcurrency(maxInFlight *atomic.Int32) func(string) error {
+	var inFlight atomic.Int32
+	return func(string) error {
+		n := inFlight.Add(1)
+		for {
+			m := maxInFlight.Load()
+			if n <= m || maxInFlight.CompareAndSwap(m, n) {
+				break
+			}
+		}
+		time.Sleep(10 * time.Millisecond)
+		inFlight.Add(-1)
+		return nil
 	}
 }

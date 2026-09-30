@@ -278,41 +278,60 @@ test_file_operations_workflow() {
     else
         test_fail "Import translations (fr-FR)" "Import failed"
     fi
-    
-    # 5. List files
-    log_info "Step 5: List files"
+
+    # 5. Download translated locales (locales of one file are pulled in parallel)
+    log_info "Step 5: Download translated locales"
+    local locale_dir="${TEST_DIR}/locales"
+    if run_cli "files pull test.properties -l de-DE -l fr-FR -d $locale_dir"; then
+        local missing_locales=""
+        for locale in de-DE fr-FR; do
+            if [[ -z "$(find "$locale_dir" -type f -name "*${locale}*" 2>/dev/null)" ]]; then
+                missing_locales="$missing_locales $locale"
+            fi
+        done
+        if [[ -z "$missing_locales" ]]; then
+            test_pass "File download (translated locales)"
+        else
+            test_fail "File download (translated locales)" "No file downloaded for:$missing_locales"
+        fi
+    else
+        test_fail "File download (translated locales)" "Download failed"
+    fi
+
+    # 6. List files
+    log_info "Step 6: List files"
     if run_cli "files list \"**/test*.txt\""; then
         test_pass "File listing"
     else
         test_fail "File listing" "List failed"
     fi
     
-    # 6. Download one file to current folder
-    log_info "Step 6: Download file to current folder"
+    # 7. Download one file to current folder
+    log_info "Step 7: Download file to current folder"
     if run_cli "files pull $file_uri1 --source"; then
         test_pass "File download (single)"
     else
         test_fail "File download (single)" "Download failed"
     fi
     
-    # 7. Rename file
-    log_info "Step 7: Rename file"
+    # 8. Rename file
+    log_info "Step 8: Rename file"
     if run_cli "files rename $file_uri2 $file_uri_renamed"; then
         test_pass "File rename"
     else
         test_fail "File rename" "Rename failed"
     fi
     
-    # 8. Download all files to subfolder
-    log_info "Step 8: Download all files to subfolder"
+    # 9. Download all files to subfolder
+    log_info "Step 9: Download all files to subfolder"
     if run_cli "files pull \"**/test*.txt\" --source -d $download_dir"; then
         test_pass "File download (bulk)"
     else
         test_fail "File download (bulk)" "Bulk download failed"
     fi
     
-    # 9. Delete uploaded files
-    log_info "Step 9: Delete uploaded files"
+    # 10. Delete uploaded files
+    log_info "Step 10: Delete uploaded files"
     if run_cli "files delete $file_uri1" && run_cli "files delete $file_uri_renamed"; then
         test_pass "File deletion"
     else

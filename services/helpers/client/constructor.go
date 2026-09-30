@@ -18,9 +18,28 @@ import (
 
 var version = "2.0"
 
-// CreateClient initializes a new Smartling API client with the provided configurations.
-// Returns the client, and an error if any.
-func CreateClient(ctx context.Context, clientConfig Config, config config.Config, verbose uint8) (sdk.HttpAPIClient, error) {
+// NewAPIClientWithAuthenticate initializes a new Smartling API client with the provided configurations
+// and authenticates it. Returns the client, and an error if any.
+func NewAPIClientWithAuthenticate(ctx context.Context, clientConfig Config, config config.Config, verbose uint8) (sdk.HttpAPIClient, error) {
+	client, err := NewAPIClient(clientConfig, config, verbose)
+	if err != nil {
+		return sdk.HttpAPIClient{}, err
+	}
+
+	err = client.Authenticate(ctx)
+	if err != nil {
+		return sdk.HttpAPIClient{}, clierror.NewError(
+			err,
+			`Your credentials are invalid. Double check it and try to run init.\n`,
+		)
+	}
+
+	return *client, nil
+}
+
+// NewAPIClient builds a Smartling API client with the CLI proxy, TLS and base
+// URL settings applied, without authenticating.
+func NewAPIClient(clientConfig Config, config config.Config, verbose uint8) (*sdk.HttpAPIClient, error) {
 	httpClient := NewHTTPClient()
 	transport := httpClient.Transport.(*http.Transport)
 
@@ -37,7 +56,7 @@ func CreateClient(ctx context.Context, clientConfig Config, config config.Config
 	if clientConfig.Proxy != "" {
 		proxy, err := url.Parse(clientConfig.Proxy)
 		if err != nil {
-			return sdk.HttpAPIClient{}, clierror.NewError(
+			return nil, clierror.NewError(
 				hierr.Errorf(
 					err,
 					"unable to parse specified proxy URL",
@@ -65,15 +84,7 @@ func CreateClient(ctx context.Context, clientConfig Config, config config.Config
 		regexp.MustCompile(`"(?:access|refresh)Token": "([^"]+)"`),
 	)
 
-	err := client.Authenticate(ctx)
-	if err != nil {
-		return sdk.HttpAPIClient{}, clierror.NewError(
-			err,
-			`Your credentials are invalid. Double check it and try to run init.\n`,
-		)
-	}
-
-	return *client, nil
+	return client, nil
 }
 
 func setLogger(client *sdk.HttpAPIClient, logger lorg.Logger, verbosity uint8) {
