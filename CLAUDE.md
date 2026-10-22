@@ -14,7 +14,7 @@ The codebase follows a layered architecture pattern:
   - Each command has its own subdirectory with command definition and tests
   - Service initializers are used to inject dependencies into commands
 - **services/**: Business logic layer containing service implementations
-  - Each service corresponds to a command group (files, projects, init, mt, jobs)
+  - Each service corresponds to a command group (files, projects, init, mt, jobs, glossaries — its service package is `services/glossary`)
   - Services interact with the Smartling API SDK
   - **services/helpers/**: Shared utilities for config management, error handling, progress rendering, format compilation, and thread pooling
 - **output/**: Rendering and formatting layer for CLI output
@@ -117,12 +117,14 @@ The CLI uses YAML configuration files (smartling.yml) that can be placed in the 
 
 ### Service Initializer Pattern
 
-Each command group (files, projects, init, mt, jobs) follows the same dependency injection pattern:
+Each command group (files, projects, init, mt, jobs, glossaries) follows the same dependency injection pattern:
 
-1. **Command Group** (e.g., `cmd/files/cmd_files.go`): Defines the `SrvInitializer` interface and factory function
-2. **Service Initializer** (e.g., `cmd/files/cmd_files.go`): Implements the initializer that wires up SDK clients and configuration
+1. **Command Group** (e.g., `cmd/files/cmd_files.go`): Defines the group command. Legacy groups (files, projects, init) also define the `SrvInitializer` interface and factory function here; newer groups (mt, jobs, glossaries) put them in `cmd/<group>/srv_initializer.go`
+2. **Service Initializer** (e.g., `cmd/files/cmd_files.go`, `cmd/glossaries/srv_initializer.go`): Implements the initializer that wires up SDK clients and configuration
 3. **Service** (e.g., `services/files/service.go`): Defines the Service interface with business logic methods
 4. **Command Implementation** (e.g., `cmd/files/push/cmd_push.go`): Uses the initializer to get service instance and executes operations
+
+To add a new command, use the `add-command` project skill (`.claude/skills/add-command/`).
 
 This pattern enables:
 - Easy mocking of services in command tests
